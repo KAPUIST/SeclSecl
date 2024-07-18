@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: final_db
+    image: mysql:latest
+    restart: always
+    ports:
+      - "2010:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1q2w3e4r
+      MYSQL_DATABASE: final_db
+      MYSQL_USER: luke
+      MYSQL_PASSWORD: 1q2w3e4r
+    volumes:
+      - db_data_final:/var/lib/mysql
+volumes:
+  db_data_final:
