@@ -1,4 +1,5 @@
-import { Credentials } from 'src/main/auth/entities/credential.entity'
+import { RefreshToken } from 'src/cp/auth/entites/refresh-token.entity'
+import { UserInfos } from 'src/main/auth/entities/user-infos.entity'
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne } from 'typeorm'
 
 @Entity()
@@ -18,6 +19,9 @@ export class User {
   @Column({ nullable: true })
   image: string
 
-  @OneToOne(() => Credentials, (credentials) => credentials.user)
-  credentials: Credentials
+  @OneToOne(() => UserInfos, (userInfos) => userInfos.user)
+  credentials: UserInfos
+
+  @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.cp, { cascade: ['remove', 'soft-remove'] })
+  refreshToken: RefreshToken
 }
