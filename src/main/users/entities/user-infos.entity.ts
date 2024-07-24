@@ -1,0 +1,62 @@
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+  DeleteDateColumn,
+} from 'typeorm'
+import { User } from './user.entity'
+import { Provider } from '../../auth/types/provider.type'
+import { Role } from '../../auth/types/role.type'
+
+@Entity('user_infos')
+export class UserInfos {
+  @PrimaryGeneratedColumn('uuid')
+  uid: string
+
+  @OneToOne(() => User, (user) => user.userInfo)
+  @JoinColumn({ name: 'uid' })
+  user: User
+
+  @Column({ unique: true })
+  phone_number: string
+
+  @Column({ type: 'enum', enum: Provider, default: Provider.CREDENTIALS })
+  provider: Provider
+
+  @Column()
+  address: string
+
+  @Column()
+  dong: string
+
+  @Column()
+  gender: string
+
+  @Column()
+  birthDate: Date
+
+  @Column()
+  sido: string
+
+  @Column({ type: 'enum', enum: Role, default: Role.USER })
+  role: Role
+
+  @Column()
+  sigungu: string
+
+  @Column()
+  nickname: string
+
+  @CreateDateColumn()
+  createdAt: Date
+
+  @UpdateDateColumn()
+  updatedAt: Date
+
+  @DeleteDateColumn()
+  deletedAt: Date
+}

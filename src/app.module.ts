@@ -4,9 +4,24 @@ import { AppService } from './app.service'
 import { AdminModule } from './admin/admin.module'
 import { CpModule } from './cp/cp.module'
 import { MainModule } from './main/main.module'
+import { SMSModule } from './common/sms/sms.module'
+import { ConfigModule } from '@nestjs/config'
+import { configModuleValidationSchema } from './config/env-validation.config'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { typeOrmModuleOptions } from './config/typeorm.config'
 
 @Module({
-  imports: [AdminModule, CpModule, MainModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: configModuleValidationSchema,
+    }),
+    TypeOrmModule.forRootAsync(typeOrmModuleOptions),
+    AdminModule,
+    CpModule,
+    MainModule,
+    SMSModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

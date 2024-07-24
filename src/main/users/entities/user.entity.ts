@@ -1,10 +1,27 @@
-import { Credentials } from 'src/main/auth/entities/credential.entity'
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  DeleteDateColumn,
+} from 'typeorm'
+import { UserInfos } from './user-infos.entity'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   uid: string
+
+  @Column()
+  email: string
+
+  @Column()
+  password: string
+
+  @Column({ default: false })
+  isVerified: boolean
 
   @CreateDateColumn()
   createdAt: Date
@@ -12,12 +29,9 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @Column({ nullable: true })
-  name: string
+  @DeleteDateColumn()
+  deletedAt: Date
 
-  @Column({ nullable: true })
-  image: string
-
-  @OneToOne(() => Credentials, (credentials) => credentials.user)
-  credentials: Credentials
+  @OneToOne(() => UserInfos, (UserInfos) => UserInfos.user)
+  userInfo: UserInfos
 }
