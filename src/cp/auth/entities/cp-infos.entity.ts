@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { Cp } from './cp.entity'
 
-@Entity({ name: 'cp_infos' })
+@Entity({ database: 'seclsecl_cp', name: 'cp_infos' })
 export class CpInfos {
   @PrimaryGeneratedColumn('uuid')
   uid: string

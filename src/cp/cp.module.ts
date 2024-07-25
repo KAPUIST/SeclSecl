@@ -11,7 +11,7 @@ import { JwtModule } from '@nestjs/jwt'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Cp, CpInfos, RefreshToken]),
+    TypeOrmModule.forFeature([Cp, CpInfos, RefreshToken], 'cp'),
     PassportModule,
     ConfigModule,
     JwtModule.registerAsync({

@@ -8,7 +8,6 @@ import * as bcrypt from 'bcrypt'
 import { SignUpDto } from './dtos/sign-up.dto'
 import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
 import { SMSService } from '../../common/sms/sms.service'
-import { v4 as uuidv4 } from 'uuid'
 import { RedisService } from 'src/common/redis/redis.service'
 import { UserInfos } from '../users/entities/user-infos.entity'
 @Injectable()

@@ -10,7 +10,7 @@ import {
 import { CpInfos } from './cp-infos.entity'
 import { RefreshToken } from './refresh-token.entity'
 
-@Entity({ name: 'cp' })
+@Entity({ database: 'seclsecl_cp', name: 'cp' })
 export class Cp {
   @PrimaryGeneratedColumn('uuid')
   uid: string

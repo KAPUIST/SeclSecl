@@ -14,11 +14,11 @@ import { CP_MESSAGE_CONSTANT } from 'src/common/messages/cp.message'
 @Injectable()
 export class cpService {
   constructor(
-    @InjectRepository(Cp)
+    @InjectRepository(Cp, 'cp')
     private readonly cpRepository: Repository<Cp>,
-    @InjectRepository(CpInfos)
+    @InjectRepository(CpInfos, 'cp')
     private readonly cpInfosRepository: Repository<CpInfos>,
-    @InjectRepository(RefreshToken)
+    @InjectRepository(RefreshToken, 'cp')
     private readonly tokenRepository: Repository<RefreshToken>,
     private readonly configService: ConfigService,
   ) {}

@@ -13,7 +13,7 @@ import { Provider } from '../../auth/types/provider.type'
 import { Role } from '../../auth/types/role.type'
 import { Gender } from 'src/main/auth/types/gender.type'
 
-@Entity('user_infos')
+@Entity({ name: 'user_infos' })
 export class UserInfos {
   @PrimaryGeneratedColumn('uuid')
   uid: string
