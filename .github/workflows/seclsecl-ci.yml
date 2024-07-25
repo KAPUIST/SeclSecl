@@ -38,6 +38,7 @@ jobs:
           echo "MAIN_REFRESH_TOKEN_SECRET=${{secrets.MAIN_REFRESH_TOKEN_SECRET}}" >> .env
           echo "MAIN_ACCESS_TOKEN_EXPIRES=${{secrets.MAIN_ACCESS_TOKEN_EXPIRES}}" >> .env
           echo "MAIN_ACCESS_TOKEN_SECRET=${{secrets.MAIN_ACCESS_TOKEN_SECRET}}" >> .env
+          echo "REDIS_URL=${{secrets.REDIS_URL}}" >> .env
 
       - name: Run build
         run: npm run build
