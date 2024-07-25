@@ -25,4 +25,45 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
     },
   },
+  BAND: {
+    BAND_GROUP: {
+      CREATE_BAND: {
+        SUCCEED: '밴드 생성에 성공하였습니다.',
+        CONFLICT_NAME: '이미 존재하는 밴드명입니다.',
+      },
+      GET_BAND_List: {
+        SUCCEED: '밴드 목록 조회에 성공하였습니다.',
+      },
+      GET_BAND_Detail: {
+        SUCCEED: '밴드 상세 조회에 성공하였습니다.',
+        NOT_FOUND: ' 존재하지 않는 밴드입니다.',
+      },
+      UPDATE_BAND: {
+        SUCCEED: '밴드 수정에 성공하였습니다.',
+        BAD_REQUEST: '밴드명, 설명 중 한가지는 입력해야 합니다.',
+        NOT_FOUND: '존재하지 않거나 해당 밴드의 오너가 아닙니다.',
+        UNAUTHORIZED: '밴드의 오너만 수정할 수 있습니다',
+      },
+      DELETE_BAND: {
+        SUCCEED: '밴드 삭제에 성공하였습니다.',
+        NOT_FOUND: '존재하지 않거나 해당 밴드의 오너가 아닙니다.',
+      },
+      JOIN_BAND: {
+        SUCCEED: '밴드 가입에 성공하였습니다.',
+      },
+    },
+    COMMON: {
+      BAND_ENTITY: {
+        UID: {
+          REQUIRED: '밴드 UID를 입력해 주세요',
+        },
+        NAME: {
+          REQUIRED: '밴드명을 입력해 주세요',
+        },
+        CONTENT: {
+          REQUIRED: '밴드 설명을 입력해 주세요',
+        },
+      },
+    },
+  },
 }
