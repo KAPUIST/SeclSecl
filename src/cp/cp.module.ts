@@ -4,14 +4,14 @@ import { cpService } from './cp.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { RefreshToken } from './auth/entities/refresh-token.entity'
 import { Cp } from './auth/entities/cp.entity'
-import { CpInfos } from './auth/entities/cp-infos.entity'
+import { CpInfo } from './auth/entities/cp-infos.entity'
 import { PassportModule } from '@nestjs/passport'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Cp, CpInfos, RefreshToken], 'cp'),
+    TypeOrmModule.forFeature([Cp, CpInfo, RefreshToken], 'cp'),
     PassportModule,
     ConfigModule,
     JwtModule.registerAsync({

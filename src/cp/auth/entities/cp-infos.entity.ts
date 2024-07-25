@@ -2,11 +2,11 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'ty
 import { Cp } from './cp.entity'
 
 @Entity({ database: 'seclsecl_cp', name: 'cp_infos' })
-export class CpInfos {
+export class CpInfo {
   @PrimaryGeneratedColumn('uuid')
   uid: string
 
-  @OneToOne(() => Cp, (cp) => cp.cp)
+  @OneToOne(() => Cp, (cp) => cp.cpInfo)
   @JoinColumn({ name: 'uid' })
   cp: Cp
 

@@ -11,10 +11,13 @@ import { AdminAuthService } from './auth/auth.service'
 import { Admin } from './auth/entities/admin.entity'
 import { AdminController } from './admin.controller'
 import { AdminService } from './admin.service'
+import { Cp } from '../cp/auth/entities/cp.entity'
+import { CpInfo } from 'src/cp/auth/entities/cp-infos.entity'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Admin, AdminRefreshToken], 'admin'),
+    TypeOrmModule.forFeature([Cp, CpInfo], 'cp'),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => ({

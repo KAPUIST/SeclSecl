@@ -8,7 +8,7 @@ import { JwtPayload } from './auth/interfaces/jwt-payload-interface'
 import { sign } from 'jsonwebtoken'
 import { InjectRepository } from '@nestjs/typeorm'
 import { RefreshToken } from './auth/entities/refresh-token.entity'
-import { CpInfos } from './auth/entities/cp-infos.entity'
+import { CpInfo } from './auth/entities/cp-infos.entity'
 import { CP_MESSAGE_CONSTANT } from 'src/common/messages/cp.message'
 
 @Injectable()
@@ -16,8 +16,8 @@ export class cpService {
   constructor(
     @InjectRepository(Cp, 'cp')
     private readonly cpRepository: Repository<Cp>,
-    @InjectRepository(CpInfos, 'cp')
-    private readonly cpInfosRepository: Repository<CpInfos>,
+    @InjectRepository(CpInfo, 'cp')
+    private readonly cpInfosRepository: Repository<CpInfo>,
     @InjectRepository(RefreshToken, 'cp')
     private readonly tokenRepository: Repository<RefreshToken>,
     private readonly configService: ConfigService,

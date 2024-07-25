@@ -32,13 +32,13 @@ export class AdminAuthService {
       throw new UnauthorizedException('비밀번호를 확인해주세요.')
     }
 
-    const payload = { email, sub: admin.uid , type:'admin'};
-    const accessToken = this.jwtService.sign(payload);
+    const payload = { email, sub: admin.uid, type: 'admin' }
+    const accessToken = this.jwtService.sign(payload)
     // const refreshToken = await this.generateRefreshToken(admin.uid);
 
     return {
-        accessToken,
-        // refreshToken,
+      accessToken,
+      // refreshToken,
     }
   }
   // async generateRefreshToken(adminId: string): Promise<string> {
