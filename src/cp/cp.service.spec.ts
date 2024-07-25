@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CpService } from './cp.service';
+import { Test, TestingModule } from '@nestjs/testing'
+import { CpService } from './cp.service'
 
 describe('CpService', () => {
-  let service: CpService;
+  let service: CpService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [CpService],
-    }).compile();
+    }).compile()
 
-    service = module.get<CpService>(CpService);
-  });
+    service = module.get<CpService>(CpService)
+  })
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+    expect(service).toBeDefined()
+  })
+})

@@ -1,4 +1,3 @@
-
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -35,5 +34,4 @@ export class User {
 
   @OneToOne(() => UserInfos, (UserInfos) => UserInfos.user)
   userInfo: UserInfos
-
 }
