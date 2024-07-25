@@ -40,22 +40,22 @@ async function bootstrap() {
 
   //admin용 스웨거
   const adminConfig = new DocumentBuilder()
-  .setTitle('seclsecl Admin API')
-  .setDescription('seclsecl PROJECT Admin API')
-  .setVersion('1.0')
-  .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
-  .build()
+    .setTitle('seclsecl Admin API')
+    .setDescription('seclsecl PROJECT Admin API')
+    .setVersion('1.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+    .build()
 
-const adminDocument = SwaggerModule.createDocument(app, adminConfig, {
-  include: [AdminModule], // AdminModule만 포함하도록 설정
-})
-SwaggerModule.setup('admin/api', app, adminDocument, {
-  swaggerOptions: {
-    persistAuthorization: true,
-    tagsSorter: 'alpha',
-    operationsSorter: 'alpha',
-  },
-})
+  const adminDocument = SwaggerModule.createDocument(app, adminConfig, {
+    include: [AdminModule], // AdminModule만 포함하도록 설정
+  })
+  SwaggerModule.setup('admin/api', app, adminDocument, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  })
 
   await app.listen(port)
 }

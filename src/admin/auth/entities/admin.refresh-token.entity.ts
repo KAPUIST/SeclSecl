@@ -1,6 +1,5 @@
-import { Column, CreateDateColumn,  Entity,  ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
-import { Admin } from "./admin.entity"
-
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Admin } from './admin.entity'
 
 @Entity({ name: 'admin_refreshToken' })
 export class AdminRefreshToken {
@@ -16,6 +15,6 @@ export class AdminRefreshToken {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToOne(() => Admin, admin => admin.refreshTokens, { onDelete: 'CASCADE' })
-    admin: Admin;
+  @ManyToOne(() => Admin, (admin) => admin.refreshTokens, { onDelete: 'CASCADE' })
+  admin: Admin
 }

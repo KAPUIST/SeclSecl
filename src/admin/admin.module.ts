@@ -1,16 +1,16 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { Module } from '@nestjs/common'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { PassportModule } from '@nestjs/passport'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { JwtModule } from '@nestjs/jwt'
 
-import { AuthController } from './auth/auth.controller';
-import { AdminRefreshToken } from './auth/entities/admin.refresh-token.entity';
-import { JwtStrategy } from './auth/jwt.strategy';
-import { AdminAuthService } from './auth/auth.service';
-import { Admin } from './auth/entities/admin.entity';
-import { AdminController } from './admin.controller';
-import { AdminService } from './admin.service';
+import { AuthController } from './auth/auth.controller'
+import { AdminRefreshToken } from './auth/entities/admin.refresh-token.entity'
+import { JwtStrategy } from './auth/jwt.strategy'
+import { AdminAuthService } from './auth/auth.service'
+import { Admin } from './auth/entities/admin.entity'
+import { AdminController } from './admin.controller'
+import { AdminService } from './admin.service'
 
 @Module({
   imports: [

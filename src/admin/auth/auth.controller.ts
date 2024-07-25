@@ -1,4 +1,4 @@
-import { Body, Controller,  Post } from '@nestjs/common'
+import { Body, Controller, Post } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { AdminAuthService } from './auth.service'
 import { AdminSignInDto } from './dto/sign-in.dto'
@@ -10,8 +10,8 @@ export class AuthController {
 
   /**
    * 로그인
-   * @param adminSignInDto 
-   * @returns 
+   * @param adminSignInDto
+   * @returns
    */
   @Post('sign-in')
   async signIn(@Body() adminSignInDto: AdminSignInDto) {
@@ -20,8 +20,8 @@ export class AuthController {
 
   // /**
   //  * 리프레시 토큰 재발급
-  //  * @param body 
-  //  * @returns 
+  //  * @param body
+  //  * @returns
   //  */
   // @Post('refreshToken')
   // async refreshTokens(@Body() body: {refreshToken:string}) {
