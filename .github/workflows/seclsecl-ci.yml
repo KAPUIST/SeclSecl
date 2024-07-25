@@ -34,6 +34,10 @@ jobs:
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
           echo "DB_SYNC=${{ secrets.DB_SYNC }}" >> .env
+          echo "MAIN_REFRESH_TOKEN_EXPIRES=${{secrets.MAIN_REFRESH_TOKEN_EXPIRES}}" >> .env
+          echo "MAIN_REFRESH_TOKEN_SECRET=${{secrets.MAIN_REFRESH_TOKEN_SECRET}}" >> .env
+          echo "MAIN_ACCESS_TOKEN_EXPIRES=${{secrets.MAIN_ACCESS_TOKEN_EXPIRES}}" >> .env
+          echo "MAIN_ACCESS_TOKEN_SECRET=${{secrets.MAIN_ACCESS_TOKEN_SECRET}}" >> .env
 
       - name: Run build
         run: npm run build
