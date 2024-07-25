@@ -1,11 +1,28 @@
-import { RefreshToken } from 'src/cp/auth/entites/refresh-token.entity'
-import { UserInfos } from 'src/main/auth/entities/user-infos.entity'
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne } from 'typeorm'
+
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  DeleteDateColumn,
+} from 'typeorm'
+import { UserInfos } from './user-infos.entity'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   uid: string
+
+  @Column()
+  email: string
+
+  @Column()
+  password: string
+
+  @Column({ default: false })
+  isVerified: boolean
 
   @CreateDateColumn()
   createdAt: Date
@@ -13,15 +30,10 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @Column({ nullable: true })
-  name: string
+  @DeleteDateColumn()
+  deletedAt: Date
 
-  @Column({ nullable: true })
-  image: string
+  @OneToOne(() => UserInfos, (UserInfos) => UserInfos.user)
+  userInfo: UserInfos
 
-  @OneToOne(() => UserInfos, (userInfos) => userInfos.user)
-  credentials: UserInfos
-
-  @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.cp, { cascade: ['remove', 'soft-remove'] })
-  refreshToken: RefreshToken
 }
