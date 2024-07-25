@@ -26,17 +26,16 @@ jobs:
       - name: Install dependencies
         run: |
 
-
-       - name: Install dependencies
+      - name: Install dependencies
         run: npm ci
 
       - name: Run build
         run: npm run build
 
-        - name: Start server
+      - name: Start server
         run: |
           npm start &
           sleep 10
 
-  - name: Check server status
+      - name: Check server status
         run: curl -f http://localhost:3000/api/health
