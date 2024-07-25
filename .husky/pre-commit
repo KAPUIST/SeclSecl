@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# npm test 넣으시면 테스트 파일도 검사 가능한가봐요.
+npm run format
+# 커밋할때 자동으로 실행되었으면 싶은것들 넣으시면 됩니다.
