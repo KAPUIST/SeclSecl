@@ -6,8 +6,11 @@ import {
   UpdateDateColumn,
   OneToOne,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm'
 import { UserInfos } from './user-infos.entity'
+import { Band } from 'src/main/band/entities/band.entity'
+import { BandMember } from 'src/main/band/entities/band-members.entity'
 
 @Entity()
 export class User {
@@ -34,4 +37,10 @@ export class User {
 
   @OneToOne(() => UserInfos, (UserInfos) => UserInfos.user)
   userInfo: UserInfos
+
+  @OneToMany(() => Band, (band) => band.user)
+  bands: Band[]
+
+  @OneToMany(() => BandMember, (bandMember) => bandMember.user)
+  bandMembers: BandMember[]
 }
