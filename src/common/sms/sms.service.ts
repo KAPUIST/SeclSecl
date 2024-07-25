@@ -1,7 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import axios from 'axios'
 import { ConfigService } from '@nestjs/config'
-import * as moment from 'moment-timezone'
 import * as crypto from 'crypto'
 
 @Injectable()
