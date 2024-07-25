@@ -16,7 +16,7 @@ export class RefreshToken {
   uid: string
 
   @OneToOne(() => cp, (cp) => cp.refreshToken)
-  @JoinColumn({ referencedColumnName: 'id' })
+  @JoinColumn({ referencedColumnName: 'uid' })
   cp: cp
 
   @Column({ type: 'int', nullable: false })
