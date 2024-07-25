@@ -1,6 +1,16 @@
-import { IsString, IsEmail, IsNotEmpty, MinLength, MaxLength, IsStrongPassword, IsOptional } from 'class-validator'
+import {
+  IsString,
+  IsEmail,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  IsStrongPassword,
+  IsOptional,
+  IsDateString,
+} from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
 import { Provider } from 'src/main/auth/types/provider.type'
+import { Gender } from '../types/gender.type'
 
 export class SignUpDto {
   @ApiProperty({ required: true })
@@ -28,6 +38,16 @@ export class SignUpDto {
   @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
+  gender: Gender
+
+  @ApiProperty({ required: true })
+  @IsDateString()
+  @IsNotEmpty()
+  birthDate: string
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
   @IsStrongPassword()
   @MinLength(6, { message: '비밀번호는 최소 6자리 이상입니다.' })
   password: string
@@ -48,16 +68,6 @@ export class SignUpDto {
   @IsString()
   @IsOptional()
   dong?: string
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  gender?: string
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  birthDate?: Date
 
   @ApiProperty({ required: false })
   @IsString()

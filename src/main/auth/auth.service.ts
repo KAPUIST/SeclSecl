@@ -57,7 +57,16 @@ export class AuthService {
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.HASH_ERROR)
     }
   }
-  async signUp({ email, password, confirmPassword, phoneNumber, nickname, ...otherUserInfo }: SignUpDto) {
+  async signUp({
+    email,
+    password,
+    confirmPassword,
+    phoneNumber,
+    gender,
+    birthDate,
+    nickname,
+    ...otherUserInfo
+  }: SignUpDto) {
     if (password !== confirmPassword) {
       throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.NOT_MATCHED_PASSWORD)
     }
@@ -89,7 +98,9 @@ export class AuthService {
 
       const userInfo = this.userInfosRepository.create({
         ...otherUserInfo,
-        phoneNumber: phoneNumber,
+        phoneNumber,
+        gender,
+        birthDate: new Date(birthDate),
         nickname,
         user: savedUser,
       })
