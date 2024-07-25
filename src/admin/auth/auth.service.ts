@@ -10,9 +10,9 @@ import { AdminRefreshToken } from './entities/admin.refresh-token.entity';
 @Injectable()
 export class AdminAuthService {
     constructor(
-        @InjectRepository(Admin)
+        @InjectRepository(Admin, 'admin')
         private adminRepository: Repository<Admin>,
-        @InjectRepository(AdminRefreshToken)
+        @InjectRepository(AdminRefreshToken, 'admin')
         private adminRefreshTokenRepository: Repository<AdminRefreshToken>,
         private readonly jwtService: JwtService
     ) {}

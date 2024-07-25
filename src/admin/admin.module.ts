@@ -14,7 +14,7 @@ import { AdminService } from './admin.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin, AdminRefreshToken]),
+    TypeOrmModule.forFeature([Admin, AdminRefreshToken], 'admin'),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => ({

@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryGenerated
 import { AdminRefreshToken } from "./admin.refresh-token.entity";
 
 
-@Entity()
+@Entity({database: 'seclsecl_admin'})
 export class Admin {
     @PrimaryGeneratedColumn('uuid')
     uid: string
