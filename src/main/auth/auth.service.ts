@@ -10,24 +10,26 @@ import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
 import { SMSService } from '../../common/sms/sms.service'
 import { v4 as uuidv4 } from 'uuid'
 import { RedisService } from 'src/common/redis/redis.service'
+import { UserInfos } from '../users/entities/user-infos.entity'
 @Injectable()
 export class AuthService {
-  private verificationCodes: Map<string, string> = new Map()
-
   constructor(
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserInfos)
+    private readonly userInfosRepository: Repository<UserInfos>,
     private readonly jwtService: JwtService,
     private readonly smsService: SMSService,
   ) {}
-  private validateVerificationCode(uuid: string, code: string): boolean {
-    const storedCode = this.verificationCodes.get(uuid)
-    return storedCode === code
+
+  private generateVerificationCode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString() // 6자리 코드 생성
   }
-  private deleteVerificationCode(uuid: string): void {
-    this.verificationCodes.delete(uuid)
+  private async isPhoneNumberVerified(phoneNumber: string): Promise<boolean> {
+    const verified = await this.redisService.getValue(`verified:${phoneNumber}`)
+    return verified === 'verified'
   }
   private async hashPassword(password: string): Promise<string> {
     try {
@@ -55,46 +57,80 @@ export class AuthService {
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.HASH_ERROR)
     }
   }
-  // async signUp({ email, password, confirmPassword, nickname }: SignUpDto) {
-  //   if (password !== confirmPassword) {
-  //     throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.NOT_MATCHED_PASSWORD)
-  //   }
-  //   try {
-  //     const existUser = await this.userRepository.findOneBy({ email })
-
-  //     if (existUser) {
-  //       throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.EXISTED_EMAIL)
-  //     }
-
-  //     const hashedPassword = await this.hashPassword(password)
-
-  //     const user = this.userRepository.create({
-  //       email,
-  //       password: hashedPassword,
-  //       nickname,
-  //     })
-
-  //     await this.userRepository.save(user)
-  //     return { email: user.email }
-  //   } catch (error) {
-  //     if (error instanceof BadRequestException) {
-  //       throw error
-  //     }
-  //     throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.FAILED)
-  //   }
-  // }
-  async sendVerificationCode(phoneNumber: string): Promise<void> {
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
-    const uuid = uuidv4()
-
-    this.verificationCodes.set(uuid, verificationCode)
-    console.log(uuid)
-    try {
-      //await this.smsService.sendVerificationCode(phoneNumber, verificationCode)
-      this.redisService.setValue(uuid, verificationCode)
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to send verification code')
+  async signUp({ email, password, confirmPassword, phoneNumber, nickname, ...otherUserInfo }: SignUpDto) {
+    if (password !== confirmPassword) {
+      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.NOT_MATCHED_PASSWORD)
     }
+    try {
+      const existUser = await this.userRepository.findOneBy({ email })
+
+      if (existUser) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.EXISTED_EMAIL)
+      }
+      const existUserByNickname = await this.userInfosRepository.findOneBy({ nickname })
+      if (existUserByNickname) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.EXISTED_NICKNAME)
+      }
+
+      // 전화번호가 인증되었는지 확인
+      const isVerified = await this.isPhoneNumberVerified(phoneNumber)
+      if (!isVerified) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.VERIFICATION_PHONE.NOT_VERIFIED)
+      }
+
+      const hashedPassword = await this.hashPassword(password)
+
+      const user = this.userRepository.create({
+        email,
+        password: hashedPassword,
+      })
+
+      const savedUser = await this.userRepository.save(user)
+
+      const userInfo = this.userInfosRepository.create({
+        ...otherUserInfo,
+        phoneNumber: phoneNumber,
+        nickname,
+        user: savedUser,
+      })
+
+      await this.userInfosRepository.save(userInfo)
+
+      await this.redisService.deleteValue(`verified:${phoneNumber}`)
+
+      return { email: user.email }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.FAILED)
+    }
+  }
+  async sendVerificationCode(phoneNumber: string): Promise<void> {
+    const existingUser = await this.userInfosRepository.findOneBy({ phoneNumber })
+    if (existingUser) {
+      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.VERIFICATION_PHONE.EXIST_PHONE)
+    }
+    const verificationCode = this.generateVerificationCode()
+    try {
+      await this.smsService.sendVerificationCode(phoneNumber, verificationCode)
+      //redis에 코드 등록
+      await this.redisService.setValue(`verification:${phoneNumber}`, verificationCode, 300)
+      console.log(`Verification code sent to ${phoneNumber}: ${verificationCode}`)
+    } catch (error) {
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.VERIFICATION_PHONE.FAILED)
+    }
+  }
+
+  async verifyCode(phoneNumber: string, code: string): Promise<boolean> {
+    const storedCode = await this.redisService.getValue(`verification:${phoneNumber}`)
+
+    if (storedCode === code) {
+      await this.redisService.setValue(`verified:${phoneNumber}`, 'verified', 86400) // 인증 상태를 1일 동안 유지
+      await this.redisService.deleteValue(`verification:${phoneNumber}`) // 인증 코드는 삭제
+      return true
+    }
+    return false
   }
 
   async validateUser() {}

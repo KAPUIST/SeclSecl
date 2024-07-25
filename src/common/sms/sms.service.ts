@@ -32,7 +32,7 @@ export class SMSService {
       const message = {
         to: phoneNumber,
         from: this.sendPhoneNumber, // 인증된 발신 번호를 사용해야 합니다.
-        text: `Your verification code is ${verificationCode}`,
+        text: `휴대폰 인증 코드는 ${verificationCode} 입니다. 유효 시간은 5분 입니다.`,
         autoTypeDetect: true,
       }
 

@@ -3,10 +3,6 @@ import { ApiProperty } from '@nestjs/swagger'
 import { Provider } from 'src/main/auth/types/provider.type'
 
 export class SignUpDto {
-  @ApiProperty()
-  @IsString()
-  uid: string
-
   @ApiProperty({ required: true })
   @IsEmail()
   @IsNotEmpty()
@@ -22,13 +18,19 @@ export class SignUpDto {
   @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
+  name: string
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  phoneNumber: string
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
   @IsStrongPassword()
   @MinLength(6, { message: '비밀번호는 최소 6자리 이상입니다.' })
   password: string
-
-  @IsString()
-  @IsNotEmpty()
-  verificationCode: string
 
   @ApiProperty({ required: true })
   @IsString()

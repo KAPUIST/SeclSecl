@@ -21,8 +21,11 @@ export class UserInfos {
   @JoinColumn({ name: 'uid' })
   user: User
 
+  @Column()
+  name: string
+
   @Column({ unique: true })
-  phone_number: string
+  phoneNumber: string
 
   @Column({ type: 'enum', enum: Provider, default: Provider.CREDENTIALS })
   provider: Provider
@@ -48,7 +51,7 @@ export class UserInfos {
   @Column()
   sigungu: string
 
-  @Column()
+  @Column({ unique: true })
   nickname: string
 
   @CreateDateColumn()
