@@ -1,20 +1,20 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { cp } from './cp.entity'
+import { Cp } from './cp.entity'
 
-@Entity({ name: 'cpInfos' })
-export class cpInfos {
+@Entity({ name: 'cp_infos' })
+export class CpInfos {
   @PrimaryGeneratedColumn('uuid')
   uid: string
 
-  @OneToOne(() => cp, (cp) => cp.cp)
+  @OneToOne(() => Cp, (cp) => cp.cp)
   @JoinColumn({ name: 'uid' })
-  cp: cp
+  cp: Cp
 
   @Column({ type: 'varchar', unique: true, nullable: false })
   name: string
 
   @Column({ type: 'varchar', nullable: false })
-  dascription: string
+  description: string
 
   @Column({ type: 'varchar', nullable: false })
   phoneNumber: string

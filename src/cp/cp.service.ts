@@ -3,20 +3,21 @@ import { SignUpDto } from './auth/dto/sign-up.dto'
 import { hash } from 'bcrypt'
 import { ConfigService } from '@nestjs/config'
 import { Repository } from 'typeorm'
-import { cp } from './auth/entites/cp.entity'
+import { Cp } from './auth/entities/cp.entity'
 import { JwtPayload } from './auth/interfaces/jwt-payload-interface'
 import { sign } from 'jsonwebtoken'
 import { InjectRepository } from '@nestjs/typeorm'
-import { RefreshToken } from './auth/entites/refresh-token.entity'
-import { cpInfos } from './auth/entites/cp-infos.entity'
+import { RefreshToken } from './auth/entities/refresh-token.entity'
+import { CpInfos } from './auth/entities/cp-infos.entity'
+import { CP_MESSAGE_CONSTANT } from 'src/common/messages/cp.message'
 
 @Injectable()
 export class cpService {
   constructor(
-    @InjectRepository(cp)
-    private readonly cpRepository: Repository<cp>,
-    @InjectRepository(cpInfos)
-    private readonly cpInfosRepository: Repository<cpInfos>,
+    @InjectRepository(Cp)
+    private readonly cpRepository: Repository<Cp>,
+    @InjectRepository(CpInfos)
+    private readonly cpInfosRepository: Repository<CpInfos>,
     @InjectRepository(RefreshToken)
     private readonly tokenRepository: Repository<RefreshToken>,
     private readonly configService: ConfigService,
@@ -28,7 +29,7 @@ export class cpService {
     // 이메일 중복 여부 확인
     const existingUser = await this.findByEmail(email)
     if (existingUser) {
-      throw new ConflictException('이미 해당 이메일로 가입된 업체가 있습니다!')
+      throw new ConflictException(CP_MESSAGE_CONSTANT.AUTH.SIGN_UP.EXISTED_EMAIL)
     }
 
     // 비밀번호 해싱
@@ -58,7 +59,7 @@ export class cpService {
     // 로그인 여부 확인
     const loginRecord = await this.tokenRepository.findOneBy({ cpId })
     if (loginRecord && loginRecord.refreshtoken) {
-      throw new BadRequestException('이미 로그인 하셨습니다.')
+      throw new BadRequestException(CP_MESSAGE_CONSTANT.AUTH.SIGN_IN.FAILED)
     }
 
     // 토큰 발급
@@ -109,10 +110,10 @@ export class cpService {
     // 로그인 여부 확인
     const loginRecord = await this.tokenRepository.findOneBy({ cpId })
     if (!loginRecord) {
-      throw new NotFoundException('로그인한 기록이 없습니다.')
+      throw new NotFoundException(CP_MESSAGE_CONSTANT.AUTH.SIGN_OUT.NORECORD)
     }
     if (!loginRecord.refreshtoken) {
-      throw new BadRequestException('이미 로그아웃 되었습니다.')
+      throw new BadRequestException(CP_MESSAGE_CONSTANT.AUTH.SIGN_OUT.ALREADYOUT)
     }
     // DB에서 Refresh Token 삭제(soft delete)
     await this.tokenRepository.update({ cpId }, { refreshtoken: null })
@@ -122,10 +123,10 @@ export class cpService {
     // 로그인 여부 확인
     const loginRecord = await this.tokenRepository.findOneBy({ cpId })
     if (!loginRecord) {
-      throw new NotFoundException('로그인한 기록이 없습니다.')
+      throw new NotFoundException(CP_MESSAGE_CONSTANT.AUTH.SIGN_OUT.NORECORD)
     }
     if (!loginRecord.refreshtoken) {
-      throw new BadRequestException('로그인 상태가 아닙니다.')
+      throw new BadRequestException(CP_MESSAGE_CONSTANT.AUTH.SIGN_OUT.NORECORD)
     }
     // 토큰 재발급
     const payload = { id: cpId, email }
