@@ -9,11 +9,13 @@ import { SignUpDto } from './dtos/sign-up.dto'
 import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
 import { SMSService } from '../../common/sms/sms.service'
 import { v4 as uuidv4 } from 'uuid'
+import { RedisService } from 'src/common/redis/redis.service'
 @Injectable()
 export class AuthService {
   private verificationCodes: Map<string, string> = new Map()
 
   constructor(
+    private readonly redisService: RedisService,
     private readonly configService: ConfigService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -86,9 +88,10 @@ export class AuthService {
     const uuid = uuidv4()
 
     this.verificationCodes.set(uuid, verificationCode)
-
+    console.log(uuid)
     try {
-      await this.smsService.sendVerificationCode(phoneNumber, verificationCode)
+      //await this.smsService.sendVerificationCode(phoneNumber, verificationCode)
+      this.redisService.setValue(uuid, verificationCode)
     } catch (error) {
       throw new InternalServerErrorException('Failed to send verification code')
     }
