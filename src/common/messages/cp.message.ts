@@ -1,21 +1,22 @@
-export const MAIN_MESSAGE_CONSTANT = {
+export const CP_MESSAGE_CONSTANT = {
   AUTH: {
     SIGN_UP: {
-      SUCCEED: '회원가입 성공.',
+      SUCCEED: '업체 회원가입 성공.',
       FAILED: '회원가입중 오류가 발생했습니다.',
       NOT_MATCHED_PASSWORD: '비밀번호가 일치 하지 않습니다.',
       EXISTED_EMAIL: '이미 존재하는 이메일입니다.',
-      EXISTED_NICKNAME: '이미 존재하는 닉네임 입니다.',
-    },
-    VERIFICATION_PHONE: {
-      EXIST_PHONE: '이미 가입된 핸드폰 번호입니다.',
-      FAILED: '인증코드 전송에 실패 하였습니다.',
-      NOT_VERIFIED: '휴대폰 인증을 해주세요.',
     },
     SIGN_IN: {
       SUCCEED: '로그인 성공',
+      FAILED: '이미 로그인 하셨습니다.',
+    },
+    SIGN_OUT: {
+      NORECORD: '로그인한 기록이 없습니다.',
+      SUCCEED: '로그아웃 성공',
+      ALREADYOUT: '이미 로그아웃 되었습니다.',
     },
     COMMON: {
+      TOKEN_SUCCEED: '토큰 재발급 성공',
       INVALID_TOKEN: '유효하지 않은 토큰 입니다.',
       HASH_ERROR: '비밀번호 해싱 중 오류가 발생했습니다.',
       CONFIRM_PASSWORD: {

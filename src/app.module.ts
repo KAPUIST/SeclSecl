@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AdminModule } from './admin/admin.module'
@@ -8,7 +8,7 @@ import { SMSModule } from './common/sms/sms.module'
 import { ConfigModule } from '@nestjs/config'
 import { configModuleValidationSchema } from './config/env-validation.config'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { typeOrmModuleOptions } from './config/typeorm.config'
+import { adminTypeOrmModuleOptions, cpTypeOrmModuleOptions, typeOrmModuleOptions } from './config/typeorm.config'
 
 
 @Module({
@@ -18,6 +18,8 @@ import { typeOrmModuleOptions } from './config/typeorm.config'
       validationSchema: configModuleValidationSchema,
     }),
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
+    TypeOrmModule.forRootAsync(cpTypeOrmModuleOptions),
+    TypeOrmModule.forRootAsync(adminTypeOrmModuleOptions),
     AdminModule,
     CpModule,
     MainModule,

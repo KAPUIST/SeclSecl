@@ -8,16 +8,16 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import { cp } from './cp.entity'
+import { Cp } from './cp.entity'
 
-@Entity({ name: 'refreshToken' })
+@Entity({ database: 'seclsecl_cp', name: 'refresh_token' })
 export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   uid: string
 
-  @OneToOne(() => cp, (cp) => cp.refreshToken)
+  @OneToOne(() => Cp, (cp) => cp.refreshToken)
   @JoinColumn({ referencedColumnName: 'uid' })
-  cp: cp
+  cp: Cp
 
   @Column({ type: 'int', nullable: false })
   cpId: number
