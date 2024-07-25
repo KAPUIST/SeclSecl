@@ -11,6 +11,7 @@ import {
 import { User } from './user.entity'
 import { Provider } from '../../auth/types/provider.type'
 import { Role } from '../../auth/types/role.type'
+import { Gender } from 'src/main/auth/types/gender.type'
 
 @Entity('user_infos')
 export class UserInfos {
@@ -21,8 +22,11 @@ export class UserInfos {
   @JoinColumn({ name: 'uid' })
   user: User
 
+  @Column()
+  name: string
+
   @Column({ unique: true })
-  phone_number: string
+  phoneNumber: string
 
   @Column({ type: 'enum', enum: Provider, default: Provider.CREDENTIALS })
   provider: Provider
@@ -33,8 +37,8 @@ export class UserInfos {
   @Column()
   dong: string
 
-  @Column()
-  gender: string
+  @Column({ type: 'enum', enum: Gender })
+  gender: Gender
 
   @Column()
   birthDate: Date
@@ -48,7 +52,7 @@ export class UserInfos {
   @Column()
   sigungu: string
 
-  @Column()
+  @Column({ unique: true })
   nickname: string
 
   @CreateDateColumn()

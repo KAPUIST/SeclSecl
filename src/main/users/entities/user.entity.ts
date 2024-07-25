@@ -9,7 +9,7 @@ import {
 } from 'typeorm'
 import { UserInfos } from './user-infos.entity'
 
-@Entity()
+@Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   uid: string
@@ -19,9 +19,6 @@ export class User {
 
   @Column()
   password: string
-
-  @Column({ default: false })
-  isVerified: boolean
 
   @CreateDateColumn()
   createdAt: Date

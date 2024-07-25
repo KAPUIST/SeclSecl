@@ -8,12 +8,14 @@ import { AuthController } from './auth.controller'
 import { User } from '../users/entities/user.entity'
 import { UserInfos } from '../users/entities/user-infos.entity'
 import { SMSModule } from 'src/common/sms/sms.module'
+import { RedisModule } from 'src/common/redis/redis.module'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, UserInfos]),
     PassportModule,
     ConfigModule,
+    RedisModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
