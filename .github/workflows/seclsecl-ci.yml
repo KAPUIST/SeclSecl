@@ -19,24 +19,21 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # 설치 할 Node.js 버전 지정
-          cache: 'npm' # npm 사용 시 'npm'
-
-      # 의존성 패키지 설치하기
-      - name: Install dependencies
-        run: |
+          node-version: 20
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-
+      - name: Setup environment variables
+        run: |
           echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" > .env
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "DB_SYNC=$(if [ "${{ secrets.DB_SYNC }}"
+          echo "DB_SYNC=${{ secrets.DB_SYNC }}" >> .env
 
       - name: Run build
         run: npm run build
