@@ -10,7 +10,7 @@ import {
 } from 'typeorm'
 import { Cp } from './cp.entity'
 
-@Entity({ name: 'refresh_token' })
+@Entity({ database: 'seclsecl_cp', name: 'refresh_token' })
 export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   uid: string
