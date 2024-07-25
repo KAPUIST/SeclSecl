@@ -10,6 +10,7 @@ import { configModuleValidationSchema } from './config/env-validation.config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { typeOrmModuleOptions } from './config/typeorm.config'
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
