@@ -10,6 +10,7 @@ import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
 import { SMSService } from '../../common/sms/sms.service'
 import { RedisService } from 'src/common/redis/redis.service'
 import { UserInfos } from '../users/entities/user-infos.entity'
+import { SignInDto } from './dtos/sign-in.dto'
 @Injectable()
 export class AuthService {
   constructor(
@@ -43,12 +44,12 @@ export class AuthService {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.NOT_MATCHED_PASSWORD)
     }
   }
-  private generateTokens(payload: { id: number; email: string }) {
+  private generateTokens(payload: { uid: string; email: string }) {
     try {
       const accessToken = this.jwtService.sign(payload)
       const refreshToken = this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
-        expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRES'),
+        secret: this.configService.get<string>('MAIN_REFRESH_TOKEN_SECRET'),
+        expiresIn: this.configService.get<string>('MAIN_REFRESH_TOKEN_EXPIRES'),
       })
 
       return { accessToken, refreshToken }
@@ -56,6 +57,22 @@ export class AuthService {
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.HASH_ERROR)
     }
   }
+  async validateUser({ email, password }: SignInDto) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { email, deletedAt: null },
+        select: { uid: true, password: true, email: true },
+      })
+      if (!user) {
+        return null
+      }
+      await this.verifyPassword(password, user.password)
+      return { uid: user.uid, email: user.email }
+    } catch (error) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_IN.FAILED)
+    }
+  }
+
   async signUp({
     email,
     password,
@@ -116,6 +133,7 @@ export class AuthService {
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.FAILED)
     }
   }
+
   async sendVerificationCode(phoneNumber: string): Promise<void> {
     const existingUser = await this.userInfosRepository.findOneBy({ phoneNumber })
     if (existingUser) {
@@ -131,7 +149,6 @@ export class AuthService {
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.VERIFICATION_PHONE.FAILED)
     }
   }
-
   async verifyCode(phoneNumber: string, code: string): Promise<boolean> {
     const storedCode = await this.redisService.getValue(`verification:${phoneNumber}`)
 
@@ -142,6 +159,8 @@ export class AuthService {
     }
     return false
   }
-
-  async validateUser() {}
+  signIn(userUid: string, email: string) {
+    const payload = { uid: userUid, email }
+    return this.generateTokens(payload)
+  }
 }
