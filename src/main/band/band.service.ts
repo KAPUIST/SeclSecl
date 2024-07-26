@@ -158,15 +158,16 @@ export class BandService {
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.TRANSFER_Band.NOT_FOUND)
     }
+    // 이미 해당 밴드의 오너일 시 에러 처리
+    if (userUid === newUser) {
+      throw new ConflictException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.TRANSFER_Band.CONFLICT)
+    }
     // 이전할 유저가 밴드 멤버가 아닐 시 에러 처리
     const isMember = await this.bandMemberRepository.findOne({ where: { bandUid, userUid: newUser } })
     if (_.isNil(isMember)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.TRANSFER_Band.NOT_FOUND_USER)
     }
-    // 이미 해당 밴드의 오너일 시 에러 처리
-    if (userUid === band.userUid) {
-      throw new ConflictException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.TRANSFER_Band.CONFLICT)
-    }
+
     await this.bandRepository.update({ uid: bandUid }, { userUid: newUser })
     return newUser
   }
@@ -264,7 +265,6 @@ export class BandService {
     if (_.isNil(isMember)) {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.DELETE_BAND_POST.NOT_FOUND_USER)
     }
-    console.log(isMember.uid, bandPost.bandMemberUid)
     // 유저가 밴드 게시물 작성자가 아닐 시 에러 처리
     if (isMember.uid !== bandPost.bandMemberUid) {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.DELETE_BAND_POST.NOT_MATCHED)

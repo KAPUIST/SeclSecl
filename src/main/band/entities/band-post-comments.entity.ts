@@ -26,10 +26,18 @@ export class BandPostComment {
   @Column()
   bandMemberUid: string
 
+  /**
+   * 부모 댓글 UID - 빈칸 가능
+   * @example ""
+   */
   @IsString()
   @Column({ nullable: true })
   parentCommentUid: string
 
+  /**
+   * 댓글 내용
+   * @example "80세 이상 농구 모임"
+   */
   @IsNotEmpty({ message: MAIN_MESSAGE_CONSTANT.BAND.COMMON.BAND_POSTS_COMMENTS_ENTITY.CONTENT.REQUIRED })
   @IsString()
   @Column({ type: 'text' })
