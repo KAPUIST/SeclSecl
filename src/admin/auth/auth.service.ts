@@ -8,7 +8,7 @@ import { Admin } from './entities/admin.entity'
 import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
 import { ConfigService } from '@nestjs/config'
 import { TokenService } from 'src/common/auth/token/token.service'
-import { JwtPayload } from 'src/cp/auth/interfaces/jwt-payload-interface'
+import { JwtPayload } from 'src/common/auth/token/interface/jwt-payload.interface'
 
 @Injectable()
 export class AdminAuthService {

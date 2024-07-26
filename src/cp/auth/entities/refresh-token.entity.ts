@@ -28,6 +28,6 @@ export class RefreshToken {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @DeleteDateColumn({ select: false })
-  deletedAt: Date
+  // @DeleteDateColumn({ select: false })
+  // deletedAt: Date
 }
