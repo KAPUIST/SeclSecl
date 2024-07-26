@@ -16,7 +16,7 @@ export class AdminAuthService {
     @InjectRepository(AdminRefreshToken, 'admin')
     private adminRefreshTokenRepository: Repository<AdminRefreshToken>,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   async signIn(adminSignInDto) {
@@ -36,10 +36,9 @@ export class AdminAuthService {
 
     const payload = { email, sub: admin.uid, type: 'admin' }
     const accessToken = this.jwtService.sign(payload, {
-        expiresIn: this.configService.get<string>('ADMIN_ACCESS_TOKEN_EXPIRES')
+      expiresIn: this.configService.get<string>('ADMIN_ACCESS_TOKEN_EXPIRES'),
     })
 
-    
     // const refreshToken = await this.generateRefreshToken(admin.uid);
 
     return {
