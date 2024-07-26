@@ -81,4 +81,16 @@ export class AdminAuthService {
   //       refreshToken: newRefreshToken,
   //     };
   //   }
+
+//   //로그아웃
+//   async logout(refreshToken:string){
+//     const decoded = this.jwtService.verify(refreshToken)
+//     const adminRefreshToken = await this.adminRefreshTokenRepository.findOne({
+//         where: {admin: {uid:decoded.sub}}
+//     })
+
+//     if(adminRefreshToken) {
+//         await this.adminRefreshTokenRepository.remove(adminRefreshToken)
+//     }
+//   }
 }

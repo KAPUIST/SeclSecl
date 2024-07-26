@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Cp } from 'src/cp/auth/entities/cp.entity'
 import { CpInfo } from '../cp/auth/entities/cp-infos.entity'
@@ -34,15 +34,30 @@ export class AdminService {
   }
 
   //cp 승인
-  async approveCp(id:string) {
-    const cp = await this.cpRepository.findOne({where: {uid:id}})
-    if(!cp) {
-        throw new NotFoundException('cp를 찾을 수 없습니다.');
+  async approveCp(id: string) {
+    const cp = await this.cpRepository.findOne({ where: { uid: id } })
+    if (!cp) {
+      throw new NotFoundException('cp를 찾을 수 없습니다.')
     }
+    if (cp.isVerified) {
+        throw new BadRequestException('이미 승인된 CP입니다.');
+      }
+
     cp.isVerified = true
     return this.cpRepository.save(cp)
   }
 
+  //cp 반려
+  async rejectCp(id: string) {
+    const cp = await this.cpRepository.findOne({ where: { uid:id}})
+    if(!cp){
+        throw new NotFoundException('cp를 찾을 수 없습니다.')
+    }
 
+    if (cp.isVerified) {
+        throw new BadRequestException('이미 승인된 CP입니다.');
+      }
 
+    await this.cpRepository.remove(cp)
+  }
 }

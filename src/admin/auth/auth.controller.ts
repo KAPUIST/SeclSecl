@@ -28,4 +28,14 @@ export class AuthController {
   //   console.log('이거야 이거:',body.refreshToken)
   //   return await this.adminAuthService.refreshTokens(body.refreshToken)
   // }
+
+//   /**
+//    * 로그아웃
+//    * @param refreshToken 
+//    * @returns 
+//    */
+//   @Post('logout')
+//   async logout(@Body('refreshToken') refreshToken: string) {
+//     return await this.adminAuthService.logout(refreshToken)
+//   }
 }
