@@ -1,9 +1,8 @@
 import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
+
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../users/entities/user.entity'
 import { Repository } from 'typeorm'
-import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
 import { SignUpDto } from './dtos/sign-up.dto'
 import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
@@ -11,17 +10,22 @@ import { SMSService } from '../../common/sms/sms.service'
 import { RedisService } from 'src/common/redis/redis.service'
 import { UserInfos } from '../users/entities/user-infos.entity'
 import { SignInDto } from './dtos/sign-in.dto'
+import { RefreshToken } from './entities/refresh-token.entity'
+import { TokenService } from 'src/common/auth/token/token.service'
+
 @Injectable()
 export class AuthService {
   constructor(
     private readonly redisService: RedisService,
-    private readonly configService: ConfigService,
+
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserInfos)
     private readonly userInfosRepository: Repository<UserInfos>,
-    private readonly jwtService: JwtService,
+    @InjectRepository(RefreshToken)
+    private refreshTokenRepository: Repository<RefreshToken>,
     private readonly smsService: SMSService,
+    private tokenService: TokenService,
   ) {}
 
   private generateVerificationCode(): string {
@@ -44,19 +48,7 @@ export class AuthService {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.NOT_MATCHED_PASSWORD)
     }
   }
-  private generateTokens(payload: { uid: string; email: string }) {
-    try {
-      const accessToken = this.jwtService.sign(payload)
-      const refreshToken = this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('MAIN_REFRESH_TOKEN_SECRET'),
-        expiresIn: this.configService.get<string>('MAIN_REFRESH_TOKEN_EXPIRES'),
-      })
 
-      return { accessToken, refreshToken }
-    } catch (error) {
-      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.HASH_ERROR)
-    }
-  }
   async validateUser({ email, password }: SignInDto) {
     try {
       const user = await this.userRepository.findOne({
@@ -159,8 +151,17 @@ export class AuthService {
     }
     return false
   }
-  signIn(userUid: string, email: string) {
+  async signIn(userUid: string, email: string) {
     const payload = { uid: userUid, email }
-    return this.generateTokens(payload)
+    const tokens = await this.tokenService.generateTokens(payload)
+
+    // 리프레시 토큰 저장
+    const newRefreshToken = this.refreshTokenRepository.create({
+      user: { uid: userUid },
+      refreshToken: tokens.refreshToken,
+    })
+    await this.refreshTokenRepository.save(newRefreshToken)
+
+    return tokens
   }
 }

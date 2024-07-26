@@ -1,35 +1,30 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { JwtModule } from '@nestjs/jwt'
-import { ConfigModule, ConfigService } from '@nestjs/config'
+import { PassportModule } from '@nestjs/passport'
+import { ConfigModule } from '@nestjs/config'
 import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { User } from '../users/entities/user.entity'
 import { UserInfos } from '../users/entities/user-infos.entity'
 import { SMSModule } from 'src/common/sms/sms.module'
 import { RedisModule } from 'src/common/redis/redis.module'
-import { GuardModule } from 'src/common/guards/guard.module'
+import { LocalStrategy } from 'src/common/strategies/local.strategy'
+import { CpModule } from 'src/cp/cp.module'
+import { RefreshToken } from './entities/refresh-token.entity'
+import { TokenModule } from 'src/common/auth/token/token.Module'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserInfos]),
+    TypeOrmModule.forFeature([User, UserInfos, RefreshToken]),
+    PassportModule,
     ConfigModule,
     RedisModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('MAIN_ACCESS_TOKEN_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<string>('MAIN_ACCESS_TOKEN_EXPIRES'),
-        },
-      }),
-    }),
     SMSModule,
-    GuardModule,
+    CpModule,
+    TokenModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, LocalStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -3,6 +3,7 @@ import { AppModule } from './app.module'
 import { ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { AdminModule } from './admin/admin.module'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -36,6 +37,26 @@ async function bootstrap() {
       operationsSorter: 'alpha', // API 그룹 내 정렬을 알파벳 순으로
     },
   })
+
+  //admin용 스웨거
+  const adminConfig = new DocumentBuilder()
+    .setTitle('seclsecl Admin API')
+    .setDescription('seclsecl PROJECT Admin API')
+    .setVersion('1.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+    .build()
+
+  const adminDocument = SwaggerModule.createDocument(app, adminConfig, {
+    include: [AdminModule], // AdminModule만 포함하도록 설정
+  })
+  SwaggerModule.setup('admin/api', app, adminDocument, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  })
+
   await app.listen(port)
 }
 bootstrap()
