@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
@@ -22,9 +22,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             case 'cp':
               secretOrKey = this.configService.get<string>('CP_ACCESS_TOKEN_SECRET')
               break
-            default:
+            case 'main':
               secretOrKey = this.configService.get<string>('MAIN_ACCESS_TOKEN_SECRET')
               break
+            default:
+              throw new BadRequestException('확인되지 않은 타입입니다.')
           }
 
           done(null, secretOrKey)
@@ -38,6 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   private extractPayloadFromToken(token: string) {
     try {
       const payload = jwt.decode(token) as { type?: string }
+
       if (!payload) {
         throw new Error('페이로드 추출에 실패했습니다.')
       }
@@ -48,6 +51,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: any) {
+    console.log(payload, 'jwt')
     return { ...payload }
   }
 }
