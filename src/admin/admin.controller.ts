@@ -1,9 +1,11 @@
 import { Controller, Delete, Get, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
 import { AdminService } from './admin.service'
 
 @ApiTags('유저 승인')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('signUp-cps')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
@@ -11,7 +13,7 @@ export class AdminController {
    * 가입 신청 리스트 조회
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
+
   @Get()
   async getApprovalList() {
     const data = await this.adminService.getApprovalList()

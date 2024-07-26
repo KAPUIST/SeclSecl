@@ -44,6 +44,52 @@ export class AdminAuthService {
     const payload: JwtPayload = { uid: userUid, email, type: 'admin' }
     const tokens = await this.tokenService.generateTokens(payload)
 
+        // 리프레시 토큰 저장
+        await this.adminRefreshTokenRepository.upsert(
+          {
+            admin: { uid: userUid },
+            refreshToken: tokens.refreshToken,
+          },
+          ['admin'],
+        )
+
     return tokens
+  }
+
+  async signOut(refreshToken: string) {
+    console.log(refreshToken)
+    try {
+      const payload = this.tokenService.verifyToken(refreshToken, 'admin')
+      console.log('payload:', payload)
+      const storedToken = await this.adminRefreshTokenRepository.findOne({
+        where: { admin: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1]},
+      })
+      console.log('저장토큰:',storedToken)
+
+      if (!storedToken) {
+        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+      }
+
+      await this.adminRefreshTokenRepository.update({ admin: { uid: payload.uid } }, { refreshToken: null })
+    } catch (error) {
+      throw new UnauthorizedException(error.message)
+    }
+  }
+  async updateTokens(refreshToken: string) {
+    try {
+      const payload = this.tokenService.verifyToken(refreshToken, 'admin')
+      const storedToken = await this.adminRefreshTokenRepository.findOne({
+        where: { admin: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
+      })
+
+      if (!storedToken) {
+        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+      }
+      const tokens = await this.tokenService.generateTokens({ uid: payload.uid, email: payload.email, type: 'main' })
+      await this.adminRefreshTokenRepository.update({ admin: { uid: payload.uid } }, { refreshToken: tokens.refreshToken })
+      return tokens
+    } catch (error) {
+      throw new UnauthorizedException(error.message)
+    }
   }
 }
