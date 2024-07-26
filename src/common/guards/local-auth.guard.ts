@@ -8,4 +8,3 @@ export class LocalAuthGuard extends AuthGuard('local') {
     super()
   }
 }
-
