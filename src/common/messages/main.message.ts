@@ -103,7 +103,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         NOT_FOUND_USER: '밴드 멤버가 아닙니다.',
         NOT_FOUND_POST: '존재하지 않는 밴드 게시물입니다.',
         CONFLICT: '이미 좋아요 누른 게시물입니다.',
-        TRANSACTION_ERROR: '게시물 좋아요 등록중 오류가 생겼습니다.',
+        TRANSACTION_ERROR: '게시물 좋아요 등록 중 오류가 생겼습니다.',
       },
       UNLIKE_BAND_POST: {
         SUCCEED: '밴드 게시물 좋아요 취소에 성공하였습니다.',
