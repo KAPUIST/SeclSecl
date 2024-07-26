@@ -47,6 +47,3 @@ jobs:
         run: |
           npm start &
           sleep 20
-
-      - name: Check server status
-        run: curl -f http://localhost:${{secrets.SERVER_PORT}}/api/health

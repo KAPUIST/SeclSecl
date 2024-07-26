@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common'
 
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../users/entities/user.entity'
@@ -199,5 +205,14 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException(error.message)
     }
+  }
+  async deleteUser(userUid: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { uid: userUid } })
+
+    if (!user) {
+      throw new NotFoundException('유저를 찾을 수 없습니다.')
+    }
+
+    await this.userRepository.softDelete(userUid)
   }
 }
