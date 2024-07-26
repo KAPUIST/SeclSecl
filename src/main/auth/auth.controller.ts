@@ -67,19 +67,19 @@ export class AuthController {
    * @param signInDto
    * @returns
    */
-  // @HttpCode(HttpStatus.OK)
-  // @Post('refresh')
-  // @ApiOperation({ summary: '토큰 재발급' })
-  // @ApiResponse({ status: HttpStatus.OK, description: '토큰 재발급 성공' })
-  // @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '토큰 재발급 실패' })
-  // async refresh(@Headers('authorization') refreshToken: string) {
-  //   const tokens = await this.authService.refreshTokens(refreshToken);
-  //   return {
-  //     statusCode: HttpStatus.OK,
-  //     message: MAIN_MESSAGE_CONSTANT.AUTH.REFRESH_TOKEN.SUCCEED,
-  //     data: tokens,
-  //   };
-  // }
+  @HttpCode(HttpStatus.OK)
+  @Post('token')
+  @ApiOperation({ summary: '토큰 재발급' })
+  @ApiResponse({ status: HttpStatus.OK, description: '토큰 재발급 성공' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '토큰 재발급 실패' })
+  async refresh(@Headers('authorization') refreshToken: string) {
+    const tokens = await this.authService.updateTokens(refreshToken)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.AUTH.REFRESH_TOKEN.SUCCEED,
+      data: tokens,
+    }
+  }
 
   /**
    * 핸드폰 인증 번호 보내기
