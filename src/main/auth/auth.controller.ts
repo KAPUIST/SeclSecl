@@ -44,8 +44,7 @@ export class AuthController {
   @ApiOperation({ summary: '로그아웃' })
   @ApiResponse({ status: HttpStatus.OK, description: '로그아웃 성공' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '로그아웃 실패' })
-  async logout(@Headers('authorization') authorization: string) {
-    const refreshToken = authorization.replace('Bearer ', '')
+  async logout(@Headers('authorization') refreshToken: string) {
     await this.authService.signOut(refreshToken)
     return {
       statusCode: HttpStatus.OK,
@@ -58,8 +57,7 @@ export class AuthController {
   @ApiOperation({ summary: '토큰 재발급' })
   @ApiResponse({ status: HttpStatus.OK, description: '토큰 재발급 성공' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '토큰 재발급 실패' })
-  async refresh(@Headers('authorization') authorization: string) {
-    const refreshToken = authorization.replace('Bearer ', '')
+  async refresh(@Headers('authorization') refreshToken: string) {
     const tokens = await this.authService.updateTokens(refreshToken)
     return {
       statusCode: HttpStatus.OK,
