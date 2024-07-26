@@ -23,7 +23,7 @@ import { CpInfo } from 'src/cp/auth/entities/cp-infos.entity'
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('ADMIN_ACCESS_TOKEN_SECRET'),
-        signOptions: { expiresIn: configService.get<string>('ADMIN_ACCESS_TOKEN_EXPIRES')}
+        signOptions: { expiresIn: configService.get<string>('ADMIN_ACCESS_TOKEN_EXPIRES') },
       }),
       inject: [ConfigService],
     }),
