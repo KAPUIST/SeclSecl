@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { PassportModule } from '@nestjs/passport'
 import { JwtModule } from '@nestjs/jwt'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { AuthService } from './auth.service'
@@ -9,13 +8,11 @@ import { User } from '../users/entities/user.entity'
 import { UserInfos } from '../users/entities/user-infos.entity'
 import { SMSModule } from 'src/common/sms/sms.module'
 import { RedisModule } from 'src/common/redis/redis.module'
-import { LocalStrategy } from 'src/common/strategies/local.strategy'
-import { CpModule } from 'src/cp/cp.module'
+import { GuardModule } from 'src/common/guards/guard.module'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, UserInfos]),
-    PassportModule,
     ConfigModule,
     RedisModule,
     JwtModule.registerAsync({
@@ -29,10 +26,10 @@ import { CpModule } from 'src/cp/cp.module'
       }),
     }),
     SMSModule,
-    CpModule,
+    GuardModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy],
+  providers: [AuthService],
   exports: [AuthService],
 })
 export class AuthModule {}

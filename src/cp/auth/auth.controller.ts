@@ -24,11 +24,8 @@ export class AuthController {
     }
   }
 
-
   //로그인
   @UseGuards(LocalAuthGuard)
-
-
   @ApiOperation({ summary: '로그인' })
   @ApiResponse({ status: 200, description: '로그인에 성공했습니다.' })
   @ApiResponse({ status: 401, description: '잘못된 이메일 또는 비밀번호입니다.' })
