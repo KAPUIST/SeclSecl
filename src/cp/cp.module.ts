@@ -33,5 +33,7 @@ import { JwtStrategy } from 'src/common/strategies/jwt.strategy'
   ],
   controllers: [AuthController],
   providers: [CpService, LocalStrategy, JwtStrategy, JwtAuthGuard, LocalAuthGuard],
+    exports: [CpService],
+
 })
 export class CpModule {}

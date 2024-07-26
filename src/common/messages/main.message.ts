@@ -14,6 +14,7 @@ export const MAIN_MESSAGE_CONSTANT = {
     },
     SIGN_IN: {
       SUCCEED: '로그인 성공',
+      FAILED: '유효성 검사 중 오류가 발생했습니다.',
     },
     COMMON: {
       INVALID_TOKEN: '유효하지 않은 토큰 입니다.',

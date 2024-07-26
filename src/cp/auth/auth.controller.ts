@@ -5,12 +5,12 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { CP_MESSAGE_CONSTANT } from 'src/common/messages/cp.message'
 import { LocalAuthGuard } from 'src/common/guards/local-auth.guard'
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
-
 @ApiTags('업체 AUTH')
 @Controller({ host: 'cp.localhost', path: 'auth' })
 export class AuthController {
   constructor(private readonly cpService: CpService) {}
 
+  //업체 회원가입
   @ApiOperation({ summary: '업체 회원가입' })
   @ApiResponse({ status: 201, description: '업체 회원가입을 성공하였습니다.' })
   @ApiResponse({ status: 409, description: '이미 해당 이메일로 가입된 업체가 있습니다!' })
@@ -23,6 +23,11 @@ export class AuthController {
       data: newCp,
     }
   }
+
+
+  //로그인
+  @UseGuards(LocalAuthGuard)
+
 
   @ApiOperation({ summary: '로그인' })
   @ApiResponse({ status: 200, description: '로그인에 성공했습니다.' })
