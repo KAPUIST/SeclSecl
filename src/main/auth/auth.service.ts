@@ -12,6 +12,7 @@ import { UserInfos } from '../users/entities/user-infos.entity'
 import { SignInDto } from './dtos/sign-in.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { TokenService } from 'src/common/auth/token/token.service'
+import { JwtPayload } from 'src/common/auth/token/interface/jwt-payload.interface'
 
 @Injectable()
 export class AuthService {
@@ -152,16 +153,41 @@ export class AuthService {
     return false
   }
   async signIn(userUid: string, email: string) {
-    const payload = { uid: userUid, email }
+    const payload: JwtPayload = { uid: userUid, email, type: 'main' }
     const tokens = await this.tokenService.generateTokens(payload)
 
     // 리프레시 토큰 저장
-    // const newRefreshToken = this.refreshTokenRepository.create({
-    //   user: { uid: userUid },
-    //   refreshToken: tokens.refreshToken,
-    // })
-    //await this.refreshTokenRepository.save(newRefreshToken)
+    await this.refreshTokenRepository.upsert(
+      {
+        user: { uid: userUid },
+        refreshToken: tokens.refreshToken,
+      },
+      ['user'],
+    )
 
     return tokens
+  }
+  async signOut(refreshToken: string) {
+    try {
+      const payload = this.tokenService.verifyToken(refreshToken, 'main')
+      const storedToken = await this.refreshTokenRepository.findOne({
+        where: { user: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
+      })
+
+      if (!storedToken) {
+        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+      }
+      const loginStatus = await this.refreshTokenRepository.findOne({
+        where: { user: { uid: payload.uid } },
+      })
+      console.log(loginStatus)
+      if (!loginStatus.refreshToken) {
+        throw new BadRequestException('이미 로그아웃 상태입니다.')
+      }
+
+      await this.refreshTokenRepository.update({ user: { uid: payload.uid } }, { refreshToken: null })
+    } catch (error) {
+      throw new UnauthorizedException(error.message)
+    }
   }
 }
