@@ -20,8 +20,10 @@ import { CpInfo } from 'src/cp/auth/entities/cp-infos.entity'
     TypeOrmModule.forFeature([Cp, CpInfo], 'cp'),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.registerAsync({
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET_KEY'),
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('ADMIN_ACCESS_TOKEN_SECRET'),
+        signOptions: { expiresIn: configService.get<string>('ADMIN_ACCESS_TOKEN_EXPIRES')}
       }),
       inject: [ConfigService],
     }),

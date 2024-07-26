@@ -4,14 +4,14 @@ import { get, identity } from 'lodash'
 import { AdminService } from './admin.service'
 
 @ApiTags('유저 승인')
-@Controller('cps')
+@Controller('signUp-cps')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
   /**
    * 가입 신청 리스트 조회
    * @returns
    */
-  @Get('signUp-cps')
+  @Get()
   async getApprovalList() {
     const data = await this.adminService.getApprovalList()
 
@@ -27,7 +27,7 @@ export class AdminController {
    * @param id
    * @returns
    */
-  @Patch('signup-cps/:cpId/approve')
+  @Patch('/:cpId/approve')
   async approveCp(@Param('cpId') id: string) {
     const data = await this.adminService.approveCp(id)
 
@@ -43,7 +43,7 @@ export class AdminController {
    * @param id
    * @returns
    */
-  @Delete('signup-cps/:cpId/reject')
+  @Delete('/:cpId/reject')
   async rejectCp(@Param('id') id: string) {
     await this.adminService.rejectCp(id)
 
