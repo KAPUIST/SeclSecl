@@ -7,7 +7,6 @@ export class CpInfo {
   uid: string
 
   @OneToOne(() => Cp, (cp) => cp.cpInfo, { onDelete: 'CASCADE' })
-
   @JoinColumn({ name: 'uid' })
   cp: Cp
 

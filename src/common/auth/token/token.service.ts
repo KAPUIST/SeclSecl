@@ -10,7 +10,7 @@ export class TokenService {
     private configService: ConfigService,
   ) {}
 
-  generateAccessToken(payload: { uid: string; email: string }, domain: string) {
+  generateAccessToken(payload: { uid: string; email: string }, domain?: string) {
     try {
       return this.jwtService.sign(payload, {
         secret: this.getAccessTokenSecretKey(domain),
@@ -21,7 +21,7 @@ export class TokenService {
     }
   }
 
-  generateRefreshToken(payload: { uid: string; email: string }, domain: string) {
+  generateRefreshToken(payload: { uid: string; email: string }, domain?: string) {
     try {
       return this.jwtService.sign(payload, {
         secret: this.getRefreshTokenSecretKey(domain),
