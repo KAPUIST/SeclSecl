@@ -6,6 +6,7 @@ import _ from 'lodash'
 import { Repository } from 'typeorm'
 import { Admin } from './entities/admin.entity'
 import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class AdminAuthService {
@@ -15,6 +16,7 @@ export class AdminAuthService {
     @InjectRepository(AdminRefreshToken, 'admin')
     private adminRefreshTokenRepository: Repository<AdminRefreshToken>,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async signIn(adminSignInDto) {
@@ -33,7 +35,10 @@ export class AdminAuthService {
     }
 
     const payload = { email, sub: admin.uid, type: 'admin' }
-    const accessToken = this.jwtService.sign(payload)
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: this.configService.get<string>('ADMIN_ACCESS_TOKEN_EXPIRES'),
+    })
+
     // const refreshToken = await this.generateRefreshToken(admin.uid);
 
     return {

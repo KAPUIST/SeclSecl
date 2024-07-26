@@ -31,7 +31,7 @@ export class AuthController {
   }
   /**
    * 회원가입
-   * @param signUpDto
+   * @param SignInDto
    * @returns
    */
   @UseGuards(LocalAuthGuard)
