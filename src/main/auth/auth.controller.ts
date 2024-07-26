@@ -1,9 +1,11 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common'
+import { Body, Controller, HttpStatus, Post, Request, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
 import { SignUpDto } from './dtos/sign-up.dto'
 import { AuthService } from './auth.service'
+import { SignInDto } from './dtos/sign-in.dto'
+import { LocalAuthGuard } from 'src/common/guards/local-auth.guard'
 
 @ApiTags('유저 인증')
 @Controller('auth')
@@ -24,6 +26,26 @@ export class AuthController {
     return {
       statusCode: HttpStatus.CREATED,
       message: MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.SUCCEED,
+      data,
+    }
+  }
+  /**
+   * 회원가입
+   * @param signUpDto
+   * @returns
+   */
+  @UseGuards(LocalAuthGuard)
+  @Post('/sign-in')
+  @ApiOperation({ summary: '로그인' })
+  @ApiResponse({ status: HttpStatus.OK, description: '로그인 성공' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '로그인 실패' })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async signIn(@Request() req, @Body() signInDto: SignInDto) {
+    console.log(req.user, 'hello')
+    const data = this.authService.signIn(req.user.uid, req.user.email)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.AUTH.SIGN_IN.SUCCEED,
       data,
     }
   }
