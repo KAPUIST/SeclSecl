@@ -14,7 +14,7 @@ export class BandLike {
   bandPostCommentUid: string
 
   @Column()
-  userId: string
+  userUid: string
 
   @ManyToOne(() => BandPost, (bandPost) => bandPost.bandLikes)
   @JoinColumn({ name: 'band_post_uid' })

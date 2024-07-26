@@ -13,6 +13,8 @@ import { Band } from './band.entity'
 import { BandMember } from './band-members.entity'
 import { BandPostComment } from './band-post-comments.entity'
 import { BandLike } from './band-likes.entity'
+import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+import { IsNotEmpty, IsString } from 'class-validator'
 
 @Entity('band_posts')
 export class BandPost {
@@ -25,9 +27,13 @@ export class BandPost {
   @Column()
   bandMemberUid: string
 
+  @IsNotEmpty({ message: MAIN_MESSAGE_CONSTANT.BAND.COMMON.BAND_POSTS_ENTITY.TITLE.REQUIRED })
+  @IsString()
   @Column()
   title: string
 
+  @IsNotEmpty({ message: MAIN_MESSAGE_CONSTANT.BAND.COMMON.BAND_POSTS_ENTITY.CONTENT.REQUIRED })
+  @IsString()
   @Column({ type: 'text' })
   content: string
 
