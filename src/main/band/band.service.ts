@@ -32,6 +32,15 @@ import { DeleteBandPostParamsDTO } from './dto/delete-band-post-params.dto'
 import { LikeBandPostParamsDTO } from './dto/like-band-post-params.dto'
 import { BandLike } from './entities/band-likes.entity'
 import { UnlikeBandPostParamsDTO } from './dto/unlike-band-post-params.dto'
+import { CreateBandCommentParamsDTO } from './dto/create-band-comment-params.dto'
+import { CreateBandCommentDTO } from './dto/create-band-comment.dto'
+import { BandPostComment } from './entities/band-post-comments.entity'
+import { GetBandCommentParamsDTO } from './dto/get-band-comment-params.dto'
+import { UpdateBandCommentParamsDTO } from './dto/update-band-comment-params.dto'
+import { UpdateBandCommentDTO } from './dto/update-band-comment.dto'
+import { DeleteBandCommentParamsDTO } from './dto/delete-band-comment-params.dto'
+import { LikeBandCommentParamsDTO } from './dto/like-band-comment-params.dto'
+import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto'
 
 @Injectable()
 export class BandService {
@@ -42,8 +51,8 @@ export class BandService {
     private readonly bandMemberRepository: Repository<BandMember>,
     @InjectRepository(BandPost)
     private readonly bandPostRepository: Repository<BandPost>,
-    @InjectRepository(BandLike)
-    private readonly bandLikeRepository: Repository<BandLike>,
+    @InjectRepository(BandPostComment)
+    private readonly bandPostCommentRepository: Repository<BandPostComment>,
     private dataSource: DataSource,
   ) {}
   // 밴드 생성 로직
@@ -165,7 +174,7 @@ export class BandService {
 
   // 밴드 게시글 생성 로직
   async createBandPost(params: CreateBandPostParamsDto, createBandPostDto: CreateBandPostDto) {
-    const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
+    const userUid = '28712071-8331-4c1b-98de-0688aaf97fae'
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
     // 밴드가 존재하지 않을 시 에러처리
@@ -334,6 +343,177 @@ export class BandService {
         return unLikedBandPost
       } catch (err) {
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.UNLIKE_BAND_POST.TRANSACTION_ERROR)
+      }
+    })
+  }
+  // 밴드 댓글 생성 로직
+  async createBandComment(
+    userUid: string,
+    params: CreateBandCommentParamsDTO,
+    createBandCommentDTO: CreateBandCommentDTO,
+  ) {
+    const bandPostUid = params.postUid
+    // 게시물이 존재하지 않을 시 에러처리
+    const bandPost = await this.bandPostRepository.findOne({ where: { uid: bandPostUid } })
+    if (_.isNil(bandPost)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.CREATE_BAND_COMMENT.NOT_FOUND_POST)
+    }
+    const bandUid = bandPost.bandUid
+    // 유저가 밴드 멤버가 아닐 시 에러 처리
+    const isMember = await this.bandMemberRepository.findOne({ where: { bandUid, userUid } })
+    if (_.isNil(isMember)) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.CREATE_BAND_COMMENT.NOT_FOUND_USER)
+    }
+    const createdBandComment = await this.bandPostCommentRepository.save({
+      bandPostUid,
+      bandMemberUid: isMember.uid,
+      ...createBandCommentDTO,
+    })
+    return createdBandComment
+  }
+  // 밴드 댓글 목록 조회 로직
+  async getBandComment(userUid: string, params: GetBandCommentParamsDTO) {
+    const bandPostUid = params.postUid
+    // 게시물이 존재하지 않을 시 에러처리
+    const bandPost = await this.bandPostRepository.findOne({ where: { uid: bandPostUid } })
+    if (_.isNil(bandPost)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.GET_BAND_COMMENT.NOT_FOUND_POST)
+    }
+    const bandUid = bandPost.bandUid
+    // 유저가 밴드 멤버가 아닐 시 에러 처리
+    const isMember = await this.bandMemberRepository.findOne({ where: { bandUid, userUid } })
+    if (_.isNil(isMember)) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.GET_BAND_COMMENT.NOT_FOUND_USER)
+    }
+    const getBandCommentList = await this.bandPostCommentRepository.find({ where: { bandPostUid } })
+    return getBandCommentList
+  }
+  // 밴드 댓글 수정 로직
+  async updateBandComment(userUid, params: UpdateBandCommentParamsDTO, updateBandCommentDTO: UpdateBandCommentDTO) {
+    const bandCommentUid = params.commentUid
+    // 댓글이 존재하지 않을 시 에러처리
+    const bandComment = await this.bandPostCommentRepository.findOne({
+      relations: { bandPost: true },
+      where: { uid: bandCommentUid },
+    })
+    if (_.isNil(bandComment)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UPDATE_BAND_COMMENT.NOT_FOUND_Comment)
+    }
+    const bandUid = bandComment.bandPost.bandUid
+    // 유저가 밴드 멤버가 아닐 시 에러 처리
+    const isMember = await this.bandMemberRepository.findOne({ where: { bandUid, userUid } })
+    if (_.isNil(isMember)) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UPDATE_BAND_COMMENT.NOT_FOUND_USER)
+    }
+    // 유저가 댓글 작성자가 아닐 시 에러 처리
+    if (isMember.uid !== bandComment.bandMemberUid) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UPDATE_BAND_COMMENT.NOT_MATCHED)
+    }
+    await this.bandPostCommentRepository.update({ uid: bandCommentUid }, updateBandCommentDTO)
+    const updatedBandComment = await this.bandPostCommentRepository.findOne({
+      where: { uid: bandCommentUid },
+    })
+    return updatedBandComment
+  }
+  // 밴드 댓글 삭제 로직
+  async deleteBandComment(userUid: string, params: DeleteBandCommentParamsDTO) {
+    const bandCommentUid = params.commentUid
+    // 댓글이 존재하지 않을 시 에러처리
+    const bandComment = await this.bandPostCommentRepository.findOne({
+      relations: { bandPost: true },
+      where: { uid: bandCommentUid },
+    })
+    if (_.isNil(bandComment)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.DELETE_BAND_COMMENT.NOT_FOUND_Comment)
+    }
+
+    const bandUid = bandComment.bandPost.bandUid
+    // 유저가 밴드 멤버가 아닐 시 에러 처리
+    const isMember = await this.bandMemberRepository.findOne({ where: { bandUid, userUid } })
+    if (_.isNil(isMember)) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.DELETE_BAND_COMMENT.NOT_FOUND_USER)
+    }
+    // 유저가 댓글 작성자가 아닐 시 에러 처리
+    if (isMember.uid !== bandComment.bandMemberUid) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.DELETE_BAND_COMMENT.NOT_MATCHED)
+    }
+    await this.bandPostCommentRepository.softDelete({ uid: bandCommentUid })
+    return bandCommentUid
+  }
+  // 밴드 댓글 좋아요 로직
+  async likeBandComment(userUid: string, params: LikeBandCommentParamsDTO) {
+    return this.dataSource.transaction(async (manager) => {
+      const bandCommentUid = params.commentUid
+      // 댓글이 존재하지 않을 시 에러처리
+      const bandComment = await manager.findOne(BandPostComment, {
+        relations: { bandPost: true },
+        where: { uid: bandCommentUid },
+      })
+      if (_.isNil(bandComment)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.Like_BAND_COMMENT.NOT_FOUND_Comment)
+      }
+      const bandUid = bandComment.bandPost.bandUid
+      // 유저가 밴드 멤버가 아닐 시 에러 처리
+      const isMember = await manager.findOne(BandMember, { where: { bandUid, userUid } })
+      if (_.isNil(isMember)) {
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.Like_BAND_COMMENT.NOT_FOUND_USER)
+      }
+      // 이미 좋아요 누른 게시물일 시 에러 처리
+      const isLike = await manager.findOne(BandLike, { where: { bandCommentUid, userUid } })
+      if (isLike) {
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.Like_BAND_COMMENT.CONFLICT)
+      }
+      try {
+        await manager.save(BandLike, { bandCommentUid, userUid })
+        const newCount = bandComment.likeCount + 1
+        await manager.update(BandPostComment, { uid: bandCommentUid }, { likeCount: newCount })
+        const likedBandComment = await manager.findOne(BandPostComment, { where: { uid: bandCommentUid } })
+        return likedBandComment
+      } catch (err) {
+        throw new InternalServerErrorException(
+          MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.Like_BAND_COMMENT.TRANSACTION_ERROR,
+        )
+      }
+    })
+  }
+
+  // 밴드 댓글 좋아요 취소 로직
+  async UnlikeBandComment(userUid: string, params: UnlikeBandCommentParamsDTO) {
+    return this.dataSource.transaction(async (manager) => {
+      const bandCommentUid = params.commentUid
+      // 댓글이 존재하지 않을 시 에러처리
+      const bandComment = await manager.findOne(BandPostComment, {
+        relations: { bandPost: true },
+        where: { uid: bandCommentUid },
+      })
+      if (_.isNil(bandComment)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UNLIKE_BAND_COMMENT.NOT_FOUND_Comment)
+      }
+      const bandUid = bandComment.bandPost.bandUid
+      // 유저가 밴드 멤버가 아닐 시 에러 처리
+      const isMember = await manager.findOne(BandMember, { where: { bandUid, userUid } })
+      if (_.isNil(isMember)) {
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UNLIKE_BAND_COMMENT.NOT_FOUND_USER)
+      }
+      // 좋아요 누르지 않은 게시물일 시 에러 처리
+      const isLike = await manager.findOne(BandLike, { where: { bandCommentUid, userUid } })
+      if (_.isNil(isLike)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UNLIKE_BAND_COMMENT.NOT_FOUND_Like)
+      }
+      // 좋아요 수가 0일때 에러 처리
+      if (bandComment.likeCount < 1) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UNLIKE_BAND_COMMENT.BAD_REQUEST)
+      }
+      try {
+        await manager.delete(BandLike, { bandCommentUid, userUid })
+        const newCount = bandComment.likeCount - 1
+        await manager.update(BandPostComment, { uid: bandCommentUid }, { likeCount: newCount })
+        const unLikedBandPost = await manager.findOne(BandPostComment, { where: { uid: bandCommentUid } })
+        return unLikedBandPost
+      } catch (err) {
+        throw new InternalServerErrorException(
+          MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UNLIKE_BAND_COMMENT.TRANSACTION_ERROR,
+        )
       }
     })
   }

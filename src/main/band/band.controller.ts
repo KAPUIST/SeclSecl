@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Request, UseGuards } from '@nestjs/common'
 import { BandService } from './band.service'
 import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
 import { CreateBandDto } from './dto/create-band.dto'
@@ -19,6 +19,15 @@ import { UpdateBandPostDTO } from './dto/update-band-post.dto'
 import { DeleteBandPostParamsDTO } from './dto/delete-band-post-params.dto'
 import { LikeBandPostParamsDTO } from './dto/like-band-post-params.dto'
 import { UnlikeBandPostParamsDTO } from './dto/unlike-band-post-params.dto'
+import { CreateBandCommentParamsDTO } from './dto/create-band-comment-params.dto'
+import { CreateBandCommentDTO } from './dto/create-band-comment.dto'
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
+import { GetBandCommentParamsDTO } from './dto/get-band-comment-params.dto'
+import { UpdateBandCommentParamsDTO } from './dto/update-band-comment-params.dto'
+import { UpdateBandCommentDTO } from './dto/update-band-comment.dto'
+import { DeleteBandCommentParamsDTO } from './dto/delete-band-comment-params.dto'
+import { LikeBandCommentParamsDTO } from './dto/like-band-comment-params.dto'
+import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto'
 
 @Controller('bands')
 export class BandController {
@@ -175,6 +184,87 @@ export class BandController {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.UNLIKE_BAND_POST.SUCCEED,
       data: unLikedBandPost,
+    }
+  }
+  // 밴드 댓글 생성
+  @UseGuards(JwtAuthGuard)
+  @Post('/posts/:postUid/comments')
+  async createBandComment(
+    @Request() req,
+    @Param() params: CreateBandCommentParamsDTO,
+    @Body() createBandCommentDTO: CreateBandCommentDTO,
+  ) {
+    const userUid = req.user.uid
+    const createdBandComment = await this.bandService.createBandComment(userUid, params, createBandCommentDTO)
+    return {
+      status: HttpStatus.CREATED,
+      message: MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.CREATE_BAND_COMMENT.SUCCEED,
+      data: createdBandComment,
+    }
+  }
+  // 밴드 댓글 목록 조회
+  @UseGuards(JwtAuthGuard)
+  @Get('/posts/:postUid/comments')
+  async getBandComment(@Request() req, @Param() params: GetBandCommentParamsDTO) {
+    const userUid = req.user.uid
+    const bandCommentList = await this.bandService.getBandComment(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.GET_BAND_COMMENT.SUCCEED,
+      data: bandCommentList,
+    }
+  }
+  // 밴드 댓글 수정
+  @UseGuards(JwtAuthGuard)
+  @Patch('/posts/comments/:commentUid')
+  async updateBandComment(
+    @Request() req,
+    @Param() params: UpdateBandCommentParamsDTO,
+    @Body() updateBandCommentDTO: UpdateBandCommentDTO,
+  ) {
+    const userUid = req.user.uid
+    const updatedBandComment = await this.bandService.updateBandComment(userUid, params, updateBandCommentDTO)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UPDATE_BAND_COMMENT.SUCCEED,
+      data: updatedBandComment,
+    }
+  }
+  // 밴드 댓글 삭제
+  @UseGuards(JwtAuthGuard)
+  @Delete('/posts/comments/:commentUid')
+  async deleteBandComment(@Request() req, @Param() params: DeleteBandCommentParamsDTO) {
+    const userUid = req.user.uid
+    const deletedBandCommentUid = await this.bandService.deleteBandComment(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.DELETE_BAND_COMMENT.SUCCEED,
+      data: deletedBandCommentUid,
+    }
+  }
+  // 밴드 댓글 좋아요
+  @UseGuards(JwtAuthGuard)
+  @Post('/posts/comments/:commentUid/likes')
+  async likeBandComment(@Request() req, @Param() params: LikeBandCommentParamsDTO) {
+    const userUid = req.user.uid
+    const likedBandComment = await this.bandService.likeBandComment(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.Like_BAND_COMMENT.SUCCEED,
+      data: likedBandComment,
+    }
+  }
+
+  // 밴드 댓글 좋아요 취소
+  @UseGuards(JwtAuthGuard)
+  @Delete('/posts/comments/:commentUid/likes')
+  async UnlikeBandComment(@Request() req, @Param() params: UnlikeBandCommentParamsDTO) {
+    const userUid = req.user.uid
+    const unLikedBandComment = await this.bandService.UnlikeBandComment(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UNLIKE_BAND_COMMENT.SUCCEED,
+      data: unLikedBandComment,
     }
   }
 }
