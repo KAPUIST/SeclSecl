@@ -56,14 +56,13 @@ export class BandService {
     private dataSource: DataSource,
   ) {}
   // 밴드 생성 로직
-  async createBand(createBandDto: CreateBandDto) {
+  async createBand(userUid: string, createBandDto: CreateBandDto) {
     return this.dataSource.transaction(async (manager) => {
       // 밴드명 중복시 에러 처리
       const isExistName = await manager.findOne(Band, { where: { name: createBandDto.name } })
       if (isExistName) {
         throw new ConflictException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.CREATE_BAND.CONFLICT_NAME)
       }
-      const userUid = '28712071-8331-4c1b-98de-0688aaf97fae'
       try {
         const createdBand = await manager.save(Band, {
           userUid,
@@ -94,8 +93,7 @@ export class BandService {
     return band
   }
   // 밴드 수정 로직
-  async updateBand(params: UpdateBandParamsDTO, updateBandDto: UpdateBandDto) {
-    const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
+  async updateBand(userUid: string, params: UpdateBandParamsDTO, updateBandDto: UpdateBandDto) {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid, userUid } })
     // 밴드명, 설명 모두 입력하지 않았을 때
@@ -113,8 +111,7 @@ export class BandService {
     return updatedBand
   }
   // 밴드 삭제 로직
-  async deleteBand(params: DeleteBandParamsDTO) {
-    const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
+  async deleteBand(userUid: string, params: DeleteBandParamsDTO) {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid, userUid } })
     // 밴드가 존재하지 않거나, 해당 밴드의 오너가 아닐 시 에러 처리
@@ -125,8 +122,7 @@ export class BandService {
     return band.uid
   }
   // 밴드 가입 로직
-  async joinBand(params: JoinBandParamsDTO) {
-    const userUid = '8a8e265e-bda6-4546-b604-717824dcab1c'
+  async joinBand(userUid: string, params: JoinBandParamsDTO) {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
     // 밴드가 존재하지 않을 시 에러 처리
@@ -154,8 +150,7 @@ export class BandService {
   }
 
   // 밴드장 이전 로직
-  async transferBand(params: TransferBandParamsDTO, transferBandDto: TransferBandDTO) {
-    const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
+  async transferBand(userUid: string, params: TransferBandParamsDTO, transferBandDto: TransferBandDTO) {
     const bandUid = params.bandUid
     const newUser = transferBandDto.userUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid, userUid } })
@@ -168,13 +163,16 @@ export class BandService {
     if (_.isNil(isMember)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.TRANSFER_Band.NOT_FOUND_USER)
     }
+    // 이미 해당 밴드의 오너일 시 에러 처리
+    if (userUid === band.userUid) {
+      throw new ConflictException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.TRANSFER_Band.CONFLICT)
+    }
     await this.bandRepository.update({ uid: bandUid }, { userUid: newUser })
     return newUser
   }
 
   // 밴드 게시글 생성 로직
-  async createBandPost(params: CreateBandPostParamsDto, createBandPostDto: CreateBandPostDto) {
-    const userUid = '28712071-8331-4c1b-98de-0688aaf97fae'
+  async createBandPost(userUid: string, params: CreateBandPostParamsDto, createBandPostDto: CreateBandPostDto) {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
     // 밴드가 존재하지 않을 시 에러처리
@@ -195,8 +193,7 @@ export class BandService {
   }
 
   // 밴드 게시글 목록 조회 로직
-  async getBandPostList(params: GetBandPostListParamsDTO) {
-    const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
+  async getBandPostList(userUid: string, params: GetBandPostListParamsDTO) {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
     // 밴드가 존재하지 않을 시 에러처리
@@ -212,8 +209,7 @@ export class BandService {
     return bandPostList
   }
   // 밴드 게시글 상세 조회 로직
-  async getBandPostDetail(params: GetBandPostDetailParamsDTO) {
-    const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
+  async getBandPostDetail(userUid: string, params: GetBandPostDetailParamsDTO) {
     const postUid = params.postUid
     // 게시물이 존재하지 않을 시 에러처리
     const bandPost = await this.bandPostRepository.findOne({ where: { uid: postUid } })
@@ -229,8 +225,7 @@ export class BandService {
     return bandPost
   }
   // 밴드 게시글 수정 로직
-  async updateBandPost(params: UpdateBandPostParamsDTO, updateBandPostDTO: UpdateBandPostDTO) {
-    const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
+  async updateBandPost(userUid: string, params: UpdateBandPostParamsDTO, updateBandPostDTO: UpdateBandPostDTO) {
     const postUid = params.postUid
     // 밴드명, 설명 모두 입력하지 않았을 때
     if (Object.keys(updateBandPostDTO).length === 0) {
@@ -256,8 +251,7 @@ export class BandService {
     return updatedBand
   }
   // 밴드 게시물 삭제 로직
-  async deleteBandPost(params: DeleteBandPostParamsDTO) {
-    const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
+  async deleteBandPost(userUid: string, params: DeleteBandPostParamsDTO) {
     const postUid = params.postUid
     // 게시물이 존재하지 않을 시 에러처리
     const bandPost = await this.bandPostRepository.findOne({ where: { uid: postUid } })
@@ -279,9 +273,8 @@ export class BandService {
     return bandPost.uid
   }
   // 밴드 게시글 좋아요 로직
-  async likeBandPost(params: LikeBandPostParamsDTO) {
+  async likeBandPost(userUid: string, params: LikeBandPostParamsDTO) {
     return this.dataSource.transaction(async (manager) => {
-      const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
       const bandPostUid = params.postUid
       // 게시물이 존재하지 않을 시 에러 처리
       const bandPost = await manager.findOne(BandPost, { where: { uid: bandPostUid } })
@@ -311,9 +304,8 @@ export class BandService {
     })
   }
   // 밴드 게시글 좋아요 취소 로직
-  async UnlikeBandPost(params: UnlikeBandPostParamsDTO) {
+  async UnlikeBandPost(userUid: string, params: UnlikeBandPostParamsDTO) {
     return this.dataSource.transaction(async (manager) => {
-      const userUid = 'c570186f-853c-4026-ae6a-f849fc53914a'
       const bandPostUid = params.postUid
       // 게시물이 존재하지 않을 시 에러 처리
       const bandPost = await manager.findOne(BandPost, { where: { uid: bandPostUid } })
