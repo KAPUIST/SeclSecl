@@ -1,7 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+import { JwtPayload } from './interface/jwt-payload.interface'
 
 @Injectable()
 export class TokenService {
@@ -10,77 +11,90 @@ export class TokenService {
     private configService: ConfigService,
   ) {}
 
-  generateAccessToken(payload: { uid: string; email: string }, domain?: string) {
+  verifyToken(refreshToken: string, type: string) {
+    const payload = this.jwtService.verify(refreshToken.split(' ')[1], {
+      secret: this.getRefreshTokenSecretKey(type),
+    })
+    return payload
+  }
+  generateAccessToken(payload: JwtPayload) {
     try {
       return this.jwtService.sign(payload, {
-        secret: this.getAccessTokenSecretKey(domain),
-        expiresIn: this.getAccessTokenExpirationTime(domain),
+        secret: this.getAccessTokenSecretKey(payload.type),
+        expiresIn: this.getAccessTokenExpirationTime(payload.type),
       })
     } catch (error) {
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.FAILED)
     }
   }
 
-  generateRefreshToken(payload: { uid: string; email: string }, domain?: string) {
+  generateRefreshToken(payload: JwtPayload) {
     try {
       return this.jwtService.sign(payload, {
-        secret: this.getRefreshTokenSecretKey(domain),
-        expiresIn: this.getRefreshTokenExpirationTime(domain),
+        secret: this.getRefreshTokenSecretKey(payload.type),
+        expiresIn: this.getRefreshTokenExpirationTime(payload.type),
       })
     } catch (error) {
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.FAILED)
     }
   }
 
-  async generateTokens(payload: { uid: string; email: string }, domain?: string) {
-    const accessToken = this.generateAccessToken(payload, domain)
-    const refreshToken = this.generateRefreshToken(payload, domain)
+  async generateTokens(payload: JwtPayload) {
+    const accessToken = this.generateAccessToken(payload)
+    const refreshToken = this.generateRefreshToken(payload)
 
     return { accessToken, refreshToken }
   }
 
-  private getAccessTokenSecretKey(domain: string): string {
-    switch (domain) {
+  private getAccessTokenSecretKey(type: string): string {
+    switch (type) {
       case 'admin':
         return this.configService.get<string>('ADMIN_ACCESS_TOKEN_SECRET')
       case 'cp':
         return this.configService.get<string>('CP_ACCESS_TOKEN_SECRET')
-      default:
+      case 'main':
         return this.configService.get<string>('MAIN_ACCESS_TOKEN_SECRET')
+      default:
+        throw new BadRequestException('허용하지않는 도메인')
     }
   }
 
-  private getAccessTokenExpirationTime(domain: string): string {
-    switch (domain) {
+  private getAccessTokenExpirationTime(type: string): string {
+    switch (type) {
       case 'admin':
         return this.configService.get<string>('ADMIN_ACCESS_TOKEN_EXPIRES')
       case 'cp':
         return this.configService.get<string>('CP_ACCESS_TOKEN_EXPIRES')
-      default:
+      case 'main':
         return this.configService.get<string>('MAIN_ACCESS_TOKEN_EXPIRES')
+      default:
+        throw new BadRequestException('허용하지않는 도메인')
     }
   }
 
-  private getRefreshTokenSecretKey(domain: string): string {
-    switch (domain) {
+  private getRefreshTokenSecretKey(type: string): string {
+    switch (type) {
       case 'admin':
         return this.configService.get<string>('ADMIN_REFRESH_TOKEN_SECRET')
       case 'cp':
         return this.configService.get<string>('CP_REFRESH_TOKEN_SECRET')
-
-      default:
+      case 'main':
         return this.configService.get<string>('MAIN_REFRESH_TOKEN_SECRET')
+      default:
+        throw new BadRequestException('허용하지않는 도메인')
     }
   }
 
-  private getRefreshTokenExpirationTime(domain: string): string {
-    switch (domain) {
+  private getRefreshTokenExpirationTime(type: string): string {
+    switch (type) {
       case 'admin':
         return this.configService.get<string>('ADMIN_REFRESH_TOKEN_EXPIRES')
       case 'cp':
         return this.configService.get<string>('CP_REFRESH_TOKEN_EXPIRES')
-      default:
+      case 'main':
         return this.configService.get<string>('MAIN_REFRESH_TOKEN_EXPIRES')
+      default:
+        throw new BadRequestException('허용하지않는 도메인')
     }
   }
 }

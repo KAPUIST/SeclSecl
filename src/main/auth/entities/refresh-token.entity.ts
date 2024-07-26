@@ -3,10 +3,10 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
 } from 'typeorm'
 
 @Entity('refresh_tokens')
@@ -14,7 +14,7 @@ export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   uid: string
 
-  @ManyToOne(() => User)
+  @OneToOne(() => User)
   @JoinColumn({ name: 'user_uid' })
   user: User
 

@@ -21,7 +21,11 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   )
+  app.use((req, res, next) => {
+    console.log('Incoming Request:', req.method, req.path)
 
+    next()
+  })
   const config = new DocumentBuilder()
     .setTitle('seclsecl')
     .setDescription('seclsecl PROJECT')

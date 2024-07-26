@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post, Request, UseGuards } from '@nestjs/common'
+import { Body, Controller, Headers, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
@@ -6,7 +6,6 @@ import { SignUpDto } from './dtos/sign-up.dto'
 import { AuthService } from './auth.service'
 import { SignInDto } from './dtos/sign-in.dto'
 import { LocalAuthGuard } from 'src/common/guards/local-auth.guard'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
 
 @ApiTags('유저 인증')
 @Controller('auth')
@@ -32,7 +31,7 @@ export class AuthController {
   }
   /**
    * 회원가입
-   * @param signUpDto
+   * @param SignInDto
    * @returns
    */
   @UseGuards(LocalAuthGuard)
@@ -49,18 +48,39 @@ export class AuthController {
       data,
     }
   }
-  // @UseGuards(JwtAuthGuard)
-  // @Post('/sign-out')
-  // @ApiOperation({ summary: '로그아웃' })
-  // @ApiResponse({ status: HttpStatus.OK, description: '로그아웃 성공' })
-  // @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '로그아웃 실패' })
-  // async logout(@Request() req) {
-  //   await this.authService.signOut(req.user.uid)
-  //   return {
-  //     statusCode: HttpStatus.OK,
-  //     message: '로그아웃 성공',
-  //   }
-  // }
+
+  @Post('/sign-out')
+  @ApiOperation({ summary: '로그아웃' })
+  @ApiResponse({ status: HttpStatus.OK, description: '로그아웃 성공' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '로그아웃 실패' })
+  async logout(@Headers('authorization') refreshToken: string) {
+    await this.authService.signOut(refreshToken)
+    return {
+      statusCode: HttpStatus.OK,
+      message: '로그아웃 성공',
+    }
+  }
+
+  /**
+   * 토큰 재발급
+   * @param req
+   * @param signInDto
+   * @returns
+   */
+  @HttpCode(HttpStatus.OK)
+  @Post('token')
+  @ApiOperation({ summary: '토큰 재발급' })
+  @ApiResponse({ status: HttpStatus.OK, description: '토큰 재발급 성공' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '토큰 재발급 실패' })
+  async refresh(@Headers('authorization') refreshToken: string) {
+    const tokens = await this.authService.updateTokens(refreshToken)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.AUTH.REFRESH_TOKEN.SUCCEED,
+      data: tokens,
+    }
+  }
+
   /**
    * 핸드폰 인증 번호 보내기
    * @param phoneNumber
