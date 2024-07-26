@@ -1,4 +1,13 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm'
 import { Admin } from './admin.entity'
 
 @Entity({ database: 'seclsecl_admin', name: 'admin_refreshToken' })
@@ -16,6 +25,6 @@ export class AdminRefreshToken {
   updated_at: Date
 
   @OneToOne(() => Admin, (admin) => admin.refreshToken, { onDelete: 'CASCADE' })
-  @JoinColumn ( {name: 'admin_uid'})
+  @JoinColumn({ name: 'admin_uid' })
   admin: Admin
 }

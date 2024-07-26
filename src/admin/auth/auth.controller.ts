@@ -28,7 +28,7 @@ export class AuthController {
 
   /**
    * 로그아웃
-   * @returns 
+   * @returns
    */
   @ApiBearerAuth()
   @Post('/sign-out')
@@ -40,11 +40,11 @@ export class AuthController {
     }
   }
 
- /**
-  * 토큰 재발급
-  * @param authorization 
-  * @returns 
-  */
+  /**
+   * 토큰 재발급
+   * @param authorization
+   * @returns
+   */
   @ApiBearerAuth()
   @Post('token')
   async refresh(@Headers('authorization') RefreshToken: string) {
