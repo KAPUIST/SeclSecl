@@ -53,6 +53,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         SUCCEED: '밴드 가입에 성공하였습니다.',
       },
     },
+
     COMMON: {
       BAND_ENTITY: {
         UID: {
@@ -65,6 +66,11 @@ export const MAIN_MESSAGE_CONSTANT = {
           REQUIRED: '밴드 설명을 입력해 주세요',
         },
       },
+    },
+  },
+  USER: {
+    CONTROLLER: {
+      FIND_ME: '내 정보 조회에 성공했습니다.',
     },
   },
 }
