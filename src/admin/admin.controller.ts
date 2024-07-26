@@ -11,7 +11,7 @@ export class AdminController {
    * 가입 신청 리스트 조회
    * @returns
    */
-   @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   async getApprovalList() {
     const data = await this.adminService.getApprovalList()

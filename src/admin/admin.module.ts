@@ -30,11 +30,9 @@ import { GuardModule } from 'src/common/guards/guard.module'
       inject: [ConfigService],
     }),
     ConfigModule,
-    GuardModule
+    GuardModule,
   ],
   controllers: [AuthController, AdminController],
   providers: [AdminAuthService, AdminService, TokenService, LocalStrategy],
 })
 export class AdminModule {}
-
-

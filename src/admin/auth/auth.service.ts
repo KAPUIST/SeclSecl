@@ -41,7 +41,7 @@ export class AdminAuthService {
   }
 
   async signIn(userUid: string, email: string) {
-    const payload : JwtPayload = { uid: userUid, email, type: 'admin' }
+    const payload: JwtPayload = { uid: userUid, email, type: 'admin' }
     const tokens = await this.tokenService.generateTokens(payload)
 
     return tokens
