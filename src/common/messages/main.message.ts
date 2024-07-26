@@ -110,6 +110,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         TRANSACTION_ERROR: '게시물 좋아요 등록중 오류가 생겼습니다.',
       },
     },
+
     COMMON: {
       BAND_ENTITY: {
         UID: {
@@ -136,6 +137,11 @@ export const MAIN_MESSAGE_CONSTANT = {
           REQUIRED: '내용을 입력해 주세요',
         },
       },
+    },
+  },
+  USER: {
+    CONTROLLER: {
+      FIND_ME: '내 정보 조회에 성공했습니다.',
     },
   },
 }
