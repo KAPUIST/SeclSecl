@@ -33,8 +33,8 @@ export class Cp {
   @DeleteDateColumn({ select: false })
   deletedAt: Date
 
-  @OneToOne(() => CpInfo, (cpInfos) => cpInfos.cp)
-  cpInfos: CpInfo
+  @OneToOne(() => CpInfo, (cpInfo) => cpInfo.cp, { cascade: true })
+  cpInfo: CpInfo
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.cp, { cascade: ['remove', 'soft-remove'] })
   refreshToken: RefreshToken
