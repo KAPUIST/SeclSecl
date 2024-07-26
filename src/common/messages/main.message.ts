@@ -17,6 +17,7 @@ export const MAIN_MESSAGE_CONSTANT = {
       FAILED: '유효성 검사 중 오류가 발생했습니다.',
     },
     COMMON: {
+      FAILED: '토큰 생성에 실패 하였습니다.',
       INVALID_TOKEN: '유효하지 않은 토큰 입니다.',
       HASH_ERROR: '비밀번호 해싱 중 오류가 발생했습니다.',
       CONFIRM_PASSWORD: {
