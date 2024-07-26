@@ -23,11 +23,19 @@ export class Band {
   @Column()
   userUid: string
 
+  /**
+   * 밴드 이름
+   * @example "80세 이상 농구 모임"
+   */
   @IsNotEmpty({ message: MAIN_MESSAGE_CONSTANT.BAND.COMMON.BAND_ENTITY.NAME.REQUIRED })
   @IsString()
   @Column()
   name: string
 
+  /**
+   * 밴드 설명
+   * @example "안녕하세요..."
+   */
   @IsNotEmpty({ message: MAIN_MESSAGE_CONSTANT.BAND.COMMON.BAND_ENTITY.CONTENT.REQUIRED })
   @IsString()
   @Column({ type: 'text' })

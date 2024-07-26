@@ -11,7 +11,7 @@ export class BandLike {
   bandPostUid: string
 
   @Column({ nullable: true })
-  bandPostCommentUid: string
+  bandCommentUid: string
 
   @Column()
   userUid: string

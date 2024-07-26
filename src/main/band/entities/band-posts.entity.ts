@@ -27,11 +27,19 @@ export class BandPost {
   @Column()
   bandMemberUid: string
 
+  /**
+   * 밴드 게시판 제목
+   * @example "안녕하세요!"
+   */
   @IsNotEmpty({ message: MAIN_MESSAGE_CONSTANT.BAND.COMMON.BAND_POSTS_ENTITY.TITLE.REQUIRED })
   @IsString()
   @Column()
   title: string
 
+  /**
+   * 밴드 게시판 내용
+   * @example "잘 부탁드려요."
+   */
   @IsNotEmpty({ message: MAIN_MESSAGE_CONSTANT.BAND.COMMON.BAND_POSTS_ENTITY.CONTENT.REQUIRED })
   @IsString()
   @Column({ type: 'text' })
