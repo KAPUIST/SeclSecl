@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import { CpInfos } from './cp-infos.entity'
+import { CpInfo } from './cp-infos.entity'
 import { RefreshToken } from './refresh-token.entity'
 
 @Entity({ database: 'seclsecl_cp', name: 'cp' })
@@ -33,8 +33,8 @@ export class Cp {
   @DeleteDateColumn({ select: false })
   deletedAt: Date
 
-  @OneToOne(() => CpInfos, (cpInfos) => cpInfos.cp)
-  cp: CpInfos
+  @OneToOne(() => CpInfo, (cpInfos) => cpInfos.cp)
+  cpInfos: CpInfo
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.cp, { cascade: ['remove', 'soft-remove'] })
   refreshToken: RefreshToken
