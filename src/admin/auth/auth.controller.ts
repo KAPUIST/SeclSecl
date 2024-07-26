@@ -17,11 +17,11 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
   async signIn(@Request() req, @Body() adminSignInDto: AdminSignInDto) {
-    const data =  await this.adminAuthService.signIn(req.user.uid, req.user.email)
+    const data = await this.adminAuthService.signIn(req.user.uid, req.user.email)
     return {
       status: HttpStatus.OK,
       message: '로그인이 완료되었습니다.',
-      data
+      data,
     }
   }
 
