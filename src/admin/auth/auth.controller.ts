@@ -1,5 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Post, UseGuards, Request, HttpStatus } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
+import { LocalAuthGuard } from 'src/common/guards/local-auth.guard'
 import { AdminAuthService } from './auth.service'
 import { AdminSignInDto } from './dto/sign-in.dto'
 
@@ -13,9 +14,15 @@ export class AuthController {
    * @param adminSignInDto
    * @returns
    */
+  @UseGuards(LocalAuthGuard)
   @Post('sign-in')
-  async signIn(@Body() adminSignInDto: AdminSignInDto) {
-    return await this.adminAuthService.signIn(adminSignInDto)
+  async signIn(@Request() req, @Body() adminSignInDto: AdminSignInDto) {
+    const data =  await this.adminAuthService.signIn(req.user.uid, req.user.email)
+    return {
+      status: HttpStatus.OK,
+      message: '로그인이 완료되었습니다.',
+      data
+    }
   }
 
   // /**

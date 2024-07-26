@@ -7,6 +7,7 @@ import { Repository } from 'typeorm'
 import { Admin } from './entities/admin.entity'
 import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
 import { ConfigService } from '@nestjs/config'
+import { TokenService } from 'src/common/auth/token/token.service'
 
 @Injectable()
 export class AdminAuthService {
@@ -17,34 +18,34 @@ export class AdminAuthService {
     private adminRefreshTokenRepository: Repository<AdminRefreshToken>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private tokenService: TokenService
   ) {}
 
-  async signIn(adminSignInDto) {
-    const { email, password } = adminSignInDto
-    const admin = await this.adminRepository.findOne({
-      select: ['uid', 'email', 'password'],
-      where: { email },
-    })
+    async validateUser(email:string, password:string){
+      const admin = await this.adminRepository.findOne({
+        select: ['uid', 'email', 'password'],
+        where: { email }
+      })
 
-    if (!admin) {
-      throw new UnauthorizedException('이메일을 확인해주세요.')
+      if(!admin){
+        return null
+      }
+
+      const isPasswordValid = (password === admin.password);
+      if(!isPasswordValid) {
+        return null
+      }
+
+      return { uid: admin.uid, email:admin.email}
     }
 
-    if (!(password === admin.password)) {
-      throw new UnauthorizedException('비밀번호를 확인해주세요.')
-    }
+  async signIn(userUid:string, email: string) {
+    const payload = { uid: userUid, email}
+    const tokens = await this.tokenService.generateTokens(payload)
 
-    const payload = { email, sub: admin.uid, type: 'admin' }
-    const accessToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.get<string>('ADMIN_ACCESS_TOKEN_EXPIRES'),
-    })
+    return 
+      tokens
 
-    // const refreshToken = await this.generateRefreshToken(admin.uid);
-
-    return {
-      accessToken,
-      // refreshToken,
-    }
   }
   // async generateRefreshToken(adminId: string): Promise<string> {
   //     const refreshToken = this.jwtService.sign(
