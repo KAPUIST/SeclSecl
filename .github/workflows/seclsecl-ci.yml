@@ -38,7 +38,16 @@ jobs:
           echo "MAIN_REFRESH_TOKEN_SECRET=${{secrets.MAIN_REFRESH_TOKEN_SECRET}}" >> .env
           echo "MAIN_ACCESS_TOKEN_EXPIRES=${{secrets.MAIN_ACCESS_TOKEN_EXPIRES}}" >> .env
           echo "MAIN_ACCESS_TOKEN_SECRET=${{secrets.MAIN_ACCESS_TOKEN_SECRET}}" >> .env
+          echo "CP_REFRESH_TOKEN_EXPIRES=${{secrets.CP_REFRESH_TOKEN_EXPIRES}}" >> .env
+          echo "CP_REFRESH_TOKEN_SECRET=${{secrets.CP_REFRESH_TOKEN_SECRET}}" >> .env
+          echo "CP_ACCESS_TOKEN_EXPIRES=${{secrets.CP_ACCESS_TOKEN_EXPIRES}}" >> .env
+          echo "CP_ACCESS_TOKEN_SECRET=${{secrets.CP_ACCESS_TOKEN_SECRET}}" >> .env
+          echo "ADMIN_REFRESH_TOKEN_EXPIRES=${{secrets.ADMIN_REFRESH_TOKEN_EXPIRES}}" >> .env
+          echo "ADMIN_REFRESH_TOKEN_SECRET=${{secrets.ADMIN_REFRESH_TOKEN_SECRET}}" >> .env
+          echo "ADMIN_ACCESS_TOKEN_EXPIRES=${{secrets.ADMIN_ACCESS_TOKEN_EXPIRES}}" >> .env
+          echo "ADMIN_ACCESS_TOKEN_SECRET=${{secrets.ADMIN_ACCESS_TOKEN_SECRET}}" >> .env
           echo "REDIS_URL=${{secrets.REDIS_HOST}}" >> .env
+          echo "JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}}" >> .env
 
       - name: Run build
         run: npm run build
@@ -46,7 +55,7 @@ jobs:
       - name: Start server
         run: |
           npm start &
-          sleep 10
+          sleep 20
 
       - name: Check server status
         run: curl -f http://localhost:${{secrets.SERVER_PORT}}/api/health
