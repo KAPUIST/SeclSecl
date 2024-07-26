@@ -149,7 +149,7 @@ export class CpService {
       select: ['uid', 'email', 'password'],
       where: { email },
     })
-
+    console.log(user)
     if (!user) return null
 
     // 입력한 비밀번호가 맞는 비밀번호인지 확인

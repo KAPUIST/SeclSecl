@@ -38,7 +38,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) implements OnModul
         //user = await this.adminService.validateUser(email, password);
         break
       case 'cp':
-        //user = await this.cpService.validateUser(email, password)
+        user = await this.cpService.validateUser(email, password)
         break
       default:
         user = await this.authService.validateUser({ email, password })

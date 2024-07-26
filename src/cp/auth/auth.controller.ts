@@ -58,12 +58,12 @@ export class AuthController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '토큰 재발급' })
   @ApiResponse({ status: 200, description: '토큰 재발급에 성공했습니다.' })
   @ApiResponse({ status: 401, description: '유효하지 않은 토큰입니다.' })
   @Post('tokens/renew')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   async renewTokens(@Request() req: any) {
     const tokens = await this.cpService.renewTokens(req.user.uid, req.user.email)
     return {
