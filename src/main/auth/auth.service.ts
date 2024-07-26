@@ -177,15 +177,25 @@ export class AuthService {
       if (!storedToken) {
         throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
       }
-      const loginStatus = await this.refreshTokenRepository.findOne({
-        where: { user: { uid: payload.uid } },
-      })
-      console.log(loginStatus)
-      if (!loginStatus.refreshToken) {
-        throw new BadRequestException('이미 로그아웃 상태입니다.')
-      }
 
       await this.refreshTokenRepository.update({ user: { uid: payload.uid } }, { refreshToken: null })
+    } catch (error) {
+      throw new UnauthorizedException(error.message)
+    }
+  }
+  async updateTokens(refreshToken: string) {
+    try {
+      const payload = this.tokenService.verifyToken(refreshToken, 'main')
+      const storedToken = await this.refreshTokenRepository.findOne({
+        where: { user: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
+      })
+
+      if (!storedToken) {
+        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+      }
+      const tokens = await this.tokenService.generateTokens({ uid: payload.uid, email: payload.email, type: 'main' })
+      await this.refreshTokenRepository.update({ user: { uid: payload.uid } }, { refreshToken: tokens.refreshToken })
+      return tokens
     } catch (error) {
       throw new UnauthorizedException(error.message)
     }
