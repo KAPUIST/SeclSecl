@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { AuthController } from './auth/auth.controller'
-import { cpService } from './cp.service'
+import { CpService } from './cp.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { RefreshToken } from './auth/entities/refresh-token.entity'
 import { Cp } from './auth/entities/cp.entity'
@@ -26,6 +26,7 @@ import { JwtModule } from '@nestjs/jwt'
     }),
   ],
   controllers: [AuthController],
-  providers: [cpService],
+  providers: [CpService],
+  exports: [CpService],
 })
 export class CpModule {}

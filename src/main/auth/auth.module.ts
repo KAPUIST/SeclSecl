@@ -9,6 +9,8 @@ import { User } from '../users/entities/user.entity'
 import { UserInfos } from '../users/entities/user-infos.entity'
 import { SMSModule } from 'src/common/sms/sms.module'
 import { RedisModule } from 'src/common/redis/redis.module'
+import { LocalStrategy } from 'src/common/strategies/local.strategy'
+import { CpModule } from 'src/cp/cp.module'
 
 @Module({
   imports: [
@@ -27,9 +29,10 @@ import { RedisModule } from 'src/common/redis/redis.module'
       }),
     }),
     SMSModule,
+    CpModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, LocalStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

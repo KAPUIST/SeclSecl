@@ -1,12 +1,13 @@
-import { Body, Controller, Get, HttpStatus, Post, Request } from '@nestjs/common'
+import { Body, Controller, Get, HttpStatus, Post, Request, UseGuards } from '@nestjs/common'
 import { SignUpDto } from './dto/sign-up.dto'
-import { cpService } from '../cp.service'
+import { CpService } from '../cp.service'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { CP_MESSAGE_CONSTANT } from 'src/common/messages/cp.message'
+import { LocalAuthGuard } from 'src/common/guards/local-auth.guard'
 @ApiTags('업체 AUTH')
 @Controller({ host: 'cp.localhost', path: 'auth' })
 export class AuthController {
-  constructor(private readonly cpService: cpService) {}
+  constructor(private readonly cpService: CpService) {}
   //업체 회원가입
   @ApiOperation({ summary: '업체 회원가입' })
   @ApiResponse({ status: 201, description: '업체 회원가입을 성공하였습니다.' })
@@ -22,6 +23,7 @@ export class AuthController {
   }
 
   //로그인
+  @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: '로그인' })
   @ApiResponse({ status: 200, description: '로그인에 성공했습니다.' })
   @ApiResponse({ status: 401, description: '잘못된 이메일 또는 비밀번호입니다.' })

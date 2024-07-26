@@ -12,7 +12,7 @@ import { CpInfos } from './auth/entities/cp-infos.entity'
 import { CP_MESSAGE_CONSTANT } from 'src/common/messages/cp.message'
 
 @Injectable()
-export class cpService {
+export class CpService {
   constructor(
     @InjectRepository(Cp, 'cp')
     private readonly cpRepository: Repository<Cp>,
