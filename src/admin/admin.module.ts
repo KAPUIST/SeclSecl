@@ -13,6 +13,8 @@ import { AdminService } from './admin.service'
 import { Cp } from '../cp/auth/entities/cp.entity'
 import { CpInfo } from 'src/cp/auth/entities/cp-infos.entity'
 import { TokenService } from 'src/common/auth/token/token.service'
+import { LocalStrategy } from 'src/common/strategies/local.strategy'
+import { GuardModule } from 'src/common/guards/guard.module'
 
 @Module({
   imports: [
@@ -28,8 +30,11 @@ import { TokenService } from 'src/common/auth/token/token.service'
       inject: [ConfigService],
     }),
     ConfigModule,
+    GuardModule
   ],
   controllers: [AuthController, AdminController],
-  providers: [AdminAuthService, AdminService, TokenService],
+  providers: [AdminAuthService, AdminService, TokenService, LocalStrategy],
 })
 export class AdminModule {}
+
+

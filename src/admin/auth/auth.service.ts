@@ -8,6 +8,7 @@ import { Admin } from './entities/admin.entity'
 import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
 import { ConfigService } from '@nestjs/config'
 import { TokenService } from 'src/common/auth/token/token.service'
+import { JwtPayload } from 'src/cp/auth/interfaces/jwt-payload-interface'
 
 @Injectable()
 export class AdminAuthService {
@@ -40,7 +41,7 @@ export class AdminAuthService {
   }
 
   async signIn(userUid: string, email: string) {
-    const payload = { uid: userUid, email }
+    const payload : JwtPayload = { uid: userUid, email, type: 'admin' }
     const tokens = await this.tokenService.generateTokens(payload)
 
     return tokens

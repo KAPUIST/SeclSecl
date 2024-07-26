@@ -1,6 +1,6 @@
-import { Controller, Delete, Get, HttpStatus, Param, Patch, Post } from '@nestjs/common'
+import { Controller, Delete, Get, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import { get, identity } from 'lodash'
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
 import { AdminService } from './admin.service'
 
 @ApiTags('유저 승인')
@@ -11,6 +11,7 @@ export class AdminController {
    * 가입 신청 리스트 조회
    * @returns
    */
+   @UseGuards(JwtAuthGuard)
   @Get()
   async getApprovalList() {
     const data = await this.adminService.getApprovalList()
