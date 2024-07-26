@@ -12,7 +12,6 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserInfos)
-    private readonly userInfoRepository: Repository<UserInfos>,
     private readonly dataSource: DataSource,
   ) {}
   // 내 정보 조회
@@ -69,7 +68,6 @@ export class UsersService {
 
       //비밀번호를 제외한 나머지 데이터 저장 후 user 테이블 업데이트
       const { password: _pw, ...data } = await transactionalEntityManager.save(User, currentUser)
-      console.log('data', data)
 
       return data
     })
