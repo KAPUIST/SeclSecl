@@ -66,6 +66,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         SUCCEED: '밴드장 이전에 성공하였습니다.',
         NOT_FOUND: '존재하지 않거나 해당 밴드의 오너가 아닙니다.',
         NOT_FOUND_USER: '해당 유저는 밴드 멤버가 아닙니다.',
+        CONFLICT: '이미 해당 밴드의 오너입니다.',
       },
     },
     BAND_POSTS: {

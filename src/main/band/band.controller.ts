@@ -33,10 +33,12 @@ import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto
 export class BandController {
   constructor(private readonly bandService: BandService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   // 밴드 생성
-  async createBand(@Body() createBandDto: CreateBandDto) {
-    const createdBand = await this.bandService.createBand(createBandDto)
+  async createBand(@Request() req, @Body() createBandDto: CreateBandDto) {
+    const userUid = req.user.uid
+    const createdBand = await this.bandService.createBand(userUid, createBandDto)
     return {
       status: HttpStatus.CREATED,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.CREATE_BAND.SUCCEED,
@@ -64,9 +66,11 @@ export class BandController {
     }
   }
   // 밴드 수정
+  @UseGuards(JwtAuthGuard)
   @Patch(':bandUid')
-  async updateBand(@Param() params: UpdateBandParamsDTO, @Body() updateBandDto: UpdateBandDto) {
-    const updatedBand = await this.bandService.updateBand(params, updateBandDto)
+  async updateBand(@Request() req, @Param() params: UpdateBandParamsDTO, @Body() updateBandDto: UpdateBandDto) {
+    const userUid = req.user.uid
+    const updatedBand = await this.bandService.updateBand(userUid, params, updateBandDto)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.UPDATE_BAND.SUCCEED,
@@ -74,9 +78,11 @@ export class BandController {
     }
   }
   // 밴드 삭제
+  @UseGuards(JwtAuthGuard)
   @Delete(':bandUid')
-  async deleteBand(@Param() params: DeleteBandParamsDTO) {
-    const deletedBandId = await this.bandService.deleteBand(params)
+  async deleteBand(@Request() req, @Param() params: DeleteBandParamsDTO) {
+    const userUid = req.user.uid
+    const deletedBandId = await this.bandService.deleteBand(userUid, params)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.DELETE_BAND.SUCCEED,
@@ -84,9 +90,11 @@ export class BandController {
     }
   }
   // 밴드 가입
+  @UseGuards(JwtAuthGuard)
   @Post(':bandUid/join')
-  async joinBand(@Param() params: JoinBandParamsDTO) {
-    const joinedBand = await this.bandService.joinBand(params)
+  async joinBand(@Request() req, @Param() params: JoinBandParamsDTO) {
+    const userUid = req.user.uid
+    const joinedBand = await this.bandService.joinBand(userUid, params)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.JOIN_BAND.SUCCEED,
@@ -105,9 +113,11 @@ export class BandController {
   }
 
   // 밴드장 위임
+  @UseGuards(JwtAuthGuard)
   @Patch(':bandUid/transfer')
-  async transferBand(@Param() params: TransferBandParamsDTO, @Body() transferBandDto: TransferBandDTO) {
-    const newOwner = await this.bandService.transferBand(params, transferBandDto)
+  async transferBand(@Request() req, @Param() params: TransferBandParamsDTO, @Body() transferBandDto: TransferBandDTO) {
+    const userUid = req.user.uid
+    const newOwner = await this.bandService.transferBand(userUid, params, transferBandDto)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.TRANSFER_Band.SUCCEED,
@@ -116,9 +126,15 @@ export class BandController {
   }
 
   // 밴드 게시글 생성
+  @UseGuards(JwtAuthGuard)
   @Post(':bandUid/posts')
-  async createBandPost(@Param() params: CreateBandPostParamsDto, @Body() createBandPostDto: CreateBandPostDto) {
-    const createdBandPost = await this.bandService.createBandPost(params, createBandPostDto)
+  async createBandPost(
+    @Request() req,
+    @Param() params: CreateBandPostParamsDto,
+    @Body() createBandPostDto: CreateBandPostDto,
+  ) {
+    const userUid = req.user.uid
+    const createdBandPost = await this.bandService.createBandPost(userUid, params, createBandPostDto)
     return {
       status: HttpStatus.CREATED,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.CREATE_BAND_POST.SUCCEED,
@@ -127,9 +143,11 @@ export class BandController {
   }
 
   // 밴드 게시글 목록 조회
+  @UseGuards(JwtAuthGuard)
   @Get(':bandUid/posts')
-  async getBandPostList(@Param() params: GetBandPostListParamsDTO) {
-    const bandPostList = await this.bandService.getBandPostList(params)
+  async getBandPostList(@Request() req, @Param() params: GetBandPostListParamsDTO) {
+    const userUid = req.user.uid
+    const bandPostList = await this.bandService.getBandPostList(userUid, params)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.GET_BAND_POST_LIST.SUCCEED,
@@ -137,9 +155,11 @@ export class BandController {
     }
   }
   // 밴드 게시글 상세 조회
+  @UseGuards(JwtAuthGuard)
   @Get('/posts/:postUid')
-  async getBandPostDetail(@Param() params: GetBandPostDetailParamsDTO) {
-    const bandPost = await this.bandService.getBandPostDetail(params)
+  async getBandPostDetail(@Request() req, @Param() params: GetBandPostDetailParamsDTO) {
+    const userUid = req.user.uid
+    const bandPost = await this.bandService.getBandPostDetail(userUid, params)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.GET_BAND_POST_DETAIL.SUCCEED,
@@ -147,9 +167,15 @@ export class BandController {
     }
   }
   // 밴드 게시글 수정
+  @UseGuards(JwtAuthGuard)
   @Patch('/posts/:postUid')
-  async updateBandPost(@Param() params: UpdateBandPostParamsDTO, @Body() updateBandPostDTO: UpdateBandPostDTO) {
-    const updatedPost = await this.bandService.updateBandPost(params, updateBandPostDTO)
+  async updateBandPost(
+    @Request() req,
+    @Param() params: UpdateBandPostParamsDTO,
+    @Body() updateBandPostDTO: UpdateBandPostDTO,
+  ) {
+    const userUid = req.user.uid
+    const updatedPost = await this.bandService.updateBandPost(userUid, params, updateBandPostDTO)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.UPDATE_BAND_POST.SUCCEED,
@@ -157,9 +183,11 @@ export class BandController {
     }
   }
   // 밴드 게시물 삭제
+  @UseGuards(JwtAuthGuard)
   @Delete('/posts/:postUid')
-  async deleteBandPost(@Param() params: DeleteBandPostParamsDTO) {
-    const deletedBandPostId = await this.bandService.deleteBandPost(params)
+  async deleteBandPost(@Request() req, @Param() params: DeleteBandPostParamsDTO) {
+    const userUid = req.user.uid
+    const deletedBandPostId = await this.bandService.deleteBandPost(userUid, params)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.DELETE_BAND_POST.SUCCEED,
@@ -167,9 +195,11 @@ export class BandController {
     }
   }
   // 밴드 게시글 좋아요
+  @UseGuards(JwtAuthGuard)
   @Post('/posts/:postUid/likes')
-  async likeBandPost(@Param() params: LikeBandPostParamsDTO) {
-    const likedBandPost = await this.bandService.likeBandPost(params)
+  async likeBandPost(@Request() req, @Param() params: LikeBandPostParamsDTO) {
+    const userUid = req.user.uid
+    const likedBandPost = await this.bandService.likeBandPost(userUid, params)
     return {
       status: HttpStatus.CREATED,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.Like_BAND_POST.SUCCEED,
@@ -177,9 +207,11 @@ export class BandController {
     }
   }
   // 밴드 게시글 좋아요 취소
+  @UseGuards(JwtAuthGuard)
   @Delete('/posts/:postUid/likes')
-  async UnlikeBandPost(@Param() params: UnlikeBandPostParamsDTO) {
-    const unLikedBandPost = await this.bandService.UnlikeBandPost(params)
+  async UnlikeBandPost(@Request() req, @Param() params: UnlikeBandPostParamsDTO) {
+    const userUid = req.user.uid
+    const unLikedBandPost = await this.bandService.UnlikeBandPost(userUid, params)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.UNLIKE_BAND_POST.SUCCEED,
