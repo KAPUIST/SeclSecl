@@ -6,6 +6,7 @@ import { SignUpDto } from './dtos/sign-up.dto'
 import { AuthService } from './auth.service'
 import { SignInDto } from './dtos/sign-in.dto'
 import { LocalAuthGuard } from 'src/common/guards/local-auth.guard'
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
 
 @ApiTags('유저 인증')
 @Controller('auth')
@@ -41,15 +42,25 @@ export class AuthController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '로그인 실패' })
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async signIn(@Request() req, @Body() signInDto: SignInDto) {
-    console.log(req.user, 'hello')
-    const data = this.authService.signIn(req.user.uid, req.user.email)
+    const data = await this.authService.signIn(req.user.uid, req.user.email)
     return {
       statusCode: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.AUTH.SIGN_IN.SUCCEED,
       data,
     }
   }
-
+  // @UseGuards(JwtAuthGuard)
+  // @Post('/sign-out')
+  // @ApiOperation({ summary: '로그아웃' })
+  // @ApiResponse({ status: HttpStatus.OK, description: '로그아웃 성공' })
+  // @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '로그아웃 실패' })
+  // async logout(@Request() req) {
+  //   await this.authService.signOut(req.user.uid)
+  //   return {
+  //     statusCode: HttpStatus.OK,
+  //     message: '로그아웃 성공',
+  //   }
+  // }
   /**
    * 핸드폰 인증 번호 보내기
    * @param phoneNumber
