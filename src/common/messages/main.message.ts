@@ -30,13 +30,14 @@ export const MAIN_MESSAGE_CONSTANT = {
       CREATE_BAND: {
         SUCCEED: '밴드 생성에 성공하였습니다.',
         CONFLICT_NAME: '이미 존재하는 밴드명입니다.',
+        TRANSACTION_ERROR: '밴드 생성중 오류가 생겼습니다.',
       },
       GET_BAND_List: {
         SUCCEED: '밴드 목록 조회에 성공하였습니다.',
       },
       GET_BAND_Detail: {
         SUCCEED: '밴드 상세 조회에 성공하였습니다.',
-        NOT_FOUND: ' 존재하지 않는 밴드입니다.',
+        NOT_FOUND: '존재하지 않는 밴드입니다.',
       },
       UPDATE_BAND: {
         SUCCEED: '밴드 수정에 성공하였습니다.',
@@ -50,6 +51,61 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
       JOIN_BAND: {
         SUCCEED: '밴드 가입에 성공하였습니다.',
+        NOT_FOUND: '존재하지 않는 밴드입니다.',
+      },
+      GET_BAND_MEMBER: {
+        SUCCEED: '밴드 멤버 조회에 성공하였습니다.',
+        NOT_FOUND: '존재하지 않는 밴드입니다.',
+      },
+      TRANSFER_Band: {
+        SUCCEED: '밴드장 이전에 성공하였습니다.',
+        NOT_FOUND: '존재하지 않거나 해당 밴드의 오너가 아닙니다.',
+        NOT_FOUND_USER: '해당 유저는 밴드 멤버가 아닙니다.',
+      },
+    },
+    BAND_POSTS: {
+      CREATE_BAND_POST: {
+        SUCCEED: '밴드 게시물 생성에 성공하였습니다.',
+        NOT_FOUND: '존재하지 않는 밴드입니다.',
+        NOT_FOUND_USER: '밴드 멤버가 아닙니다.',
+      },
+      GET_BAND_POST_LIST: {
+        SUCCEED: '밴드 게시물 목록 조회에 성공하였습니다.',
+        NOT_FOUND: '존재하지 않는 밴드입니다.',
+        NOT_FOUND_USER: '밴드 멤버가 아닙니다.',
+      },
+      GET_BAND_POST_DETAIL: {
+        SUCCEED: '밴드 게시물 상세 조회에 성공하였습니다.',
+        NOT_FOUND_USER: '밴드 멤버가 아닙니다.',
+        NOT_FOUND_POST: '존재하지 않는 밴드 게시물입니다.',
+      },
+      UPDATE_BAND_POST: {
+        SUCCEED: '밴드 게시물 수정에 성공하였습니다.',
+        BAD_REQUEST: '게시물 제목, 설명 중 한가지는 입력해야 합니다.',
+        NOT_FOUND_USER: '밴드 멤버가 아닙니다.',
+        NOT_FOUND_POST: '존재하지 않는 밴드 게시물입니다.',
+        NOT_MATCHED: '게시물의 작성자만 수정할 수 있습니다.',
+      },
+      DELETE_BAND_POST: {
+        SUCCEED: '밴드 게시물 삭제에 성공하였습니다.',
+        NOT_FOUND_USER: '밴드 멤버가 아닙니다.',
+        NOT_FOUND_POST: '존재하지 않는 밴드 게시물입니다.',
+        NOT_MATCHED: '게시물의 작성자만 삭제할 수 있습니다.',
+      },
+      Like_BAND_POST: {
+        SUCCEED: '밴드 게시물 좋아요에 성공하였습니다.',
+        NOT_FOUND_USER: '밴드 멤버가 아닙니다.',
+        NOT_FOUND_POST: '존재하지 않는 밴드 게시물입니다.',
+        CONFLICT: '이미 좋아요 누른 게시물입니다.',
+        TRANSACTION_ERROR: '게시물 좋아요 등록중 오류가 생겼습니다.',
+      },
+      UNLIKE_BAND_POST: {
+        SUCCEED: '밴드 게시물 좋아요 취소에 성공하였습니다.',
+        BAD_REQUEST: '좋아요 수는 0 이하로 내려갈 수 없습니다.',
+        NOT_FOUND_USER: '밴드 멤버가 아닙니다.',
+        NOT_FOUND_POST: '존재하지 않는 밴드 게시물입니다.',
+        NOT_FOUND_Like: '좋아요 누르지 않은 밴드 게시물입니다.',
+        TRANSACTION_ERROR: '게시물 좋아요 등록중 오류가 생겼습니다.',
       },
     },
     COMMON: {
@@ -57,11 +113,25 @@ export const MAIN_MESSAGE_CONSTANT = {
         UID: {
           REQUIRED: '밴드 UID를 입력해 주세요',
         },
+        USER_UID: {
+          REQUIRED: '유저 UID를 입력해 주세요',
+        },
         NAME: {
           REQUIRED: '밴드명을 입력해 주세요',
         },
         CONTENT: {
           REQUIRED: '밴드 설명을 입력해 주세요',
+        },
+      },
+      BAND_POSTS_ENTITY: {
+        UID: {
+          REQUIRED: '밴드 게시글 UID를 입력해 주세요',
+        },
+        TITLE: {
+          REQUIRED: '제목을 입력해 주세요',
+        },
+        CONTENT: {
+          REQUIRED: '내용을 입력해 주세요',
         },
       },
     },
