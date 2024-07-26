@@ -49,4 +49,4 @@ jobs:
           sleep 10
 
       - name: Check server status
-        run: curl -f http://localhost:3000/api/health
+        run: curl -f http://localhost:${{secrets.SERVER_PORT}}/api/health

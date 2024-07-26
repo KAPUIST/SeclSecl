@@ -156,11 +156,11 @@ export class AuthService {
     const tokens = await this.tokenService.generateTokens(payload)
 
     // 리프레시 토큰 저장
-    // const newRefreshToken = this.refreshTokenRepository.create({
-    //   user: { uid: userUid },
-    //   refreshToken: tokens.refreshToken,
-    // })
-    //await this.refreshTokenRepository.save(newRefreshToken)
+    const newRefreshToken = this.refreshTokenRepository.create({
+      user: { uid: userUid },
+      refreshToken: tokens.refreshToken,
+    })
+    await this.refreshTokenRepository.save(newRefreshToken)
 
     return tokens
   }

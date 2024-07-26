@@ -61,6 +61,7 @@ export class AuthController {
   //     message: '로그아웃 성공',
   //   }
   // }
+
   /**
    * 핸드폰 인증 번호 보내기
    * @param phoneNumber
