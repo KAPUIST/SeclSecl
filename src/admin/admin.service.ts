@@ -40,8 +40,8 @@ export class AdminService {
       throw new NotFoundException('cp를 찾을 수 없습니다.')
     }
     if (cp.isVerified) {
-        throw new BadRequestException('이미 승인된 CP입니다.');
-      }
+      throw new BadRequestException('이미 승인된 CP입니다.')
+    }
 
     cp.isVerified = true
     return this.cpRepository.save(cp)
@@ -49,14 +49,14 @@ export class AdminService {
 
   //cp 반려
   async rejectCp(id: string) {
-    const cp = await this.cpRepository.findOne({ where: { uid:id}})
-    if(!cp){
-        throw new NotFoundException('cp를 찾을 수 없습니다.')
+    const cp = await this.cpRepository.findOne({ where: { uid: id } })
+    if (!cp) {
+      throw new NotFoundException('cp를 찾을 수 없습니다.')
     }
 
     if (cp.isVerified) {
-        throw new BadRequestException('이미 승인된 CP입니다.');
-      }
+      throw new BadRequestException('이미 승인된 CP입니다.')
+    }
 
     await this.cpRepository.remove(cp)
   }

@@ -6,7 +6,7 @@ export class CpInfo {
   @PrimaryGeneratedColumn('uuid')
   uid: string
 
-  @OneToOne(() => Cp, (cp) => cp.cpInfo, { onDelete:'CASCADE'})
+  @OneToOne(() => Cp, (cp) => cp.cpInfo, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'uid' })
   cp: Cp
 

@@ -40,16 +40,16 @@ export class AdminController {
 
   /**
    * cp 반려
-   * @param id 
-   * @returns 
+   * @param id
+   * @returns
    */
   @Delete('signup-cps/:cpId/reject')
   async rejectCp(@Param('id') id: string) {
     await this.adminService.rejectCp(id)
 
     return {
-        status: HttpStatus.OK,
-        message: 'cp 반려에 성공했습니다.'
+      status: HttpStatus.OK,
+      message: 'cp 반려에 성공했습니다.',
     }
   }
 }

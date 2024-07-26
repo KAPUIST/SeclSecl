@@ -29,13 +29,13 @@ export class AuthController {
   //   return await this.adminAuthService.refreshTokens(body.refreshToken)
   // }
 
-//   /**
-//    * 로그아웃
-//    * @param refreshToken 
-//    * @returns 
-//    */
-//   @Post('logout')
-//   async logout(@Body('refreshToken') refreshToken: string) {
-//     return await this.adminAuthService.logout(refreshToken)
-//   }
+  //   /**
+  //    * 로그아웃
+  //    * @param refreshToken
+  //    * @returns
+  //    */
+  //   @Post('logout')
+  //   async logout(@Body('refreshToken') refreshToken: string) {
+  //     return await this.adminAuthService.logout(refreshToken)
+  //   }
 }
