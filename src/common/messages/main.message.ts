@@ -1,4 +1,3 @@
-import { Controller } from '@nestjs/common'
 export const MAIN_MESSAGE_CONSTANT = {
   AUTH: {
     SIGN_UP: {
