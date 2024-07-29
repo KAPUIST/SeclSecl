@@ -38,7 +38,7 @@ export class UserLesson {
   @JoinColumn({ name: 'user_uid' })
   user: User
 
-  @ManyToOne(() => Batch, (batch) => batch.userLessons)
-  @JoinColumn({ name: 'batch_uid' })
-  batch: Batch
+  // @ManyToOne(() => Batch, (batch) => batch.userLessons)
+  // @JoinColumn({ name: 'batch_uid' })
+  // batch: Batch
 }

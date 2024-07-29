@@ -9,7 +9,7 @@ import {
   OneToMany,
 } from 'typeorm'
 
-@Entity({ name: 'batches', database: 'cp' })
+@Entity({ name: 'batches', database: 'seclsecl_cp' })
 export class Batch {
   @PrimaryGeneratedColumn('uuid')
   uid: string
@@ -44,6 +44,6 @@ export class Batch {
   @DeleteDateColumn()
   deletedAt: Date
 
-  @OneToMany(() => UserLesson, (userLesson) => userLesson.batch)
-  userLessons: UserLesson[]
+  // @OneToMany(() => UserLesson, (userLesson) => userLesson.batch)
+  // userLessons: UserLesson[]
 }
