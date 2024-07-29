@@ -1,61 +1,53 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm'
 
 @Entity('lessons')
 export class Lesson {
   @PrimaryGeneratedColumn('uuid')
-  uid: string;
+  uid: string
 
   // @Column('uuid')
   // lesson_category_uid: string;
 
   @Column('uuid')
-  cp_uid: string;
+  cp_uid: string
 
   @Column('varchar')
-  title: string;
+  title: string
 
   @Column('varchar')
-  teacher: string;
+  teacher: string
 
   @Column('int')
-  price: number;
+  price: number
 
   @Column('text')
-  description: string;
+  description: string
 
   @Column('text')
-  bio: string;
+  bio: string
 
   @Column({
     type: 'enum',
     enum: ['OPEN', 'CLOSED', 'PENDING'],
     default: 'PENDING',
   })
-  status: 'OPEN' | 'CLOSED' | 'PENDING';
+  status: 'OPEN' | 'CLOSED' | 'PENDING'
 
   @Column('varchar')
-  location: string;
+  location: string
 
   @Column('boolean', { default: false })
-  shuttle: boolean;
+  shuttle: boolean
 
   @Column('boolean', { default: false })
-  isVerified: boolean;
+  isVerified: boolean
 
   @CreateDateColumn()
-  created_at: Date;
+  created_at: Date
 
   @UpdateDateColumn({ nullable: true })
-  updated_at: Date;
+  updated_at: Date
 
   @DeleteDateColumn({ nullable: true })
-  deleted_at: Date;
-
+  deleted_at: Date
 }

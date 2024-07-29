@@ -2,8 +2,9 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm'
 import { Cp } from 'src/cp/auth/entities/cp.entity'
 import { CpInfo } from '../cp/auth/entities/cp-infos.entity'
-import { Repository } from 'typeorm'
+import { Connection, Repository } from 'typeorm'
 import { Lesson } from 'src/main/lesson/entities/lesson.entity'
+import { async } from 'rxjs'
 
 @Injectable()
 export class AdminService {
@@ -13,7 +14,8 @@ export class AdminService {
     @InjectRepository(CpInfo, 'cp')
     private readonly cpInfosRepository: Repository<CpInfo>,
     @InjectRepository(Lesson, 'default')
-    private readonly lessonRepository:Repository<Lesson>
+    private readonly lessonRepository: Repository<Lesson>,
+    private readonly connection: Connection
   ) {}
 
   //가입 신청 리스트 조회
@@ -64,22 +66,22 @@ export class AdminService {
     await this.cpRepository.remove(cp)
   }
 
-
   //수업 신청 리스트 조회
   async getLessonList(cpId: string): Promise<Lesson[]> {
-    const cp = await this.cpRepository.findOne({where: {uid: cpId}})
-    if (!cp){
-      throw new NotFoundException
+    const cp = await this.cpRepository.findOne({ where: { uid: cpId } })
+    if (!cp) {
+      throw new NotFoundException()
     }
     const lessons = await this.lessonRepository.find({
-      where: { cp_uid: cpId, isVerified: false }
+      where: { cp_uid: cpId, isVerified: false },
     })
     return lessons
   }
 
   //수업 승인
   async approveLesson(cpId: string, lessonId: string): Promise<Lesson> {
-    const lesson = await this.lessonRepository.findOne({ where: { cp_uid: cpId, uid: lessonId } })
+    return await this.connection.transaction(async (manager) => {
+    const lesson = await manager.findOne(Lesson, { where: { cp_uid: cpId, uid: lessonId } })
     if (!lesson) {
       throw new NotFoundException('수업을 찾을 수 없습니다.')
     }
@@ -88,11 +90,13 @@ export class AdminService {
     }
 
     lesson.isVerified = true
-    return this.lessonRepository.save(lesson)
+    lesson.status = 'OPEN'
+    return manager.save(lesson)
+    })
   }
 
   //cp 반려
-  async rejectLesson(cpId: string, lessonId:string) {
+  async rejectLesson(cpId: string, lessonId: string) {
     const lesson = await this.lessonRepository.findOne({ where: { cp_uid: cpId, uid: lessonId } })
     if (!lesson) {
       throw new NotFoundException('수업을 찾을 수 없습니다.')

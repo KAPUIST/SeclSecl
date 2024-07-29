@@ -40,5 +40,4 @@ export class Cp {
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.cp, { cascade: ['remove', 'soft-remove'] })
   refreshToken: RefreshToken
-
 }
