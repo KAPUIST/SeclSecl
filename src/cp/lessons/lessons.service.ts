@@ -4,7 +4,7 @@ import { DataSource, Repository } from 'typeorm'
 
 import { CreateLessonDto } from './dtos/create-lesson.dto'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
-import { S3Service } from 'src/common/s3/s3.service'
+import { S3Service } from '../../common/s3/s3.service'
 import { LessonImages } from '../../common/lessons/entities/lesson-image.entity'
 import { Cp } from '../auth/entities/cp.entity'
 

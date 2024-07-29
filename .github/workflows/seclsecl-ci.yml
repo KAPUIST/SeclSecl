@@ -48,6 +48,13 @@ jobs:
           echo "ADMIN_ACCESS_TOKEN_SECRET=${{secrets.ADMIN_ACCESS_TOKEN_SECRET}}" >> .env
           echo "REDIS_URL=${{secrets.REDIS_HOST}}" >> .env
           echo "JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}}" >> .env
+          echo "AWS_REGION=${{secrets.AWS_REGION}}" >> .env
+          echo "AWS_S3_BUCKET=${{secrets.AWS_S3_BUCKET}}" >> .env
+          echo "SENDBIRD_API_TOKEN=${{secrets.SENDBIRD_API_TOKEN}}" >> .env
+          echo "SENDBIRD_APP_ID=${{secrets.SENDBIRD_APP_ID}}" >> .env
+          echo "BASE_URL=${{secrets.BASE_URL}}" >> .env
 
       - name: Run build
         run: npm run build

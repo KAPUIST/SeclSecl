@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Request, UseGuards } from '@nestjs/common'
 import { BandService } from './band.service'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+
 import { CreateBandDto } from './dto/create-band.dto'
 import { GetBandDetailParamsDTO } from './dto/get-band-detail-params.dto'
 import { UpdateBandParamsDTO } from './dto/update-band-params.dto'
@@ -21,7 +21,7 @@ import { LikeBandPostParamsDTO } from './dto/like-band-post-params.dto'
 import { UnlikeBandPostParamsDTO } from './dto/unlike-band-post-params.dto'
 import { CreateBandCommentParamsDTO } from './dto/create-band-comment-params.dto'
 import { CreateBandCommentDTO } from './dto/create-band-comment.dto'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
+
 import { GetBandCommentParamsDTO } from './dto/get-band-comment-params.dto'
 import { UpdateBandCommentParamsDTO } from './dto/update-band-comment-params.dto'
 import { UpdateBandCommentDTO } from './dto/update-band-comment.dto'
@@ -29,6 +29,8 @@ import { DeleteBandCommentParamsDTO } from './dto/delete-band-comment-params.dto
 import { LikeBandCommentParamsDTO } from './dto/like-band-comment-params.dto'
 import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @ApiTags('밴드 관련 API')
 @Controller('bands')

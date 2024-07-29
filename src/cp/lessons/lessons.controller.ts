@@ -14,9 +14,9 @@ import {
 import { LessonsService } from './lessons.service'
 import { FileFieldsInterceptor } from '@nestjs/platform-express'
 import { CreateLessonDto } from './dtos/create-lesson.dto'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
-import { LessonOpenStatus } from 'src/common/lessons/types/lessons-type'
-import { validateDto } from 'src/common/utils/validator-dto'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
+import { LessonOpenStatus } from '../../common/lessons/types/lessons-type'
+import { validateDto } from '../../common/utils/validator-dto'
 
 @Controller({ host: 'cp.localhost', path: 'lessons' })
 export class LessonsController {

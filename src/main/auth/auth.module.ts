@@ -6,16 +6,17 @@ import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { User } from '../users/entities/user.entity'
 import { UserInfos } from '../users/entities/user-infos.entity'
-import { SMSModule } from 'src/common/sms/sms.module'
-import { RedisModule } from 'src/common/redis/redis.module'
-import { LocalStrategy } from 'src/common/strategies/local.strategy'
-import { CpModule } from 'src/cp/cp.module'
+
 import { RefreshToken } from './entities/refresh-token.entity'
-import { TokenModule } from 'src/common/auth/token/token.Module'
-import { GuardModule } from 'src/common/guards/guard.module'
-import { SendbirdModule } from 'src/common/sendbird/sendbird.module'
-import { SendBirdService } from 'src/common/sendbird/sendbird.service'
+
 import { HttpModule } from '@nestjs/axios'
+import { RedisModule } from '../../common/redis/redis.module'
+import { SMSModule } from '../../common/sms/sms.module'
+import { CpModule } from '../../cp/cp.module'
+import { TokenModule } from '../../common/auth/token/token.Module'
+import { GuardModule } from '../../common/guards/guard.module'
+import { SendbirdModule } from '../../common/sendbird/sendbird.module'
+import { LocalStrategy } from '../../common/strategies/local.strategy'
 
 @Module({
   imports: [

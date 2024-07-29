@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsNumber, IsBoolean, IsEnum, IsOptional } from 'class-validator'
-import { LessonOpenStatus } from 'src/common/lessons/types/lessons-type'
+import { LessonOpenStatus } from '../../../common/lessons/types/lessons-type'
 
 export class CreateLessonDto {
   @IsString()
