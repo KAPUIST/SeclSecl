@@ -12,6 +12,7 @@ import { UserInfos } from './user-infos.entity'
 import { Band } from 'src/main/band/entities/band.entity'
 import { BandMember } from 'src/main/band/entities/band-members.entity'
 import { RefreshToken } from 'src/main/auth/entities/refresh-token.entity'
+import { UserLesson } from './user-lessons..entity'
 
 @Entity({ name: 'users' })
 export class User {
@@ -44,4 +45,7 @@ export class User {
 
   @OneToMany(() => BandMember, (bandMember) => bandMember.user)
   bandMembers: BandMember[]
+
+  @OneToMany(() => UserLesson, (lesson) => lesson.user)
+  userLessons: UserLesson[]
 }

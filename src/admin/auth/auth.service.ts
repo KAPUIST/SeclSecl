@@ -1,8 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { InjectRepository } from '@nestjs/typeorm'
-import { compare, hash } from 'bcrypt'
-import _ from 'lodash'
+
 import { Repository } from 'typeorm'
 import { Admin } from './entities/admin.entity'
 import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
@@ -43,7 +42,6 @@ export class AdminAuthService {
   async signIn(userUid: string, email: string) {
     const payload: JwtPayload = { uid: userUid, email, type: 'admin' }
     const tokens = await this.tokenService.generateTokens(payload)
-
     // 리프레시 토큰 저장
     await this.adminRefreshTokenRepository.upsert(
       {

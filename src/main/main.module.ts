@@ -3,14 +3,15 @@ import { AuthModule } from './auth/auth.module'
 import { UsersController } from './users/users.controller'
 import { UsersService } from './users/users.service'
 import { BandModule } from './band/band.module'
-import { UsersModule } from './users/users.module'
+
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from './users/entities/user.entity'
 import { UserInfos } from './users/entities/user-infos.entity'
-import { LessonsModule } from './lesson/lesson.module'
+import { LessonsModule } from '../common/lessons/lessons.module'
+import { UserLesson } from './users/entities/user-lessons..entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserInfos]), AuthModule, BandModule, LessonsModule],
+  imports: [TypeOrmModule.forFeature([User, UserInfos, UserLesson]), AuthModule, BandModule, LessonsModule],
   controllers: [UsersController],
   providers: [UsersService],
 })

@@ -35,4 +35,18 @@ export class UsersController {
       data,
     }
   }
+
+  /**내 강의 목록 조회
+   */
+  @ApiBearerAuth()
+  @Get('/my-lessons')
+  async findMyLessons(@Request() req) {
+    const data = await this.userService.findMyLessons(req.user.uid)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.USER.CONTROLLER.FIND_MY_LESSONS,
+      data,
+    }
+  }
 }

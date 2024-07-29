@@ -3,8 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Cp } from 'src/cp/auth/entities/cp.entity'
 import { CpInfo } from '../cp/auth/entities/cp-infos.entity'
 import { Connection, Repository } from 'typeorm'
-import { Lesson } from 'src/main/lesson/entities/lesson.entity'
-import { async } from 'rxjs'
+import { Lesson } from 'src/common/lessons/entities/lessons.entity'
 
 @Injectable()
 export class AdminService {
@@ -73,7 +72,7 @@ export class AdminService {
       throw new NotFoundException()
     }
     const lessons = await this.lessonRepository.find({
-      where: { cp_uid: cpId, isVerified: false },
+      where: { cp_uid: cpId, is_verified: false },
     })
     return lessons
   }
@@ -85,11 +84,11 @@ export class AdminService {
       if (!lesson) {
         throw new NotFoundException('수업을 찾을 수 없습니다.')
       }
-      if (lesson.isVerified) {
+      if (lesson.is_verified) {
         throw new BadRequestException('이미 승인된 수업입니다.')
       }
 
-      lesson.isVerified = true
+      lesson.is_verified = true
       lesson.status = 'OPEN'
       return manager.save(lesson)
     })
@@ -102,7 +101,7 @@ export class AdminService {
       throw new NotFoundException('수업을 찾을 수 없습니다.')
     }
 
-    if (lesson.isVerified) {
+    if (lesson.is_verified) {
       throw new BadRequestException('이미 승인된 수업입니다.')
     }
 

@@ -11,4 +11,5 @@ export const configModuleValidationSchema = Joi.object({
   MAIN_ACCESS_TOKEN_EXPIRES: Joi.string().required(),
   MAIN_REFRESH_TOKEN_SECRET: Joi.string().required(),
   MAIN_REFRESH_TOKEN_EXPIRES: Joi.string().required(),
+  BASE_URL: Joi.string().required(),
 })

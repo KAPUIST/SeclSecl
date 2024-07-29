@@ -31,6 +31,7 @@ export class AuthController {
   @ApiOperation({ summary: '로그인' })
   @ApiResponse({ status: HttpStatus.OK, description: '로그인 성공' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '로그인 실패' })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async signIn(@Request() req, @Body() signInDto: SignInDto) {
     const data = await this.authService.signIn(req.user.uid, req.user.email)
     return {

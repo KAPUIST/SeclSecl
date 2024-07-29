@@ -1,4 +1,3 @@
-import { Lesson } from 'src/main/lesson/entities/lesson.entity'
 import {
   Column,
   CreateDateColumn,
