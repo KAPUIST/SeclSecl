@@ -158,13 +158,13 @@ export class LessonsService {
       }
 
       // S3에서 이미지 삭제
-      for (const image of lesson.images) {
-        await this.s3Service.deleteFile(image.url.split('/').pop())
-      }
+      // for (const image of lesson.images) {
+      //   await this.s3Service.deleteFile(image.url.split('/').pop())
+      // }
 
-      // 데이터베이스에서 레슨 삭제시에는 이미지를 보존
-
-      await queryRunner.manager.softDelete(Lesson, { uid })
+      // 데이터베이스에서 레슨과 관련된 이미지 삭제
+      await queryRunner.manager.softRemove(LessonImages, { lesson: { uid: lesson.uid } })
+      await queryRunner.manager.softRemove(Lesson, { uid })
 
       await queryRunner.commitTransaction()
     } catch (error) {
