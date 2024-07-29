@@ -8,8 +8,7 @@ import { BandMember } from './entities/band-members.entity'
 import { BandPost } from './entities/band-posts.entity'
 import { BandPostComment } from './entities/band-post-comments.entity'
 import { BandLike } from './entities/band-likes.entity'
-import { SendbirdModule } from 'src/common/sendbird/sendbird.module'
-import { SendBirdService } from 'src/common/sendbird/sendbird.service'
+import { SendbirdModule } from '../../common/sendbird/sendbird.module'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Band, BandMember, BandPost, BandPostComment, BandLike, User]), SendbirdModule],
