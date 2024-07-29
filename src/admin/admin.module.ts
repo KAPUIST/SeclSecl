@@ -6,13 +6,15 @@ import { JwtModule } from '@nestjs/jwt'
 
 import { AuthController } from './auth/auth.controller'
 import { AdminRefreshToken } from './auth/entities/admin.refresh-token.entity'
-import { JwtStrategy } from './auth/jwt.strategy'
 import { AdminAuthService } from './auth/auth.service'
 import { Admin } from './auth/entities/admin.entity'
 import { AdminController } from './admin.controller'
 import { AdminService } from './admin.service'
 import { Cp } from '../cp/auth/entities/cp.entity'
 import { CpInfo } from 'src/cp/auth/entities/cp-infos.entity'
+import { TokenService } from 'src/common/auth/token/token.service'
+import { LocalStrategy } from 'src/common/strategies/local.strategy'
+import { GuardModule } from 'src/common/guards/guard.module'
 
 @Module({
   imports: [
@@ -28,8 +30,9 @@ import { CpInfo } from 'src/cp/auth/entities/cp-infos.entity'
       inject: [ConfigService],
     }),
     ConfigModule,
+    GuardModule,
   ],
   controllers: [AuthController, AdminController],
-  providers: [AdminAuthService, JwtStrategy, AdminService],
+  providers: [AdminAuthService, AdminService, TokenService, LocalStrategy],
 })
 export class AdminModule {}

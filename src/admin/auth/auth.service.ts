@@ -7,6 +7,8 @@ import { Repository } from 'typeorm'
 import { Admin } from './entities/admin.entity'
 import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
 import { ConfigService } from '@nestjs/config'
+import { TokenService } from 'src/common/auth/token/token.service'
+import { JwtPayload } from 'src/common/auth/token/interface/jwt-payload.interface'
 
 @Injectable()
 export class AdminAuthService {
@@ -17,85 +19,80 @@ export class AdminAuthService {
     private adminRefreshTokenRepository: Repository<AdminRefreshToken>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private tokenService: TokenService,
   ) {}
 
-  async signIn(adminSignInDto) {
-    const { email, password } = adminSignInDto
+  async validateUser(email: string, password: string) {
     const admin = await this.adminRepository.findOne({
       select: ['uid', 'email', 'password'],
       where: { email },
     })
 
     if (!admin) {
-      throw new UnauthorizedException('이메일을 확인해주세요.')
+      return null
     }
 
-    if (!(password === admin.password)) {
-      throw new UnauthorizedException('비밀번호를 확인해주세요.')
+    const isPasswordValid = password === admin.password
+    if (!isPasswordValid) {
+      return null
     }
 
-    const payload = { email, sub: admin.uid, type: 'admin' }
-    const accessToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.get<string>('ADMIN_ACCESS_TOKEN_EXPIRES'),
-    })
+    return { uid: admin.uid, email: admin.email }
+  }
 
-    // const refreshToken = await this.generateRefreshToken(admin.uid);
+  async signIn(userUid: string, email: string) {
+    const payload: JwtPayload = { uid: userUid, email, type: 'admin' }
+    const tokens = await this.tokenService.generateTokens(payload)
 
-    return {
-      accessToken,
-      // refreshToken,
+    // 리프레시 토큰 저장
+    await this.adminRefreshTokenRepository.upsert(
+      {
+        admin: { uid: userUid },
+        refreshToken: tokens.refreshToken,
+      },
+      ['admin'],
+    )
+
+    return tokens
+  }
+
+  async signOut(refreshToken: string) {
+    console.log(refreshToken)
+    try {
+      const payload = this.tokenService.verifyToken(refreshToken, 'admin')
+      console.log('payload:', payload)
+      const storedToken = await this.adminRefreshTokenRepository.findOne({
+        where: { admin: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
+      })
+      console.log('저장토큰:', storedToken)
+
+      if (!storedToken) {
+        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+      }
+
+      await this.adminRefreshTokenRepository.update({ admin: { uid: payload.uid } }, { refreshToken: null })
+    } catch (error) {
+      throw new UnauthorizedException(error.message)
     }
   }
-  // async generateRefreshToken(adminId: string): Promise<string> {
-  //     const refreshToken = this.jwtService.sign(
-  //       { sub: adminId },
-  //       { expiresIn: '14d' }
-  //     );
-  //     const hashedToken = await hash(refreshToken, 10);
+  async updateTokens(refreshToken: string) {
+    try {
+      const payload = this.tokenService.verifyToken(refreshToken, 'admin')
+      const storedToken = await this.adminRefreshTokenRepository.findOne({
+        where: { admin: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
+      })
 
-  //     await this.adminRefreshTokenRepository.save({
-  //       admin: { uid: adminId },
-  //       token: hashedToken,
-  //     });
-
-  //     return refreshToken;
-  //   }
-
-  //   async refreshTokens(refreshToken: string) {
-  //     const decoded = this.jwtService.verify(refreshToken);
-  //     const adminRefreshToken = await this.adminRefreshTokenRepository.findOne({
-  //       where: { admin: { uid: decoded.sub } },
-  //     });
-
-  //     if (!adminRefreshToken) {
-  //       throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
-  //     }
-
-  //     const isValid = await compare(refreshToken, adminRefreshToken.refreshToken);
-  //     if (!isValid) {
-  //       throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
-  //     }
-
-  //     const admin = await this.adminRepository.findOne({ where: { uid: decoded.sub } });
-  //     const payload = { email: admin.email, sub: admin.uid };
-  //     const newAccessToken = this.jwtService.sign(payload);
-  //     const newRefreshToken = await this.generateRefreshToken(admin.uid);
-
-  //     return {
-  //       accessToken: newAccessToken,
-  //       refreshToken: newRefreshToken,
-  //     };
-  //   }
-
-  //   //로그아웃
-  //   async logout(refreshToken:string){
-  //     const decoded = this.jwtService.verify(refreshToken)
-  //     const adminRefreshToken = await this.adminRefreshTokenRepository.findOne({
-  //         where: {admin: {uid:decoded.sub}}
-  //     })
-
-  //     if(adminRefreshToken) {
-  //         await this.adminRefreshTokenRepository.remove(adminRefreshToken)
-  //     }
-  //   }
+      if (!storedToken) {
+        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+      }
+      const tokens = await this.tokenService.generateTokens({ uid: payload.uid, email: payload.email, type: 'main' })
+      await this.adminRefreshTokenRepository.update(
+        { admin: { uid: payload.uid } },
+        { refreshToken: tokens.refreshToken },
+      )
+      return tokens
+    } catch (error) {
+      throw new UnauthorizedException(error.message)
+    }
+  }
 }

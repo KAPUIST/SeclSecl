@@ -75,6 +75,7 @@ export class TokenService {
   private getRefreshTokenSecretKey(type: string): string {
     switch (type) {
       case 'admin':
+        console.log(this.configService.get<string>('ADMIN_REFRESH_TOKEN_SECRET'))
         return this.configService.get<string>('ADMIN_REFRESH_TOKEN_SECRET')
       case 'cp':
         return this.configService.get<string>('CP_REFRESH_TOKEN_SECRET')

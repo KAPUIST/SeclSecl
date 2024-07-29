@@ -12,6 +12,7 @@ import { LocalStrategy } from 'src/common/strategies/local.strategy'
 import { CpModule } from 'src/cp/cp.module'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { TokenModule } from 'src/common/auth/token/token.Module'
+import { GuardModule } from 'src/common/guards/guard.module'
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TokenModule } from 'src/common/auth/token/token.Module'
     SMSModule,
     CpModule,
     TokenModule,
+    GuardModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy],

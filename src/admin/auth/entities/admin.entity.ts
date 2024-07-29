@@ -15,6 +15,6 @@ export class Admin {
   @CreateDateColumn()
   createdAt: Date
 
-  @OneToMany(() => AdminRefreshToken, (refreshToken) => refreshToken.admin, { cascade: ['remove'] })
-  refreshTokens: AdminRefreshToken[]
+  @OneToOne(() => AdminRefreshToken, (refreshToken) => refreshToken.admin, { cascade: ['remove'] })
+  refreshToken: AdminRefreshToken
 }
