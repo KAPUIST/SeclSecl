@@ -19,11 +19,14 @@ import { SignInDto } from './dtos/sign-in.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { TokenService } from 'src/common/auth/token/token.service'
 import { JwtPayload } from 'src/common/auth/token/interface/jwt-payload.interface'
+import { SendBirdService } from 'src/common/sendbird/sendbird.service'
+import { lastValueFrom } from 'rxjs'
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly redisService: RedisService,
+    private readonly sendBirdService: SendBirdService,
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -120,7 +123,11 @@ export class AuthService {
         user: savedUser,
       })
 
+      console.log('savedUser.uid:', savedUser.uid)
       await this.userInfosRepository.save(userInfo)
+
+      // SendBird 사용자 생성
+      await lastValueFrom(this.sendBirdService.createUser(savedUser.uid, nickname, 'https://example.com/profile.jpg'))
 
       await this.redisService.deleteValue(`verified:${phoneNumber}`)
 

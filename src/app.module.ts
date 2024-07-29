@@ -9,6 +9,9 @@ import { configModuleValidationSchema } from './config/env-validation.config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { adminTypeOrmModuleOptions, cpTypeOrmModuleOptions, typeOrmModuleOptions } from './config/typeorm.config'
 import { CpModule } from './cp/cp.module'
+import { SendbirdModule } from './common/sendbird/sendbird.module'
+import { AuthModule } from './main/auth/auth.module'
+import { HttpModule } from '@nestjs/axios'
 import { BatchesModule } from './main/batches/batches.module'
 
 
@@ -25,6 +28,9 @@ import { BatchesModule } from './main/batches/batches.module'
     CpModule,
     MainModule,
     SMSModule,
+    AuthModule,
+    SendbirdModule,
+    HttpModule,
     BatchesModule,
   ],
   controllers: [AppController],
