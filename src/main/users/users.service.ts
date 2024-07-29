@@ -5,7 +5,7 @@ import { DataSource, EntityManager, Repository } from 'typeorm'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UserInfos } from './entities/user-infos.entity'
 import * as bcrypt from 'bcrypt'
-import { UserLesson } from './entities/user-lessons..entity'
+import { UserLesson } from './entities/user-lessons.entity'
 
 @Injectable()
 export class UsersService {

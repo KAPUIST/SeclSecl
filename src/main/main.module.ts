@@ -7,8 +7,8 @@ import { BandModule } from './band/band.module'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from './users/entities/user.entity'
 import { UserInfos } from './users/entities/user-infos.entity'
+import { UserLesson } from './users/entities/user-lessons.entity'
 import { LessonsModule } from '../common/lessons/lessons.module'
-import { UserLesson } from './users/entities/user-lessons..entity'
 import { PaymentsModule } from './payments/payments.module'
 
 @Module({

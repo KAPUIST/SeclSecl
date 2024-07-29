@@ -1,3 +1,4 @@
+import { Controller } from '@nestjs/common'
 export const MAIN_MESSAGE_CONSTANT = {
   AUTH: {
     SIGN_UP: {
@@ -225,6 +226,11 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_MATCHED_CHANGE_CAPASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
       EXISTED_NICKNAME: '중복되는 닉네임이 존재합니다.',
       NOT_FOUND_USER_LESSON: '수강중인 강의를 찾을 수 없습니다.',
+    },
+  },
+  BATCH: {
+    CONTROLLER: {
+      CREATE: '기수 생성에 성공했습니다.',
     },
   },
 }

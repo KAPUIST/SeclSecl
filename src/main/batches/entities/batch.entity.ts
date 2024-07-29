@@ -9,12 +9,12 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
-import { UserLesson } from '../../users/entities/user-lessons..entity'
 import { PaymentCart } from '../../payments/entities/payment-carts.entity'
 import { PaymentDetail } from '../../payments/entities/payment-details.entity'
 import { Lesson } from '../../../common/lessons/entities/lessons.entity'
+import { UserLesson } from '../../users/entities/user-lessons.entity'
 
-@Entity({ name: 'batches' })
+@Entity({ name: 'batches', database: 'seclsecl_cp' })
 export class Batch {
   @PrimaryGeneratedColumn('uuid')
   uid: string
@@ -49,7 +49,7 @@ export class Batch {
   @DeleteDateColumn()
   deletedAt: Date
 
-  @OneToMany(() => UserLesson, (lesson) => lesson.batch)
+  @OneToMany(() => UserLesson, (userLesson) => userLesson.batch)
   userLessons: UserLesson[]
 
   @OneToMany(() => PaymentCart, (paymentCart) => paymentCart.batch)
