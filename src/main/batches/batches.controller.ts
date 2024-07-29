@@ -2,9 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Request,
 import { BatchesService } from './batches.service'
 import { CreateBatchDto } from './dto/create-batch.dto'
 import { UpdateBatchDto } from './dto/update-batch.dto'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
 import { ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Controller('lesson')
 export class BatchesController {

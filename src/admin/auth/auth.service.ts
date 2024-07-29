@@ -6,8 +6,8 @@ import { Repository } from 'typeorm'
 import { Admin } from './entities/admin.entity'
 import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
 import { ConfigService } from '@nestjs/config'
-import { TokenService } from 'src/common/auth/token/token.service'
-import { JwtPayload } from 'src/common/auth/token/interface/jwt-payload.interface'
+import { TokenService } from '../../common/auth/token/token.service'
+import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interface'
 
 @Injectable()
 export class AdminAuthService {
@@ -58,11 +58,9 @@ export class AdminAuthService {
     console.log(refreshToken)
     try {
       const payload = this.tokenService.verifyToken(refreshToken, 'admin')
-      console.log('payload:', payload)
       const storedToken = await this.adminRefreshTokenRepository.findOne({
         where: { admin: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
       })
-      console.log('저장토큰:', storedToken)
 
       if (!storedToken) {
         throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')

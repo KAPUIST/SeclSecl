@@ -1,8 +1,8 @@
-import { User } from 'src/main/users/entities/user.entity'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { Band } from './band.entity'
 import { BandPost } from './band-posts.entity'
 import { BandPostComment } from './band-post-comments.entity'
+import { User } from '../../users/entities/user.entity'
 
 @Entity('band_members')
 export class BandMember {

@@ -3,8 +3,8 @@ import { CreateBatchDto } from './dto/create-batch.dto'
 import { UpdateBatchDto } from './dto/update-batch.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { Cp } from '../auth/entities/cp.entity'
-import { Lesson } from 'src/common/lessons/entities/lessons.entity'
+import { Cp } from '../../cp/auth/entities/cp.entity'
+import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { Batch } from './entities/batch.entity'
 
 @Injectable()

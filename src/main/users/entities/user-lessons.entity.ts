@@ -9,7 +9,7 @@ import {
   ManyToOne,
 } from 'typeorm'
 import { User } from './user.entity'
-import { Batch } from 'src/cp/batches/entities/batch.entity'
+import { Batch } from '../../batches/entities/batch.entity'
 
 @Entity({ name: 'user_lessons' })
 export class UserLesson {
@@ -38,7 +38,7 @@ export class UserLesson {
   @JoinColumn({ name: 'user_uid' })
   user: User
 
-  // @ManyToOne(() => Batch, (batch) => batch.userLessons)
-  // @JoinColumn({ name: 'batch_uid' })
-  // batch: Batch
+  @ManyToOne(() => Batch, (batch) => batch.userLessons)
+  @JoinColumn({ name: 'batch_uid' })
+  batch: Batch
 }

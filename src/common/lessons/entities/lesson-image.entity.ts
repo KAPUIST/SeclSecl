@@ -1,6 +1,15 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm'
 
 import { Lesson } from './lessons.entity'
+import { Exclude } from 'class-transformer'
 
 @Entity({ name: 'lesson_images' })
 export class LessonImages {
@@ -16,6 +25,11 @@ export class LessonImages {
   @UpdateDateColumn()
   updatedAt: Date
 
+  @DeleteDateColumn()
+  @Exclude()
+  deletedAt: Date
+
   @ManyToOne(() => Lesson, (lesson) => lesson.images)
+  @Exclude()
   lesson: Lesson
 }
