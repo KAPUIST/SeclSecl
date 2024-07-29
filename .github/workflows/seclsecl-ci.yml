@@ -46,7 +46,7 @@ jobs:
           echo "ADMIN_REFRESH_TOKEN_SECRET=${{secrets.ADMIN_REFRESH_TOKEN_SECRET}}" >> .env
           echo "ADMIN_ACCESS_TOKEN_EXPIRES=${{secrets.ADMIN_ACCESS_TOKEN_EXPIRES}}" >> .env
           echo "ADMIN_ACCESS_TOKEN_SECRET=${{secrets.ADMIN_ACCESS_TOKEN_SECRET}}" >> .env
-          echo "REDIS_URL=${{secrets.REDIS_HOST}}" >> .env
+          echo "REDIS_HOST=${{secrets.REDIS_HOST}}" >> .env
           echo "REDIS_PORT=${{secrets.REDIS_PORT}}" >> .env
           echo "REDIS_USER=${{secrets.REDIS_USER}}" >> .env
           echo "REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}}" >> .env
