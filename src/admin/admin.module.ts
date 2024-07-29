@@ -15,11 +15,13 @@ import { CpInfo } from 'src/cp/auth/entities/cp-infos.entity'
 import { TokenService } from 'src/common/auth/token/token.service'
 import { LocalStrategy } from 'src/common/strategies/local.strategy'
 import { GuardModule } from 'src/common/guards/guard.module'
+import { Lesson } from 'src/common/lessons/entities/lessons.entity'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Admin, AdminRefreshToken], 'admin'),
     TypeOrmModule.forFeature([Cp, CpInfo], 'cp'),
+    TypeOrmModule.forFeature([Lesson]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
