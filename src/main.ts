@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AdminModule } from './admin/admin.module'
+import { CpModule } from './cp/cp.module'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -60,6 +61,7 @@ async function bootstrap() {
       operationsSorter: 'alpha',
     },
   })
+
 
   await app.listen(port)
 }

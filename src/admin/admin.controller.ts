@@ -6,7 +6,7 @@ import { AdminService } from './admin.service'
 @ApiTags('유저 승인')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller('signUp-cps')
+@Controller({host: 'admin.localhost', path:'signUp-cps'})
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
   /**
