@@ -5,12 +5,16 @@ import { DataSource, EntityManager, Repository } from 'typeorm'
 import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
 import { UserInfos } from './entities/user-infos.entity'
 import * as bcrypt from 'bcrypt'
+import { UserLesson } from './entities/user-lessons..entity'
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserLesson)
+    private readonly userLessonRepository: Repository<UserLesson>,
+
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) {}
@@ -75,5 +79,28 @@ export class UsersService {
 
       return data
     })
+  }
+  //내 강의 목록 조회
+  async findMyLessons(uid: string) {
+    await this.getUserById(uid)
+
+    const userLesson = await this.userLessonRepository.findOne({ where: { userUid: uid } })
+
+    if (!userLesson) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER_LESSON)
+    }
+
+    return userLesson
+  }
+
+  //유저 있나 확인하는 함수
+  private async getUserById(uid: string) {
+    const findOneUser = await this.userRepository.findOne({ where: { uid } })
+
+    if (!findOneUser) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER)
+    }
+
+    return findOneUser
   }
 }
