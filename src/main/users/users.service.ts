@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { User } from './entities/user.entity'
 import { DataSource, EntityManager, Repository } from 'typeorm'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UserInfos } from './entities/user-infos.entity'
 import * as bcrypt from 'bcrypt'
 import { UserLesson } from './entities/user-lessons..entity'

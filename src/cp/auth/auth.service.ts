@@ -14,9 +14,10 @@ import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interf
 import { InjectRepository } from '@nestjs/typeorm'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { CpInfo } from './entities/cp-infos.entity'
-import { CP_MESSAGE_CONSTANT } from 'src/common/messages/cp.message'
+
 import { SignInDto } from './dto/sign-in.dto'
-import { TokenService } from 'src/common/auth/token/token.service'
+import { TokenService } from '../../common/auth/token/token.service'
+import { CP_MESSAGE_CONSTANT } from '../../common/messages/cp.message'
 
 @Injectable()
 export class CpAuthService {

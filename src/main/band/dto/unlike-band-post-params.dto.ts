@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsUUID } from 'class-validator'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+import { MAIN_MESSAGE_CONSTANT } from '../../../common/messages/main.message'
 
 export class UnlikeBandPostParamsDTO {
   @IsUUID()

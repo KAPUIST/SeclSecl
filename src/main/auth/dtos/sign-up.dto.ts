@@ -9,8 +9,9 @@ import {
   IsDateString,
 } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
-import { Provider } from 'src/main/auth/types/provider.type'
+
 import { Gender } from '../types/gender.type'
+import { Provider } from '../types/provider.type'
 
 export class SignUpDto {
   @ApiProperty({ required: true })

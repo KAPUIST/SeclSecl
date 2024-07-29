@@ -13,8 +13,9 @@ import { Band } from './band.entity'
 import { BandMember } from './band-members.entity'
 import { BandPostComment } from './band-post-comments.entity'
 import { BandLike } from './band-likes.entity'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+
 import { IsNotEmpty, IsString } from 'class-validator'
+import { MAIN_MESSAGE_CONSTANT } from '../../../common/messages/main.message'
 
 @Entity('band_posts')
 export class BandPost {
