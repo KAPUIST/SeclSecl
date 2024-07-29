@@ -8,7 +8,6 @@ import { AuthService } from 'src/main/auth/auth.service'
 import { AdminAuthService } from '../../admin/auth/auth.service'
 import { CpAuthService } from 'src/cp/auth/auth.service'
 
-
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) implements OnModuleInit {
   private authService: any

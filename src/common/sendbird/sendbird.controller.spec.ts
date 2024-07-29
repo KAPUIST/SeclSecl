@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { SendbirdController } from './sendbird.controller';
+import { Test, TestingModule } from '@nestjs/testing'
+import { SendbirdController } from './sendbird.controller'
 
 describe('SendbirdController', () => {
-  let controller: SendbirdController;
+  let controller: SendbirdController
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SendbirdController],
-    }).compile();
+    }).compile()
 
-    controller = module.get<SendbirdController>(SendbirdController);
-  });
+    controller = module.get<SendbirdController>(SendbirdController)
+  })
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
+    expect(controller).toBeDefined()
+  })
+})
