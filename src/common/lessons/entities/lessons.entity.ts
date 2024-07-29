@@ -9,6 +9,8 @@ import {
 } from 'typeorm'
 import { LessonOpenStatus } from '../types/lessons-type'
 import { LessonImages } from './lesson-image.entity'
+import { Batch } from '../../../main/batches/entities/batch.entity'
+import { Exclude } from 'class-transformer'
 
 @Entity({ name: 'lessons' })
 export class Lesson {
@@ -49,6 +51,7 @@ export class Lesson {
   updatedAt: Date
 
   @DeleteDateColumn()
+  @Exclude()
   deletedAt: Date
 
   @Column({ default: false })
@@ -56,4 +59,7 @@ export class Lesson {
 
   @OneToMany(() => LessonImages, (LessonImages) => LessonImages.lesson, { cascade: true })
   images: LessonImages[]
+
+  @OneToMany(() => Batch, (batch) => batch.lesson)
+  batches: Batch[]
 }

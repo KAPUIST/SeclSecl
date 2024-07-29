@@ -1,4 +1,3 @@
-import { User } from 'src/main/users/entities/user.entity'
 import {
   Column,
   CreateDateColumn,
@@ -13,7 +12,8 @@ import {
 import { BandMember } from './band-members.entity'
 import { BandPost } from './band-posts.entity'
 import { IsNotEmpty, IsString } from 'class-validator'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+import { MAIN_MESSAGE_CONSTANT } from '../../../common/messages/main.message'
+import { User } from '../../users/entities/user.entity'
 
 @Entity('bands')
 export class Band {

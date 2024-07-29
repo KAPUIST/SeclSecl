@@ -9,10 +9,12 @@ import {
   OneToMany,
 } from 'typeorm'
 import { UserInfos } from './user-infos.entity'
-import { Band } from 'src/main/band/entities/band.entity'
-import { BandMember } from 'src/main/band/entities/band-members.entity'
-import { RefreshToken } from 'src/main/auth/entities/refresh-token.entity'
-import { UserLesson } from './user-lessons..entity'
+import { UserLesson } from './user-lessons.entity'
+import { RefreshToken } from '../../auth/entities/refresh-token.entity'
+import { Band } from '../../band/entities/band.entity'
+import { BandMember } from '../../band/entities/band-members.entity'
+import { Payment } from '../../payments/entities/payments.entity'
+import { PaymentCart } from '../../payments/entities/payment-carts.entity'
 
 @Entity({ name: 'users' })
 export class User {
@@ -48,4 +50,10 @@ export class User {
 
   @OneToMany(() => UserLesson, (lesson) => lesson.user)
   userLessons: UserLesson[]
+
+  @OneToMany(() => Payment, (payment) => payment.user)
+  payments: Payment[]
+
+  @OneToMany(() => PaymentCart, (paymentCart) => paymentCart.user)
+  paymentCarts: PaymentCart[]
 }

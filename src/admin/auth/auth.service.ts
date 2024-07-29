@@ -6,8 +6,8 @@ import { Repository } from 'typeorm'
 import { Admin } from './entities/admin.entity'
 import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
 import { ConfigService } from '@nestjs/config'
-import { TokenService } from 'src/common/auth/token/token.service'
-import { JwtPayload } from 'src/common/auth/token/interface/jwt-payload.interface'
+import { TokenService } from '../../common/auth/token/token.service'
+import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interface'
 
 @Injectable()
 export class AdminAuthService {
@@ -55,7 +55,6 @@ export class AdminAuthService {
   }
 
   async signOut(refreshToken: string) {
-    console.log(refreshToken)
     try {
       const payload = this.tokenService.verifyToken(refreshToken, 'admin')
       const storedToken = await this.adminRefreshTokenRepository.findOne({

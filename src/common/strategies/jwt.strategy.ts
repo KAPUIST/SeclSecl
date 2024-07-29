@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           const payload = this.extractPayloadFromToken(token)
           const type = payload.type
           let secretOrKey: string
-          console.log(payload)
+
           switch (type) {
             case 'admin':
               secretOrKey = this.configService.get<string>('ADMIN_ACCESS_TOKEN_SECRET')
@@ -51,8 +51,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: any) {
-    console.log(payload, 'jwt')
-
     return payload
   }
 }

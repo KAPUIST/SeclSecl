@@ -11,7 +11,7 @@ import {
 import { User } from './user.entity'
 import { Provider } from '../../auth/types/provider.type'
 import { Role } from '../../auth/types/role.type'
-import { Gender } from 'src/main/auth/types/gender.type'
+import { Gender } from '../../auth/types/gender.type'
 
 @Entity({ name: 'user_infos' })
 export class UserInfos {
