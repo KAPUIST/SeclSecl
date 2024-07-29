@@ -33,8 +33,4 @@ export class CreateLessonDto {
   @IsBoolean()
   @IsNotEmpty()
   shuttle: boolean
-
-  @IsBoolean()
-  @IsOptional()
-  is_verified: boolean
 }

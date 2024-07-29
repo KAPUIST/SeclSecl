@@ -14,6 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           const payload = this.extractPayloadFromToken(token)
           const type = payload.type
           let secretOrKey: string
+
           switch (type) {
             case 'admin':
               secretOrKey = this.configService.get<string>('ADMIN_ACCESS_TOKEN_SECRET')
