@@ -13,7 +13,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         try {
           const payload = this.extractPayloadFromToken(token)
           const type = payload.type
-          console.log('여기야여기!!!!!!!', type)
           let secretOrKey: string
 
           switch (type) {

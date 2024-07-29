@@ -1,8 +1,10 @@
+import { Lesson } from 'src/main/lesson/entities/lesson.entity'
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -38,4 +40,5 @@ export class Cp {
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.cp, { cascade: ['remove', 'soft-remove'] })
   refreshToken: RefreshToken
+
 }
