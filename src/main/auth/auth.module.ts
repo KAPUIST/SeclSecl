@@ -13,6 +13,9 @@ import { CpModule } from 'src/cp/cp.module'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { TokenModule } from 'src/common/auth/token/token.Module'
 import { GuardModule } from 'src/common/guards/guard.module'
+import { SendbirdModule } from 'src/common/sendbird/sendbird.module'
+import { SendBirdService } from 'src/common/sendbird/sendbird.service'
+import { HttpModule } from '@nestjs/axios'
 
 @Module({
   imports: [
@@ -24,6 +27,8 @@ import { GuardModule } from 'src/common/guards/guard.module'
     CpModule,
     TokenModule,
     GuardModule,
+    SendbirdModule,
+    HttpModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy],

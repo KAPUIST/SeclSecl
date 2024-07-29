@@ -22,7 +22,7 @@ async function bootstrap() {
     }),
   )
   app.use((req, res, next) => {
-    console.log('Incoming Request:', req.method, req.path)
+    console.log('Incoming Request:', req.hostname, req.method, req.path)
 
     next()
   })

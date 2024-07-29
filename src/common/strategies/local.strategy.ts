@@ -31,7 +31,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) implements OnModul
   }
   async validate(req: Request, email: string, password: string) {
     const domain = req.hostname.split('.')[0] // 도메인 정보를 헤더에서 추출
-    // console.log(domain)
+
     let user: any
 
     switch (domain) {

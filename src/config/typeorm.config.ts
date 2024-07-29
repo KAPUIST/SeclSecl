@@ -15,7 +15,10 @@ export const typeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
     database: configService.get('DB_NAME'),
     synchronize: configService.get('DB_SYNC'),
     //엔티티 자동 추가
-    entities: [__dirname + '/../main/**/entities/*.entity{.ts,.js}'],
+    entities: [
+      __dirname + '/../main/**/entities/*.entity{.ts,.js}',
+      __dirname + '/../common/lessons/entities/*.entity{.ts,.js}',
+    ],
     logging: true,
   }),
 }

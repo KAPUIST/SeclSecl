@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AdminModule } from './admin/admin.module'
-import { CpModule } from './cp/cp.module'
 import { MainModule } from './main/main.module'
 import { SMSModule } from './common/sms/sms.module'
 import { ConfigModule } from '@nestjs/config'
@@ -10,6 +9,10 @@ import { configModuleValidationSchema } from './config/env-validation.config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { adminTypeOrmModuleOptions, cpTypeOrmModuleOptions, typeOrmModuleOptions } from './config/typeorm.config'
 import { BatchesModule } from './cp/batches/batches.module'
+import { CpModule } from './cp/cp.module'
+import { SendbirdModule } from './common/sendbird/sendbird.module'
+import { AuthModule } from './main/auth/auth.module'
+import { HttpModule } from '@nestjs/axios'
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { BatchesModule } from './cp/batches/batches.module'
     CpModule,
     MainModule,
     SMSModule,
+    AuthModule,
+    SendbirdModule,
+    HttpModule,
     BatchesModule,
   ],
   controllers: [AppController],
