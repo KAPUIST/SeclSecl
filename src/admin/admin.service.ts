@@ -15,7 +15,7 @@ export class AdminService {
     private readonly cpInfosRepository: Repository<CpInfo>,
     @InjectRepository(Lesson, 'default')
     private readonly lessonRepository: Repository<Lesson>,
-    private readonly connection: Connection
+    private readonly connection: Connection,
   ) {}
 
   //가입 신청 리스트 조회
@@ -81,17 +81,17 @@ export class AdminService {
   //수업 승인
   async approveLesson(cpId: string, lessonId: string): Promise<Lesson> {
     return await this.connection.transaction(async (manager) => {
-    const lesson = await manager.findOne(Lesson, { where: { cp_uid: cpId, uid: lessonId } })
-    if (!lesson) {
-      throw new NotFoundException('수업을 찾을 수 없습니다.')
-    }
-    if (lesson.isVerified) {
-      throw new BadRequestException('이미 승인된 수업입니다.')
-    }
+      const lesson = await manager.findOne(Lesson, { where: { cp_uid: cpId, uid: lessonId } })
+      if (!lesson) {
+        throw new NotFoundException('수업을 찾을 수 없습니다.')
+      }
+      if (lesson.isVerified) {
+        throw new BadRequestException('이미 승인된 수업입니다.')
+      }
 
-    lesson.isVerified = true
-    lesson.status = 'OPEN'
-    return manager.save(lesson)
+      lesson.isVerified = true
+      lesson.status = 'OPEN'
+      return manager.save(lesson)
     })
   }
 
