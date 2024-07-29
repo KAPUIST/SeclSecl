@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config'
 import { configModuleValidationSchema } from './config/env-validation.config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { adminTypeOrmModuleOptions, cpTypeOrmModuleOptions, typeOrmModuleOptions } from './config/typeorm.config'
+import { BatchesModule } from './main/batches/batches.module'
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { adminTypeOrmModuleOptions, cpTypeOrmModuleOptions, typeOrmModuleOptions
     CpModule,
     MainModule,
     SMSModule,
+    BatchesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
