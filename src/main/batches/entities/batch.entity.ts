@@ -6,7 +6,12 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm'
+import { PaymentCart } from '../../payments/entities/payment-carts.entity'
+import { PaymentDetail } from '../../payments/entities/payment-details.entity'
+import { Lesson } from '../../../common/lessons/entities/lessons.entity'
 import { UserLesson } from '../../users/entities/user-lessons.entity'
 
 @Entity({ name: 'batches', database: 'seclsecl_cp' })
@@ -46,4 +51,14 @@ export class Batch {
 
   @OneToMany(() => UserLesson, (userLesson) => userLesson.batch)
   userLessons: UserLesson[]
+
+  @OneToMany(() => PaymentCart, (paymentCart) => paymentCart.batch)
+  paymentCarts: PaymentCart[]
+
+  @OneToMany(() => PaymentDetail, (paymentDetail) => paymentDetail.batch)
+  paymentDetails: PaymentDetail[]
+
+  @ManyToOne(() => Lesson, (lesson) => lesson.batches)
+  @JoinColumn({ name: 'lesson_uid' })
+  lesson: Lesson
 }

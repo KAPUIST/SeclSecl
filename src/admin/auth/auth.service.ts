@@ -55,7 +55,6 @@ export class AdminAuthService {
   }
 
   async signOut(refreshToken: string) {
-    console.log(refreshToken)
     try {
       const payload = this.tokenService.verifyToken(refreshToken, 'admin')
       const storedToken = await this.adminRefreshTokenRepository.findOne({
