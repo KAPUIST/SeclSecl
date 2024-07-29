@@ -15,7 +15,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
     this.client = new Redis({
       host: redisHost,
-      port: redisPort,
+      port: redisPort || 6379,
       username: redisUser,
       password: redisPassword,
       tls: redisTls ? {} : undefined,

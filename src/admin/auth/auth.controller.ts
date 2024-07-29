@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, Request, HttpStatus, Headers, UnauthorizedException } from '@nestjs/common'
+import { Body, Controller, Post, UseGuards, Request, HttpStatus, Headers } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 
 import { AdminAuthService } from './auth.service'
