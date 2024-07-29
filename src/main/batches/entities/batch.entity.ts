@@ -14,7 +14,7 @@ import { PaymentDetail } from '../../payments/entities/payment-details.entity'
 import { Lesson } from '../../../common/lessons/entities/lessons.entity'
 import { UserLesson } from '../../users/entities/user-lessons.entity'
 
-@Entity({ name: 'batches', database: 'seclsecl_cp' })
+@Entity({ name: 'batches' })
 export class Batch {
   @PrimaryGeneratedColumn('uuid')
   uid: string
