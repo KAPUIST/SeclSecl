@@ -23,7 +23,9 @@ import { LessonOpenStatus } from '../../common/lessons/types/lessons-type'
 import { validateDto } from '../../common/utils/validator-dto'
 
 import { LessonResponseDto } from './dtos/lessons-response.dto'
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
+@ApiTags('레슨 관리')
 @Controller({ host: 'cp.localhost', path: 'lessons' })
 export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
@@ -32,6 +34,10 @@ export class LessonsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileFieldsInterceptor([{ name: 'images', maxCount: 10 }]))
+  @ApiOperation({ summary: '레슨 생성' })
+  @ApiResponse({ status: 201, description: '레슨이 성공적으로 생성되었습니다.' })
+  @ApiResponse({ status: 400, description: '유효하지 않은 요청입니다.' })
+  @ApiBearerAuth()
   async createLesson(@Request() req, @Body() body: any, @UploadedFiles() files: { images?: Express.Multer.File[] }) {
     if (!files.images || files.images.length === 0) {
       throw new BadRequestException('이미지를 하나 이상 업로드해야 합니다.')
@@ -65,6 +71,10 @@ export class LessonsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get()
+  @ApiOperation({ summary: '전체 레슨 조회' })
+  @ApiResponse({ status: 200, description: '전체 레슨 조회 성공' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiBearerAuth()
   async getAllLessons(@Request() req): Promise<{ statusCode: number; message: string; lessons: LessonResponseDto[] }> {
     const cpUid = req.user.uid
     const data = await this.lessonsService.getAllLessons(cpUid)
@@ -77,6 +87,11 @@ export class LessonsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get(':lessonId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '단일 레슨 조회' })
+  @ApiResponse({ status: 200, description: '레슨 조회 성공' })
+  @ApiResponse({ status: 404, description: '레슨을 찾을 수 없습니다.' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
   async getLesson(
     @Request() req,
     @Param('lessonId') lessonId: string,
@@ -93,6 +108,12 @@ export class LessonsController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':lessonId')
+  @ApiOperation({ summary: '레슨 수정' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: '레슨 수정 성공' })
+  @ApiResponse({ status: 400, description: '유효하지 않은 요청입니다.' })
+  @ApiResponse({ status: 404, description: '레슨을 찾을 수 없습니다.' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
   @UseInterceptors(FileFieldsInterceptor([{ name: 'images', maxCount: 10 }]))
   async updateLesson(
     @Request() req,
@@ -115,18 +136,23 @@ export class LessonsController {
     const updatedLesson = await this.lessonsService.updateLesson(req.user.uid, lessonId, updateLessonData, files.images)
     return {
       statusCode: HttpStatus.OK,
-      message: '수업 수정 성공',
+      message: '레슨 수정 성공',
       data: updatedLesson,
     }
   }
   @UseGuards(JwtAuthGuard)
   @Delete('/:lessonId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '레슨 삭제' })
+  @ApiResponse({ status: 200, description: '레슨 삭제 성공' })
+  @ApiResponse({ status: 404, description: '레슨을 찾을 수 없습니다.' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
   async deleteLesson(@Request() req, @Param('lessonId') lessonId: string) {
     const cpUid = req.user.uid
     await this.lessonsService.deleteLesson(cpUid, lessonId)
     return {
       statusCode: HttpStatus.OK,
-      message: '수업 삭제 성공',
+      message: '레슨 삭제 성공',
     }
   }
 }
