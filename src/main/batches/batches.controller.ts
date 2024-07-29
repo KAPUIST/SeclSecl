@@ -49,6 +49,7 @@ export class BatchesController {
   /**
    * 기수 목록 상세 조회
    * @param lessonId
+   * @param batchId
    * @returns
    */
   @ApiBearerAuth()
@@ -64,9 +65,28 @@ export class BatchesController {
     }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBatchDto: UpdateBatchDto) {
-    return this.batchesService.update(+id, updateBatchDto)
+  /**
+   * 기수 수정
+   * @param lessonId
+   * @param batchId
+   * @param updateBatchDto
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Patch('/:lessonId/batches/:batchId')
+  async update(
+    @Request() req,
+    @Param('lessonId') lessonId: string,
+    @Param('batchId') batchId: string,
+    @Body() updateBatchDto: UpdateBatchDto,
+  ) {
+    const data = await this.batchesService.update(req.user.uid, lessonId, batchId, updateBatchDto)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH.CONTROLLER.UPDATE,
+      data,
+    }
   }
 
   @Delete(':id')
