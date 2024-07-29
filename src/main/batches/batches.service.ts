@@ -68,8 +68,18 @@ export class BatchesService {
     return batches
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} batch`
+  async findOne(uid: string, lessonId: string, batchId: string) {
+    await this.authorizedCp(uid, lessonId)
+
+    const batch = await this.batchRepository.findOne({ where: { uid: batchId, lessonUid: lessonId } })
+
+    if (!batch) {
+      throw new NotFoundException('존재하는 기수가 없습니다.')
+    }
+
+    delete batch.deletedAt
+
+    return batch
   }
 
   update(id: number, updateBatchDto: UpdateBatchDto) {

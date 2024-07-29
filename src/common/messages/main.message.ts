@@ -231,6 +231,7 @@ export const MAIN_MESSAGE_CONSTANT = {
     CONTROLLER: {
       CREATE: '기수 생성에 성공했습니다.',
       FINDALL: '기수 목록 찾기에 성공했습니다.',
+      FINDONE: '기수 목록 상세 조회에 성공했습니다.',
     },
   },
 }
