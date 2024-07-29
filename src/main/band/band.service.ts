@@ -41,7 +41,7 @@ import { DeleteBandCommentParamsDTO } from './dto/delete-band-comment-params.dto
 import { LikeBandCommentParamsDTO } from './dto/like-band-comment-params.dto'
 import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
-import { SendBirdService } from 'src/common/sendbird/sendbird.service'
+import { SendBirdService } from '../../common/sendbird/sendbird.service'
 import { lastValueFrom, map } from 'rxjs'
 
 @Injectable()
