@@ -28,10 +28,22 @@ export class BatchesController {
       data,
     }
   }
+  /**
+   * 기수 목록 조회
+   * @param lessonId
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('/:lessonId/batches')
+  async findAll(@Request() req, @Param('lessonId') lessonId: string) {
+    const data = await this.batchesService.findAll(req.user.uid, lessonId)
 
-  @Get()
-  findAll() {
-    return this.batchesService.findAll()
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH.CONTROLLER.FINDALL,
+      data,
+    }
   }
 
   @Get(':id')

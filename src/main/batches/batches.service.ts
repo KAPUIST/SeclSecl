@@ -14,7 +14,7 @@ export class BatchesService {
     private readonly cpRepository: Repository<Cp>,
     @InjectRepository(Lesson)
     private readonly lessonRepository: Repository<Lesson>,
-    @InjectRepository(Batch, 'cp')
+    @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
   ) {}
 
@@ -22,10 +22,7 @@ export class BatchesService {
   async create(uid: string, createBatchDto: CreateBatchDto, lessonId: string) {
     const { ...batchInfo } = createBatchDto
 
-    const authorizedCp = await this.lessonRepository.find({ where: { uid: lessonId, cp_uid: uid } })
-    if (authorizedCp.length === 0) {
-      throw new NotFoundException('해당 기업은 강의에 대한 권한이 없습니다.')
-    }
+    await this.authorizedCp(uid, lessonId)
 
     const existingLesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
 
@@ -49,11 +46,26 @@ export class BatchesService {
 
     const data = await this.batchRepository.save(newBatch)
 
+    delete data.deletedAt
+
     return data
   }
 
-  findAll() {
-    return `This action returns all batches`
+  async findAll(uid: string, lessonId: string) {
+    await this.authorizedCp(uid, lessonId)
+
+    const batches = await this.batchRepository.find({ where: { lessonUid: lessonId } })
+
+    if (batches.length === 0) {
+      throw new NotFoundException('존재하는 기수가 없습니다.')
+    }
+
+    // deletedAt 필드 삭제
+    batches.forEach((batch) => {
+      delete batch.deletedAt
+    })
+
+    return batches
   }
 
   findOne(id: number) {
@@ -66,5 +78,13 @@ export class BatchesService {
 
   remove(id: number) {
     return `This action removes a #${id} batch`
+  }
+
+  private async authorizedCp(uid, lessonId) {
+    const authorizedLesson = await this.lessonRepository.find({ where: { uid: lessonId, cp_uid: uid } })
+    if (authorizedLesson.length === 0) {
+      throw new NotFoundException('해당 기업은 강의에 대한 권한이 없습니다.')
+    }
+    return authorizedLesson
   }
 }

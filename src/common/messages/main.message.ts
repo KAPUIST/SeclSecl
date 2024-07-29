@@ -230,6 +230,7 @@ export const MAIN_MESSAGE_CONSTANT = {
   BATCH: {
     CONTROLLER: {
       CREATE: '기수 생성에 성공했습니다.',
+      FINDALL: '기수 목록 찾기에 성공했습니다.',
     },
   },
 }
