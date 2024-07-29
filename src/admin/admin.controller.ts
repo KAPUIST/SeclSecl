@@ -15,8 +15,8 @@ export class AdminController {
    */
 
   @Get()
-  async getApprovalList() {
-    const data = await this.adminService.getApprovalList()
+  async getCpList() {
+    const data = await this.adminService.getCpList()
 
     return {
       status: HttpStatus.OK,
@@ -53,6 +53,55 @@ export class AdminController {
     return {
       status: HttpStatus.OK,
       message: 'cp 반려에 성공했습니다.',
+    }
+  }
+
+  /**
+   * 수업 신청리스트
+   * @param id
+   * @returns
+   */
+  @Get('/:cpId/lessons')
+  async getLessonList(@Param('cpId') id: string) {
+    const data = await this.adminService.getLessonList(id)
+
+    return {
+      status: HttpStatus.OK,
+      message: '수업 신청 리스트 조회에 성공했습니다.',
+      data,
+    }
+  }
+
+  /**
+   * 수업 승인
+   * @param cpId
+   * @param lessonId
+   * @returns
+   */
+  @Patch('/:cpId/lessons/:lessonId/approve')
+  async approveLesson(@Param('cpId') cpId: string, @Param('lessonId') lessonId: string) {
+    const data = await this.adminService.approveLesson(cpId, lessonId)
+
+    return {
+      status: HttpStatus.OK,
+      message: '수업 승인에 성공했습니다.',
+      data,
+    }
+  }
+
+  /**
+   * 수업 반려
+   * @param cpId
+   * @param id
+   * @returns
+   */
+  @Delete('/:cpId/lessons/:lessonId/reject')
+  async rejectLesson(@Param('cpId') cpId: string, @Param('lessonId') lessonId: string) {
+    await this.adminService.rejectLesson(cpId, lessonId)
+
+    return {
+      status: HttpStatus.OK,
+      message: '수업 반려에 성공했습니다.',
     }
   }
 }

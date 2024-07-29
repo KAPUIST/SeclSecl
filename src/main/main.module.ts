@@ -7,10 +7,11 @@ import { BandModule } from './band/band.module'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from './users/entities/user.entity'
 import { UserInfos } from './users/entities/user-infos.entity'
+import { LessonsModule } from '../common/lessons/lessons.module'
 import { UserLesson } from './users/entities/user-lessons..entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserInfos, UserLesson]), AuthModule, BandModule],
+  imports: [TypeOrmModule.forFeature([User, UserInfos, UserLesson]), AuthModule, BandModule, LessonsModule],
   controllers: [UsersController],
   providers: [UsersService],
 })
