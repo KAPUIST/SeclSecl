@@ -9,6 +9,7 @@ import { User } from './users/entities/user.entity'
 import { UserInfos } from './users/entities/user-infos.entity'
 import { LessonsModule } from '../common/lessons/lessons.module'
 import { UserLesson } from './users/entities/user-lessons..entity'
+import { SendbirdModule } from 'src/common/sendbird/sendbird.module'
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, UserInfos, UserLesson]), AuthModule, BandModule, LessonsModule],

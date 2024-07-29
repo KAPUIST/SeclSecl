@@ -26,7 +26,6 @@ import { BatchesModule } from './main/batches/batches.module'
     AdminModule,
     CpModule,
     MainModule,
-    SendbirdModule,
     HttpModule,
     BatchesModule,
   ],

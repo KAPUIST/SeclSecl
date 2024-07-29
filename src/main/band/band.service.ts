@@ -41,10 +41,16 @@ import { UpdateBandCommentDTO } from './dto/update-band-comment.dto'
 import { DeleteBandCommentParamsDTO } from './dto/delete-band-comment-params.dto'
 import { LikeBandCommentParamsDTO } from './dto/like-band-comment-params.dto'
 import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto'
+import { SendBirdService } from 'src/common/sendbird/sendbird.service'
+import { lastValueFrom, map } from 'rxjs'
 
 @Injectable()
 export class BandService {
+  sendFileToBand(bandsUid: string, file: Express.Multer.File, userUid: any) {
+    throw new Error('Method not implemented.')
+  }
   constructor(
+    private readonly sendBirdService: SendBirdService,
     @InjectRepository(Band)
     private readonly bandRepository: Repository<Band>,
     @InjectRepository(BandMember)
@@ -71,6 +77,14 @@ export class BandService {
         })
         // 밴드 멤버 추가
         await manager.save(BandMember, { userUid, bandUid: createdBand.uid })
+
+        // SendBird 채널 생성 및 chatUrl 저장
+        const sendBirdResponse = await lastValueFrom(this.sendBirdService.createChannel(createdBand.name, [userUid]))
+        const channelUrl = sendBirdResponse.channel_url
+
+        // chatUrl 업데이트
+        createdBand.chatUrl = channelUrl
+        await manager.save(Band, createdBand)
         return createdBand
       } catch (err) {
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.CREATE_BAND.TRANSACTION_ERROR)
@@ -507,6 +521,112 @@ export class BandService {
           MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UNLIKE_BAND_COMMENT.TRANSACTION_ERROR,
         )
       }
+    })
+  }
+
+  async sendMessageToBand(bandsUid: string, message: string, userUid: string) {
+    return this.dataSource.transaction(async (manager) => {
+      const band = await manager.findOne(Band, { where: { uid: bandsUid } })
+      if (!band) {
+        throw new NotFoundException('없는 밴드입니다.')
+      }
+
+      const members = await manager.find(BandMember, { where: { bandUid: bandsUid } })
+      const memberUids = members.map((member) => member.userUid)
+
+      if (!memberUids.includes(userUid)) {
+        throw new UnauthorizedException('가입되지 않은 밴드입니다.')
+      }
+
+      const chatUrl = band.chatUrl
+      if (!chatUrl) {
+        throw new NotFoundException('밴드와 다른 채팅방입니다.')
+      }
+
+      return this.sendBirdService.sendMessage(chatUrl, message, userUid)
+    })
+  }
+
+  //밴드 채널 조회
+  async getBandChannels(bandsUid: string, userUid: string) {
+    return this.dataSource.transaction(async (manager) => {
+      const band = await manager.findOne(Band, { where: { uid: bandsUid } })
+      if (!band) {
+        throw new NotFoundException('없는 밴드입니다.')
+      }
+
+      const members = await manager.find(BandMember, { where: { bandUid: bandsUid } })
+      const memberUids = members.map((member) => member.userUid)
+
+      if (!memberUids.includes(userUid)) {
+        throw new UnauthorizedException('가입되지 않은 밴드입니다.')
+      }
+
+      const chatUrl = band.chatUrl
+      if (!chatUrl) {
+        throw new NotFoundException('밴드와 다른 채팅방입니다.')
+      }
+
+      return this.sendBirdService.getChannelTypes().pipe(
+        map((response) => {
+          const channels = response.channels
+          const uniqueChannels = []
+          const channelMap = new Map()
+          for (const channel of channels) {
+            if (!channelMap.has(channel.channel_url)) {
+              channelMap.set(channel.channel_url, true)
+              uniqueChannels.push(channel)
+            }
+          }
+          return uniqueChannels
+        }),
+      )
+    })
+  }
+
+  async getChannelMessages(userUid: string, bandsUid: string, limit?: number, messageTs?: number) {
+    return this.dataSource.transaction(async (manager) => {
+      const band = await manager.findOne(Band, { where: { uid: bandsUid } })
+      if (!band) {
+        throw new NotFoundException('없는 밴드입니다.')
+      }
+
+      const members = await manager.find(BandMember, { where: { bandUid: bandsUid } })
+      const memberUids = members.map((member) => member.userUid)
+
+      if (!memberUids.includes(userUid)) {
+        throw new UnauthorizedException('가입되지 않은 밴드입니다.')
+      }
+
+      const chatUrl = band.chatUrl
+      if (!chatUrl) {
+        throw new NotFoundException('밴드와 다른 채팅방입니다.')
+      }
+
+      return this.sendBirdService.getChannelMessages(chatUrl, limit, messageTs)
+    })
+  }
+
+  async sendMessageFileToBand(bandsUid: string, file: Express.Multer.File, userUid: string) {
+    return this.dataSource.transaction(async (manager) => {
+      const band = await manager.findOne(Band, { where: { uid: bandsUid } })
+      if (!band) {
+        throw new NotFoundException('없는 밴드입니다.')
+      }
+
+      const members = await manager.find(BandMember, { where: { bandUid: bandsUid } })
+      const memberUids = members.map((member) => member.userUid)
+
+      if (!memberUids.includes(userUid)) {
+        throw new UnauthorizedException('가입되지 않은 밴드입니다.')
+      }
+
+      const chatUrl = band.chatUrl
+      if (!chatUrl) {
+        throw new NotFoundException('밴드와 다른 채팅방입니다.')
+      }
+
+      return this.sendBirdService.sendFile(chatUrl, file, userUid)
     })
   }
 }
