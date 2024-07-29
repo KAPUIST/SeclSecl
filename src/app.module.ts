@@ -26,8 +26,6 @@ import { BatchesModule } from './main/batches/batches.module'
     AdminModule,
     CpModule,
     MainModule,
-    SMSModule,
-    AuthModule,
     SendbirdModule,
     HttpModule,
     BatchesModule,

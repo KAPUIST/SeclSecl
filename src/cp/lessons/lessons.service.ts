@@ -28,11 +28,12 @@ export class LessonsService {
     try {
       const lesson = this.lessonsRepository.create({ ...createLessonDto, cp_uid: cpUid })
 
+      const savedLesson = await queryRunner.manager.save(Lesson, lesson)
       const imageEntities = []
 
       for (const file of files) {
         const { location, key } = await this.s3Service.uploadFile(file, 'lessons')
-        const imageEntity = this.lessonImagesRepository.create({ url: location, lesson })
+        const imageEntity = this.lessonImagesRepository.create({ url: location, lesson: savedLesson })
         imageEntities.push(imageEntity)
         uploadedFiles.push({ location, key }) // 업로드된 파일 정보를 저장
       }
