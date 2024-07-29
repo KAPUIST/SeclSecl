@@ -14,7 +14,6 @@ import { AuthModule } from './main/auth/auth.module'
 import { HttpModule } from '@nestjs/axios'
 import { BatchesModule } from './main/batches/batches.module'
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,8 +26,6 @@ import { BatchesModule } from './main/batches/batches.module'
     AdminModule,
     CpModule,
     MainModule,
-    SMSModule,
-    AuthModule,
     SendbirdModule,
     HttpModule,
     BatchesModule,
