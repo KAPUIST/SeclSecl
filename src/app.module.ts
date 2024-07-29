@@ -24,7 +24,6 @@ import { HttpModule } from '@nestjs/axios'
     AdminModule,
     CpModule,
     MainModule,
-    SendbirdModule,
     HttpModule,
     BatchesModule,
   ],
