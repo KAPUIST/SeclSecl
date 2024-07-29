@@ -158,6 +158,7 @@ export class CpAuthService {
     const isPasswordMatched = await compare(password, user.password)
 
     if (isPasswordMatched) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...userWithoutPassword } = user
       return userWithoutPassword
     }
