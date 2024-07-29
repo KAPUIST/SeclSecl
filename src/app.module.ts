@@ -9,7 +9,7 @@ import { ConfigModule } from '@nestjs/config'
 import { configModuleValidationSchema } from './config/env-validation.config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { adminTypeOrmModuleOptions, cpTypeOrmModuleOptions, typeOrmModuleOptions } from './config/typeorm.config'
-import { BatchesModule } from './main/batches/batches.module'
+import { BatchesModule } from './cp/batches/batches.module'
 
 @Module({
   imports: [

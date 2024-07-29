@@ -10,10 +10,10 @@ import { TokenModule } from 'src/common/auth/token/token.module'
 import { PassportModule } from '@nestjs/passport'
 import { GuardModule } from 'src/common/guards/guard.module'
 import { CpAuthService } from './auth/auth.service'
-
+import { Batch } from './batches/entities/batch.entity'
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Cp, CpInfo, RefreshToken], 'cp'),
+    TypeOrmModule.forFeature([Cp, CpInfo, RefreshToken, Batch], 'cp'),
     ConfigModule,
     TokenModule,
     PassportModule,

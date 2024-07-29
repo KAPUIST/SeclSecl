@@ -12,7 +12,7 @@ import { UserInfos } from './user-infos.entity'
 import { Band } from 'src/main/band/entities/band.entity'
 import { BandMember } from 'src/main/band/entities/band-members.entity'
 import { RefreshToken } from 'src/main/auth/entities/refresh-token.entity'
-import { UserLesson } from './user-lessons..entity'
+import { UserLesson } from './user-lessons.entity'
 
 @Entity({ name: 'users' })
 export class User {
