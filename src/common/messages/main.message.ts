@@ -233,6 +233,13 @@ export const MAIN_MESSAGE_CONSTANT = {
       FINDALL: '기수 목록 찾기에 성공했습니다.',
       FINDONE: '기수 목록 상세 조회에 성공했습니다.',
       UPDATE: '기수 업데이트에 성공했습니다.',
+      DELETE: '기수 삭제에 성공했습니다.',
+    },
+    SERVICE: {
+      FIND: '강의를 찾을 수 없습니다.',
+      NOT_EXISTING_BATCH: '존재하는 기수가 없습니다.',
+      NOT_AUTHORIZED_LESSON: '해당 기업은 강의에 대한 권한이 없습니다.',
+      EXISTING_BATCH: '이미 있는 기수입니다.',
     },
   },
 }
