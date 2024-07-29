@@ -6,8 +6,13 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm'
 import { UserLesson } from '../../users/entities/user-lessons..entity'
+import { PaymentCart } from '../../payments/entities/payment-carts.entity'
+import { PaymentDetail } from '../../payments/entities/payment-details.entity'
+import { Lesson } from '../../../common/lessons/entities/lessons.entity'
 
 @Entity({ name: 'batches' })
 export class Batch {
@@ -46,4 +51,14 @@ export class Batch {
 
   @OneToMany(() => UserLesson, (lesson) => lesson.batch)
   userLessons: UserLesson[]
+
+  @OneToMany(() => PaymentCart, (paymentCart) => paymentCart.batch)
+  paymentCarts: PaymentCart[]
+
+  @OneToMany(() => PaymentDetail, (paymentDetail) => paymentDetail.batch)
+  paymentDetails: PaymentDetail[]
+
+  @ManyToOne(() => Lesson, (lesson) => lesson.batches)
+  @JoinColumn({ name: 'lesson_uid' })
+  lesson: Lesson
 }

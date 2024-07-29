@@ -189,6 +189,30 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
     },
   },
+  PAYMENT: {
+    PAYMENT_CART: {
+      ADD_CART: {
+        SUCCESS: '장바구니 추가에 성공하였습니다.',
+        NOT_FOUND: '해당 수업은 존재하지 않습니다.',
+        BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
+        AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
+        CONFLICT: '이미 장바구니에 있는 수업입니다.',
+      },
+      GET_CART_LIST: {
+        SUCCESS: '장바구니 목록 조회에 성공하였습니다.',
+      },
+      DELETE_CART: {
+        SUCCESS: '장바구니 삭제에 성공하였습니다.',
+        NOT_FOUND: '비울 수 없는 물품입니다.',
+      },
+    },
+    COMMON: {
+      PAYMENT_CART_ENTITY: {
+        BATCH_UID: '기수 UID를 입력해 주세요',
+        CART_UID: '장바구니 UID를 입력해 주세요',
+      },
+    },
+  },
   USER: {
     CONTROLLER: {
       FIND_ME: '내 정보 조회에 성공했습니다.',

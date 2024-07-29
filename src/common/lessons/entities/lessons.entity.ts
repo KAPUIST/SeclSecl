@@ -9,6 +9,7 @@ import {
 } from 'typeorm'
 import { LessonOpenStatus } from '../types/lessons-type'
 import { LessonImages } from './lesson-image.entity'
+import { Batch } from '../../../main/batches/entities/batch.entity'
 
 @Entity({ name: 'lessons' })
 export class Lesson {
@@ -56,4 +57,7 @@ export class Lesson {
 
   @OneToMany(() => LessonImages, (LessonImages) => LessonImages.lesson, { cascade: true })
   images: LessonImages[]
+
+  @OneToMany(() => Batch, (batch) => batch.lesson, { cascade: true })
+  batches: Batch[]
 }
