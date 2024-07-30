@@ -26,7 +26,7 @@ import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 @ApiTags('레슨 관리')
-@Controller({ host: process.env.CP_HOST, path: 'lessons' })
+@Controller({ host: String(process.env.CP_HOST), path: 'lessons' })
 export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
