@@ -166,7 +166,6 @@ export class AuthService {
     return false
   }
   async signIn(userUid: string, email: string) {
-    console.log(1231321313123123)
     const payload: JwtPayload = { uid: userUid, email, type: 'main' }
     const tokens = await this.tokenService.generateTokens(payload)
 
