@@ -6,11 +6,9 @@ import { SignInDto } from './dto/sign-in.dto'
 import { CP_MESSAGE_CONSTANT } from '../../common/messages/cp.message'
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { CpHostGuard } from '../../common/guards/host.guard'
 
 @ApiTags('업체 AUTH')
-@UseGuards(CpHostGuard)
-@Controller({ path: 'auth' })
+@Controller({ host: 'cp.localhost', path: 'auth' })
 export class CpAuthController {
   constructor(private readonly cpService: CpAuthService) {}
 

@@ -9,6 +9,8 @@ export class CpHostGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const host = request.hostname
     const allowedHost = this.configService.get<string>('CP_HOST')
+    console.log(allowedHost)
+    console.log(host)
 
     return host === allowedHost
   }
@@ -22,7 +24,8 @@ export class DefaultHostGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const host = request.hostname
     const allowedHost = this.configService.get<string>('MAIN_HOST')
-
+    console.log(allowedHost)
+    console.log(host)
     return host === allowedHost
   }
 }
@@ -35,7 +38,8 @@ export class AdminHostGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const host = request.hostname
     const allowedHost = this.configService.get<string>('ADMIN_HOST')
-
+    console.log(allowedHost)
+    console.log(host)
     return host === allowedHost
   }
 }

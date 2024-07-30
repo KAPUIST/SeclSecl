@@ -23,11 +23,9 @@ import { LessonOpenStatus } from '../../common/lessons/types/lessons-type'
 import { validateDto } from '../../common/utils/validator-dto'
 import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { CpHostGuard } from '../../common/guards/host.guard'
 
 @ApiTags('레슨 관리')
-@UseGuards(CpHostGuard)
-@Controller({ path: 'lessons' })
+@Controller({ host: 'cp.localhost', path: 'lessons' })
 export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 

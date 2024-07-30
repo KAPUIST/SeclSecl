@@ -7,11 +7,9 @@ import { SignInDto } from './dtos/sign-in.dto'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { DefaultHostGuard } from '../../common/guards/host.guard'
 
 @ApiTags('유저 인증')
 @Controller('auth')
-@UseGuards(DefaultHostGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
