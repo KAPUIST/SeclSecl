@@ -89,7 +89,7 @@ export class BatchesController {
     }
   }
   /**
-   * 기수 수정
+   * 기수 삭제
    * @param lessonId
    * @param batchId
    * @returns

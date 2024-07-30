@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateBatchNoticeDto } from './dto/create-batch-notice.dto'
 import { UpdateBatchNoticeDto } from './dto/update-batch-notice.dto'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -25,7 +25,7 @@ export class BatchNoticeService {
   async create(uid, lessonId, batchId, createBatchNoticeDto: CreateBatchNoticeDto) {
     const { ...noticeInfo } = createBatchNoticeDto
 
-    // 권한이 있는지 확인
+    //cp가 권한이 있는지 확인
     await this.authorizedCp(uid, lessonId)
 
     // 기수가 존재하는지 확인
@@ -71,10 +71,24 @@ export class BatchNoticeService {
   update(id: number, updateBatchNoticeDto: UpdateBatchNoticeDto) {
     return `This action updates a #${id} batchNotice`
   }
+  // 기수 공지 삭제
+  async remove(uid, lessonId, batchId, notification) {
+    //cp가 해당 강의의 권한이 있는지 확인
+    await this.authorizedCp(uid, lessonId)
+    // 기수가 존재하는지 확인
+    await this.findBatchOrThrow(lessonId, batchId)
 
-  remove(id: number) {
-    return `This action removes a #${id} batchNotice`
+    const existingNotification = await this.batchNoticeRepository.findOne({ where: { uid: notification } })
+
+    if (!existingNotification) {
+      throw new BadRequestException('기수 공지를 찾을 수 없습니다.')
+    }
+
+    const deleteBatch = await this.batchNoticeRepository.softRemove(existingNotification)
+
+    return deleteBatch
   }
+
   // 기수가 존재하는지 확인
   private async findBatchOrThrow(lessonId: string, batchId: string) {
     const batch = await this.batchRepository.findOne({ where: { uid: batchId, lessonUid: lessonId } })
