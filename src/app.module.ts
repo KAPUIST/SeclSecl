@@ -13,6 +13,7 @@ import { SendbirdModule } from './common/sendbird/sendbird.module'
 import { AuthModule } from './main/auth/auth.module'
 import { HttpModule } from '@nestjs/axios'
 import { BatchesModule } from './main/batches/batches.module'
+import { ChatModule } from './main/chat/chat.module'
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { BatchesModule } from './main/batches/batches.module'
     SendbirdModule,
     HttpModule,
     BatchesModule,
+    ChatModule
   ],
   controllers: [AppController],
   providers: [AppService],

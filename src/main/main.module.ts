@@ -9,7 +9,7 @@ import { User } from './users/entities/user.entity'
 import { UserInfos } from './users/entities/user-infos.entity'
 import { LessonsModule } from '../common/lessons/lessons.module'
 import { UserLesson } from './users/entities/user-lessons..entity'
-import { ChatModule } from './chat/chat.module';
+import { ChatModule } from './chat/chat.module'
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, UserInfos, UserLesson]), AuthModule, BandModule, LessonsModule, ChatModule],
