@@ -7,7 +7,7 @@ import { UpdateUserInfoDto } from './dto/update-userInfo.dto'
 
 @ApiTags('유저 정보')
 @UseGuards(JwtAuthGuard)
-@Controller('users')
+@Controller({ host: 'localhost', path: 'users' })
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
