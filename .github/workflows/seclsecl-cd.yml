@@ -21,6 +21,9 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Setup environment variables
         run: |
           echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" > .env
