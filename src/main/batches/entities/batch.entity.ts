@@ -7,7 +7,7 @@ import {
   DeleteDateColumn,
   OneToMany,
 } from 'typeorm'
-import { UserLesson } from '../../users/entities/user-lessons..entity'
+import { UserLesson } from '../../users/entities/user-lessons.entity'
 
 @Entity({ name: 'batches' })
 export class Batch {
