@@ -6,6 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AdminModule } from './admin/admin.module'
 
 async function bootstrap() {
+  console.log(process.env.CP_HOST, 'thisis Host')
   const app = await NestFactory.create(AppModule)
   const configService = app.get(ConfigService)
   const port = configService.get<number>('SERVER_PORT')
@@ -23,7 +24,6 @@ async function bootstrap() {
   )
   app.use((req, res, next) => {
     console.log('Incoming Request:', req.hostname, req.method, req.path)
-
     next()
   })
   const config = new DocumentBuilder()
