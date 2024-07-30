@@ -46,9 +46,22 @@ export class BatchesController {
     }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.batchesService.findOne(+id)
+  /**
+   * 기수 목록 상세 조회
+   * @param lessonId
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('/:lessonId/batches/:batchId')
+  async findOne(@Request() req, @Param('lessonId') lessonId: string, @Param('batchId') batchId: string) {
+    const data = await this.batchesService.findOne(req.user.uid, lessonId, batchId)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH.CONTROLLER.FINDONE,
+      data,
+    }
   }
 
   @Patch(':id')
