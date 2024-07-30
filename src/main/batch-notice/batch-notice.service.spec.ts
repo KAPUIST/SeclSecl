@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { BatchNoticeService } from './batch-notice.service';
+import { Test, TestingModule } from '@nestjs/testing'
+import { BatchNoticeService } from './batch-notice.service'
 
 describe('BatchNoticeService', () => {
-  let service: BatchNoticeService;
+  let service: BatchNoticeService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [BatchNoticeService],
-    }).compile();
+    }).compile()
 
-    service = module.get<BatchNoticeService>(BatchNoticeService);
-  });
+    service = module.get<BatchNoticeService>(BatchNoticeService)
+  })
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+    expect(service).toBeDefined()
+  })
+})

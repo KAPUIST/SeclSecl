@@ -1,34 +1,52 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { BatchNoticeService } from './batch-notice.service';
-import { CreateBatchNoticeDto } from './dto/create-batch-notice.dto';
-import { UpdateBatchNoticeDto } from './dto/update-batch-notice.dto';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Request, UseGuards } from '@nestjs/common'
+import { BatchNoticeService } from './batch-notice.service'
+import { CreateBatchNoticeDto } from './dto/create-batch-notice.dto'
+import { UpdateBatchNoticeDto } from './dto/update-batch-notice.dto'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { ApiBearerAuth } from '@nestjs/swagger'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 
-@Controller('batch-notice')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('/lessons/:lessonId/batches/:batchId/notification')
 export class BatchNoticeController {
   constructor(private readonly batchNoticeService: BatchNoticeService) {}
 
+  /**
+   * 기수 공지 등록
+   * @param lessonId
+   * @param batchId
+   * @param createBatchNoticeDto
+   * @returns
+   */
   @Post()
-  create(@Body() createBatchNoticeDto: CreateBatchNoticeDto) {
-    return this.batchNoticeService.create(createBatchNoticeDto);
+  async create(
+    @Request() req,
+    @Param('lessonId') lessonId: string,
+    @Param('batchId') batchId: string,
+    @Body() createBatchNoticeDto: CreateBatchNoticeDto,
+  ) {
+    const data = await this.batchNoticeService.create(req.user.uid, lessonId, batchId, createBatchNoticeDto)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.CONTROLLER.CREATE,
+      data,
+    }
   }
 
   @Get()
   findAll() {
-    return this.batchNoticeService.findAll();
+    return this.batchNoticeService.findAll()
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.batchNoticeService.findOne(+id);
-  }
-
-  @Patch(':id')
+  @Patch()
   update(@Param('id') id: string, @Body() updateBatchNoticeDto: UpdateBatchNoticeDto) {
-    return this.batchNoticeService.update(+id, updateBatchNoticeDto);
+    return this.batchNoticeService.update(+id, updateBatchNoticeDto)
   }
 
-  @Delete(':id')
+  @Delete()
   remove(@Param('id') id: string) {
-    return this.batchNoticeService.remove(+id);
+    return this.batchNoticeService.remove(+id)
   }
 }
