@@ -2,7 +2,7 @@ name: seclsecl CD
 
 on:
   workflow_run: # 특정 workflow가 실행됐을 때
-    workflows: ['eclsecl nestJS StartCI'] # CI workflow
+    workflows: ['seclsecl nestJS StartCI'] # CI workflow
     types: [completed] # 완료 되었을 때
     branches: [dev, main] # main 브랜치
 
