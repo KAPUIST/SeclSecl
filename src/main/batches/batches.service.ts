@@ -3,15 +3,13 @@ import { CreateBatchDto } from './dto/create-batch.dto'
 import { UpdateBatchDto } from './dto/update-batch.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { Cp } from '../../cp/auth/entities/cp.entity'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { Batch } from './entities/batch.entity'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Injectable()
 export class BatchesService {
   constructor(
-    @InjectRepository(Cp, 'cp')
-    private readonly cpRepository: Repository<Cp>,
     @InjectRepository(Lesson)
     private readonly lessonRepository: Repository<Lesson>,
     @InjectRepository(Batch)
@@ -29,7 +27,7 @@ export class BatchesService {
     const existingLesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
 
     if (!existingLesson) {
-      throw new NotFoundException('강의를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.FIND)
     }
 
     // 이미 있는 기수인지 확인
@@ -54,7 +52,7 @@ export class BatchesService {
     const batches = await this.batchRepository.find({ where: { lessonUid: lessonId } })
 
     if (batches.length === 0) {
-      throw new NotFoundException('존재하는 기수가 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_EXISTING_BATCH)
     }
 
     // deletedAt 필드 삭제
@@ -98,16 +96,23 @@ export class BatchesService {
 
     return updatedBatch
   }
+  // 기수 삭제
+  async remove(uid: string, lessonId: string, batchId: string) {
+    // 권한이 있는지 확인
+    await this.authorizedCp(uid, lessonId)
+    // 기수가 존재하는지 확인
+    const existingBatch = await this.findBatchOrThrow(lessonId, batchId)
 
-  remove(id: number) {
-    return `This action removes a #${id} batch`
+    const deleteBatch = await this.batchRepository.softRemove(existingBatch)
+
+    return deleteBatch
   }
 
   //해당 강의의 권한이 있는지 확인
   private async authorizedCp(uid, lessonId) {
     const authorizedLesson = await this.lessonRepository.find({ where: { uid: lessonId, cp_uid: uid } })
     if (authorizedLesson.length === 0) {
-      throw new NotFoundException('해당 기업은 강의에 대한 권한이 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_AUTHORIZED_LESSON)
     }
     return authorizedLesson
   }
@@ -117,18 +122,18 @@ export class BatchesService {
     const batch = await this.batchRepository.findOne({ where: { uid: batchId, lessonUid: lessonId } })
 
     if (!batch) {
-      throw new NotFoundException('존재하는 기수가 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_EXISTING_BATCH)
     }
     return batch
   }
+  //이미 있는 기수인지 확인
   private async checkBatchDuplicate(lessonId, batchNumber) {
     const existingBatchs = await this.batchRepository.find({ where: { lessonUid: lessonId } })
 
     const batchNumbers = existingBatchs.map((batch) => batch.batchNumber)
 
-    //있는 기수는 에러처리
     if (batchNumbers.includes(batchNumber)) {
-      throw new BadRequestException('이미 있는 기수입니다.')
+      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.EXISTING_BATCH)
     }
   }
 }

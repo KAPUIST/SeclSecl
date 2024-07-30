@@ -88,9 +88,22 @@ export class BatchesController {
       data,
     }
   }
+  /**
+   * 기수 수정
+   * @param lessonId
+   * @param batchId
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Delete('/:lessonId/batches/:batchId')
+  async remove(@Request() req, @Param('lessonId') lessonId: string, @Param('batchId') batchId: string) {
+    const data = await this.batchesService.remove(req.user.uid, lessonId, batchId)
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.batchesService.remove(+id)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH.CONTROLLER.DELETE,
+      data,
+    }
   }
 }
