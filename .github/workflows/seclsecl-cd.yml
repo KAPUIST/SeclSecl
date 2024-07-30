@@ -3,10 +3,7 @@ name: seclsecl CD
 on:
   workflow_dispatch:
   push:
-    branches: [dev]
-  pull_request:
-    types: [opened, reopened, synchronize]
-    branches: [dev]
+    branches: [dev, main]
 
 jobs:
   build:

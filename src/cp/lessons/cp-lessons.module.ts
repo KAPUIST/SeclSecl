@@ -13,8 +13,4 @@ import { S3Module } from '../../common/s3/s3.module'
   controllers: [LessonsController],
   providers: [LessonsService],
 })
-export class CpLessonsModule {
-  constructor() {
-    console.log('CP_HOST in AppModule:', process.env.CP_HOST)
-  }
-}
+export class CpLessonsModule {}
