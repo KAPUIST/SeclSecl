@@ -55,7 +55,7 @@ export class BatchNoticeService {
     })
 
     if (!authorizedUser && !authorizedCp) {
-      throw new ForbiddenException('공지를 읽을 수 있는 권한이 없습니다.')
+      throw new ForbiddenException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_AUTHORIZED_NOTICE)
     }
 
     const data = await this.batchNoticeRepository.find({ where: { batchUid: batchId } })
@@ -67,9 +67,28 @@ export class BatchNoticeService {
 
     return data
   }
+  // 기수 수정
+  async update(uid, lessonId, batchId, notification, updateBatchNoticeDto: UpdateBatchNoticeDto) {
+    const { ...noticeInfo } = updateBatchNoticeDto
+    //cp가 권한이 있는지 확인
+    await this.authorizedCp(uid, lessonId)
 
-  update(id: number, updateBatchNoticeDto: UpdateBatchNoticeDto) {
-    return `This action updates a #${id} batchNotice`
+    // 기수가 존재하는지 확인
+    await this.findBatchOrThrow(lessonId, batchId)
+
+    const existingBatchNotice = await this.batchNoticeRepository.findOne({ where: { uid: notification } })
+
+    if (!existingBatchNotice) {
+      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_FIND_NOTICE)
+    }
+
+    Object.assign(existingBatchNotice, noticeInfo)
+
+    const data = await this.batchNoticeRepository.save(existingBatchNotice)
+
+    delete data.deletedAt
+
+    return data
   }
   // 기수 공지 삭제
   async remove(uid, lessonId, batchId, notification) {
@@ -81,7 +100,7 @@ export class BatchNoticeService {
     const existingNotification = await this.batchNoticeRepository.findOne({ where: { uid: notification } })
 
     if (!existingNotification) {
-      throw new BadRequestException('기수 공지를 찾을 수 없습니다.')
+      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_FIND_NOTICE)
     }
 
     const deleteBatch = await this.batchNoticeRepository.softRemove(existingNotification)

@@ -53,10 +53,34 @@ export class BatchNoticeController {
       data,
     }
   }
-
+  /**
+   * 기수 공지 수정
+   * @param lessonId
+   * @param batchId
+   * @param notification
+   * @returns
+   */
   @Patch('/:notification')
-  update(@Param('id') id: string, @Body() updateBatchNoticeDto: UpdateBatchNoticeDto) {
-    return this.batchNoticeService.update(+id, updateBatchNoticeDto)
+  async update(
+    @Request() req,
+    @Param('lessonId') lessonId: string,
+    @Param('batchId') batchId: string,
+    @Param('notification') notification: string,
+    @Body() updateBatchNoticeDto: UpdateBatchNoticeDto,
+  ) {
+    const data = await this.batchNoticeService.update(
+      req.user.uid,
+      lessonId,
+      batchId,
+      notification,
+      updateBatchNoticeDto,
+    )
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.CONTROLLER.UPDATE,
+      data,
+    }
   }
   /**
    * 기수 공지 삭제

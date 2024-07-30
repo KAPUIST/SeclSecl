@@ -249,5 +249,9 @@ export const MAIN_MESSAGE_CONSTANT = {
       UPDATE: '기수 공지 업데이트에 성공했습니다.',
       DELETE: '기수 공지 삭제에 성공했습니다.',
     },
+    SERVICE: {
+      NOT_FIND_NOTICE: '기수 공지를 찾을 수 없습니다.',
+      NOT_AUTHORIZED_NOTICE: '공지를 읽을 수 있는 권한이 없습니다.',
+    },
   },
 }
