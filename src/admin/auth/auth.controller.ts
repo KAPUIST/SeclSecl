@@ -4,11 +4,9 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { AdminAuthService } from './auth.service'
 import { AdminSignInDto } from './dto/sign-in.dto'
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
-import { AdminHostGuard } from '../../common/guards/host.guard'
 
 @ApiTags('어드민 인증')
-@UseGuards(AdminHostGuard)
-@Controller({ path: 'auth' })
+@Controller({ host: 'admin.localhost', path: 'auth' })
 export class AuthController {
   constructor(private readonly adminAuthService: AdminAuthService) {}
 

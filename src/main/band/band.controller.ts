@@ -48,10 +48,8 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { SendBirdService } from '../../common/sendbird/sendbird.service'
 import { GetUser } from '../../common/sendbird/send-bird.dto.ts/decorators/get-user.decorator'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { DefaultHostGuard } from '../../common/guards/host.guard'
 
 @ApiTags('밴드 관련 API')
-@UseGuards(DefaultHostGuard)
 @Controller('bands')
 export class BandController {
   constructor(

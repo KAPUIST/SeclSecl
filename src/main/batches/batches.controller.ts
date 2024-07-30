@@ -5,9 +5,7 @@ import { UpdateBatchDto } from './dto/update-batch.dto'
 import { ApiBearerAuth } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
-import { DefaultHostGuard } from '../../common/guards/host.guard'
 
-@UseGuards(DefaultHostGuard)
 @Controller('lesson')
 export class BatchesController {
   constructor(private readonly batchesService: BatchesService) {}

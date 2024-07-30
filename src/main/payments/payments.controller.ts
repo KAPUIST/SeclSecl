@@ -4,9 +4,7 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { PaymentsService } from './payments.service'
 import { AddCartParamsDTO } from './dto/add-cart-params-dto'
 import { DeleteCartParamsDTO } from './dto/delete-cart-params-dto'
-import { DefaultHostGuard } from '../../common/guards/host.guard'
 
-@UseGuards(DefaultHostGuard)
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
