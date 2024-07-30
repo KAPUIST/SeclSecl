@@ -14,3 +14,6 @@ pm2 delete "seclsecl"
 
 # 새로 시작
 pm2 start dist/main.js --name "seclsecl"
+
+# 프로세스 상태 저장
+pm2 save
