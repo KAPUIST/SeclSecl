@@ -50,7 +50,7 @@ import { GetUser } from '../../common/sendbird/send-bird.dto.ts/decorators/get-u
 import { FileInterceptor } from '@nestjs/platform-express'
 
 @ApiTags('밴드 관련 API')
-@Controller('bands')
+@Controller({ host: 'localhost', path: 'bands' })
 export class BandController {
   constructor(
     private readonly bandService: BandService,

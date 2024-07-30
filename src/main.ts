@@ -5,6 +5,39 @@ import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AdminModule } from './admin/admin.module'
 
+export class DynamicHostMiddleware {
+  use(req, res, next) {
+    const host = req.hostname
+    const originalUrl = req.originalUrl
+
+    if (!originalUrl) {
+      return res.status(400).send('Bad Request')
+    }
+
+    const transformUrl = (prefix: string, url: string) => {
+      const segments = url.split('/')
+      if (segments[1] === 'api') {
+        return `/api/${prefix}/${segments.slice(2).join('/')}`
+      }
+      return url
+    }
+
+    if (host === process.env.CP_HOST) {
+      req.url = transformUrl('cp', originalUrl)
+      console.log(`Transformed URL (CP): ${req.url}`)
+    } else if (host === process.env.ADMIN_HOST) {
+      req.url = transformUrl('admin', originalUrl)
+      console.log(`Transformed URL (Admin): ${req.url}`)
+    } else if (host === process.env.MAIN_HOST) {
+      // Main host can use the original URL directly
+      req.url = `/${originalUrl}`
+    } else {
+      return res.status(404).send('Not Found')
+    }
+
+    next()
+  }
+}
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const configService = app.get(ConfigService)
@@ -26,6 +59,7 @@ async function bootstrap() {
 
     next()
   })
+  //app.use(new DynamicHostMiddleware().use)
   const config = new DocumentBuilder()
     .setTitle('seclsecl')
     .setDescription('seclsecl PROJECT')
