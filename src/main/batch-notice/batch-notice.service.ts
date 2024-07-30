@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateBatchNoticeDto } from './dto/create-batch-notice.dto'
 import { UpdateBatchNoticeDto } from './dto/update-batch-notice.dto'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -7,6 +7,7 @@ import { Repository } from 'typeorm'
 import { Batch } from '../batches/entities/batch.entity'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { BatchNotice } from './entities/batch-notice.entity'
+import { UserLesson } from '../users/entities/user-lessons.entity'
 
 @Injectable()
 export class BatchNoticeService {
@@ -17,6 +18,8 @@ export class BatchNoticeService {
     private readonly batchRepository: Repository<Batch>,
     @InjectRepository(BatchNotice)
     private readonly batchNoticeRepository: Repository<BatchNotice>,
+    @InjectRepository(UserLesson)
+    private readonly userLessonRepository: Repository<UserLesson>,
   ) {}
 
   async create(uid, lessonId, batchId, createBatchNoticeDto: CreateBatchNoticeDto) {
@@ -41,8 +44,28 @@ export class BatchNoticeService {
     return newBatchNotice
   }
 
-  findAll() {
-    return `This action returns all batchNotice`
+  async findAll(uid, lessonId, batchId) {
+    // 기수가 존재하는지 확인
+    await this.findBatchOrThrow(lessonId, batchId)
+
+    const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonId, cp_uid: uid } })
+
+    const authorizedUser = await this.userLessonRepository.findOne({
+      where: { uid: lessonId, userUid: uid, batchUid: batchId },
+    })
+
+    if (!authorizedUser && !authorizedCp) {
+      throw new ForbiddenException('공지를 읽을 수 있는 권한이 없습니다.')
+    }
+
+    const data = await this.batchNoticeRepository.find({ where: { batchUid: batchId } })
+
+    // deletedAt 필드 삭제
+    data.forEach((notice) => {
+      delete notice.deletedAt
+    })
+
+    return data
   }
 
   update(id: number, updateBatchNoticeDto: UpdateBatchNoticeDto) {

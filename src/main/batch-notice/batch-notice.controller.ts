@@ -35,9 +35,22 @@ export class BatchNoticeController {
     }
   }
 
+  /**
+   * 기수 공지 목록
+   * @param lessonId
+   * @param batchId
+   * @param createBatchNoticeDto
+   * @returns
+   */
   @Get()
-  findAll() {
-    return this.batchNoticeService.findAll()
+  async findAll(@Request() req, @Param('lessonId') lessonId: string, @Param('batchId') batchId: string) {
+    const data = await this.batchNoticeService.findAll(req.user.uid, lessonId, batchId)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.CONTROLLER.CREATE,
+      data,
+    }
   }
 
   @Patch()
