@@ -4,7 +4,9 @@ import { UsersService } from './users.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UpdateUserInfoDto } from './dto/update-userInfo.dto'
+import { DefaultHostGuard } from '../../common/guards/host.guard'
 
+@UseGuards(DefaultHostGuard)
 @ApiTags('유저 정보')
 @UseGuards(JwtAuthGuard)
 @Controller('users')

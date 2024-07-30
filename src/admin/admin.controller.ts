@@ -3,9 +3,11 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 
 import { AdminService } from './admin.service'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import { AdminHostGuard } from '../common/guards/host.guard'
 
 @ApiTags('유저 승인')
 @ApiBearerAuth()
+@UseGuards(AdminHostGuard)
 @UseGuards(JwtAuthGuard)
 @Controller('signUp-cps')
 export class AdminController {

@@ -21,12 +21,13 @@ import { CreateLessonDto } from './dtos/create-lesson.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { LessonOpenStatus } from '../../common/lessons/types/lessons-type'
 import { validateDto } from '../../common/utils/validator-dto'
-
 import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { CpHostGuard } from '../../common/guards/host.guard'
 
 @ApiTags('레슨 관리')
-@Controller({ host: 'cp.localhost', path: 'lessons' })
+@UseGuards(CpHostGuard)
+@Controller({ path: 'lessons' })
 export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
