@@ -43,9 +43,10 @@ jobs:
         run: |
           aws s3 cp --region ap-northeast-2 ./build-app.zip s3://seclsecl-deploy/build-app.zip
 
-      - name: Deploy # Deploy to EC2
-        run: aws deploy create-deployment
-          --application-name seclsecl-codedeploy
-          --deployment-config-name CodeDeployDefault.AllAtOnce
-          --deployment-group-name seclsecl-deploy-group
-          --s3-location bucket= seclsecl-deploy,key=build-app.zip,bundleType=zip
+        - name: Deploy # Deploy to EC2
+          run: |
+            aws deploy create-deployment \
+              --application-name seclsecl-codedeploy \
+              --deployment-config-name CodeDeployDefault.AllAtOnce \
+              --deployment-group-name seclsecl-deploy-group \
+              --s3-location bucket=seclsecl-deploy,key=build-app.zip,bundleType=zip
