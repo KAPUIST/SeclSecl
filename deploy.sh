@@ -7,8 +7,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # NVM 로드
 nvm use 20.15.1 # 사용할 Node.js 버전 설정
 
-# 기존 프로세스 종료
-pm2 stop "seclsecl" && pm2 delete "seclsecl"
+
 
 # 새로 시작
 pm2 start dist/main.js --name "seclsecl"

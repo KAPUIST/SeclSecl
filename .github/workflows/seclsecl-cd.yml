@@ -80,6 +80,18 @@ jobs:
         run: |
           aws s3 cp --region ap-northeast-2 ./build-app.zip s3://seclsecl-deploy/build-app.zip
 
+      - name: Setup NVM and Node.js # NVM 및 Node.js 환경 설정
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install 20.15.1
+          nvm use 20.15.1
+
+      - name: Stop existing PM2 processes # 기존 PM2 프로세스 종료
+        run: |
+          pm2 stop all || true
+          pm2 delete all || true
+
       - name: Deploy # Deploy to EC2
         run: |
           aws deploy create-deployment \
