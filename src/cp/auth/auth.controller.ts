@@ -8,7 +8,7 @@ import { CP_MESSAGE_CONSTANT } from '../../common/messages/cp.message'
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 @ApiTags('업체 AUTH')
-@Controller({ host: 'cp.localhost', path: 'auth' })
+@Controller({ host: process.env.CP_HOST, path: 'auth' })
 export class CpAuthController {
   constructor(private readonly cpService: CpAuthService) {}
 

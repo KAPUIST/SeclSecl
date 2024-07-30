@@ -23,7 +23,7 @@ async function bootstrap() {
   )
   app.use((req, res, next) => {
     console.log('Incoming Request:', req.hostname, req.method, req.path)
-
+    console.log('now env value', process.env.CP_HOST)
     next()
   })
   const config = new DocumentBuilder()
