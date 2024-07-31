@@ -30,7 +30,7 @@ import { ChatModule } from './main/chat/chat.module'
     SendbirdModule,
     HttpModule,
     BatchesModule,
-    ChatModule
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,10 +9,8 @@ import { JwtService } from '@nestjs/jwt'
 import { ChatJwtStrategy } from './chat.jwt.strategy'
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([ChatRoom, Message]),
-],
+  imports: [TypeOrmModule.forFeature([ChatRoom, Message])],
   controllers: [ChatController],
-  providers: [ChatService, ChatGateway,JwtService, ChatJwtStrategy],
+  providers: [ChatService, ChatGateway, JwtService, ChatJwtStrategy],
 })
 export class ChatModule {}
