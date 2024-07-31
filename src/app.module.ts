@@ -13,6 +13,8 @@ import { CpModule } from './cp/cp.module'
 import { HttpModule } from '@nestjs/axios'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
+import { BatchNoticeModule } from './main/batch-notice/batch-notice.module'
+
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { join } from 'path'
     HttpModule,
     BatchesModule,
     ChatModule,
+    BatchNoticeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

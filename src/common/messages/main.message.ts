@@ -190,13 +190,27 @@ export const MAIN_MESSAGE_CONSTANT = {
     },
   },
   PAYMENT: {
+    ORDER: {
+      PURCHASE_ITEM: {
+        SUCCESS: '주문 결제에 성공하였습니다.',
+      },
+      CREATE_ORDER: {
+        SUCCESS: '주문 결제에 성공하였습니다.',
+        NOT_FOUND: '해당 수업은 존재하지 않습니다.',
+        EXIST_ORDER: '해당 주문 번호에 이미 결제 대기중인 강의가 있습니다.',
+        CONFLICT_LESSON: '이미 보유한 강의입니다.',
+        BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
+        AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
+      },
+    },
     PAYMENT_CART: {
       ADD_CART: {
         SUCCESS: '장바구니 추가에 성공하였습니다.',
         NOT_FOUND: '해당 수업은 존재하지 않습니다.',
         BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
         AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
-        CONFLICT: '이미 장바구니에 있는 수업입니다.',
+        CONFLICT_CART: '이미 장바구니에 있는 수업입니다.',
+        CONFLICT_LESSON: '이미 보유한 강의입니다.',
       },
       GET_CART_LIST: {
         SUCCESS: '장바구니 목록 조회에 성공하였습니다.',
@@ -210,6 +224,11 @@ export const MAIN_MESSAGE_CONSTANT = {
       PAYMENT_CART_ENTITY: {
         BATCH_UID: '기수 UID를 입력해 주세요',
         CART_UID: '장바구니 UID를 입력해 주세요',
+      },
+      PAYMENT_TOSS: {
+        PAYMENT_KEY: '결제키를 입력해 주세요',
+        ORDER_ID: '주문 ID를 입력해 주세요',
+        AMOUNT: '총 금액을 입력해 주세요',
       },
     },
   },
@@ -240,6 +259,18 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_EXISTING_BATCH: '존재하는 기수가 없습니다.',
       NOT_AUTHORIZED_LESSON: '해당 기업은 강의에 대한 권한이 없습니다.',
       EXISTING_BATCH: '이미 있는 기수입니다.',
+    },
+  },
+  BATCH_NOTICE: {
+    CONTROLLER: {
+      CREATE: '기수 공지 생성에 성공했습니다.',
+      FINDALL: '기수 공지 목록 찾기에 성공했습니다.',
+      UPDATE: '기수 공지 업데이트에 성공했습니다.',
+      DELETE: '기수 공지 삭제에 성공했습니다.',
+    },
+    SERVICE: {
+      NOT_FIND_NOTICE: '기수 공지를 찾을 수 없습니다.',
+      NOT_AUTHORIZED_NOTICE: '공지를 읽을 수 있는 권한이 없습니다.',
     },
   },
 }
