@@ -245,6 +245,13 @@ export const MAIN_MESSAGE_CONSTANT = {
       EXISTED_NICKNAME: '중복되는 닉네임이 존재합니다.',
       NOT_FOUND_USER_LESSON: '수강중인 강의를 찾을 수 없습니다.',
     },
+    FAVORITE: {
+      ADD_FAVORITE: '강의를 찜했습니다.',
+      DELETE_FAVORITE: '찜하기가 취소되었습니다.',
+      NOT_FOUND_LESSON: '강의를 찾을수 없습니다.',
+      FAILED: '강의 찜하기를 실패했습니다.',
+      FIND_FAVORITE: '찜한목록 조회에 성공했습니다.',
+    },
   },
   BATCH: {
     CONTROLLER: {
