@@ -66,4 +66,18 @@ export class UsersController {
       },
     }
   }
+  /** 찜 목록 가져오기
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('/favorites')
+  @ApiBearerAuth()
+  async myFavorite(@Request() req) {
+    const userUid: string = req.user.uid
+    const favorites = await this.userService.getFavorite(userUid)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.FIND_FAVORITE,
+      data: favorites,
+    }
+  }
 }

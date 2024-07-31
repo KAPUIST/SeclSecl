@@ -9,6 +9,7 @@ import { UserLesson } from './entities/user-lessons.entity'
 import { LessonBookmarks } from '../../common/lessons/entities/lesson-bookmark.entity'
 import { ToggleLessonBookmarkRO } from './ro/toggle-favorite.ro'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
+import { FavoriteLessonRO } from './ro/favorite-lesson.ro'
 
 @Injectable()
 export class UsersService {
@@ -162,6 +163,23 @@ export class UsersService {
       message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.DELETE_FAVORITE,
       title,
       lessonId: existingFavorite.lesson.uid,
+    }
+  }
+
+  async getFavorite(userUid: string): Promise<FavoriteLessonRO[]> {
+    try {
+      const favorites = await this.lessonBookmarkRepository.find({
+        where: { user: { uid: userUid } },
+        relations: ['lesson'],
+      })
+
+      return favorites.map((fav) => ({
+        lessonId: fav.lesson.uid,
+        title: fav.lesson.title,
+      }))
+    } catch (error) {
+      console.error(error)
+      throw new InternalServerErrorException('찜한 강의 목록을 가져오는데 실패했습니다.')
     }
   }
 }
