@@ -1,4 +1,3 @@
-import { User } from 'src/main/users/entities/user.entity'
 import {
   Entity,
   Column,
@@ -8,6 +7,7 @@ import {
   UpdateDateColumn,
   OneToOne,
 } from 'typeorm'
+import { User } from '../../users/entities/user.entity'
 
 @Entity('refresh_tokens')
 export class RefreshToken {

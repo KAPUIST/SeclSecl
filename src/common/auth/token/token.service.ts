@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+
 import { JwtPayload } from './interface/jwt-payload.interface'
+import { MAIN_MESSAGE_CONSTANT } from '../../messages/main.message'
 
 @Injectable()
 export class TokenService {

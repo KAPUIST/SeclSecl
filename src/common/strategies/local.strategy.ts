@@ -4,9 +4,10 @@ import { Strategy } from 'passport-local'
 
 import { Request } from 'express'
 import { ModuleRef } from '@nestjs/core'
-import { AuthService } from 'src/main/auth/auth.service'
+
 import { AdminAuthService } from '../../admin/auth/auth.service'
-import { CpAuthService } from 'src/cp/auth/auth.service'
+import { AuthService } from '../../main/auth/auth.service'
+import { CpAuthService } from '../../cp/auth/auth.service'
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) implements OnModuleInit {
@@ -33,7 +34,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) implements OnModul
     const domain = req.hostname.split('.')[0] // 도메인 정보를 헤더에서 추출
 
     let user: any
-
     switch (domain) {
       case 'admin':
         user = await this.adminAuthService.validateUser(email, password)

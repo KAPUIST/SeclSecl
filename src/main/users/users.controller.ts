@@ -1,13 +1,13 @@
 import { Body, Controller, Get, HttpStatus, Patch, Request, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { UsersService } from './users.service'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UpdateUserInfoDto } from './dto/update-userInfo.dto'
 
 @ApiTags('유저 정보')
 @UseGuards(JwtAuthGuard)
-@Controller('users')
+@Controller({ host: 'localhost', path: 'users' })
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 

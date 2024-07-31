@@ -1,7 +1,8 @@
-import { Controller, Delete, Get, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common'
+import { Controller, Delete, Get, HttpStatus, Param, Patch, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
+
 import { AdminService } from './admin.service'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 
 @ApiTags('유저 승인')
 @ApiBearerAuth()

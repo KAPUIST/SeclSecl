@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Cp } from 'src/cp/auth/entities/cp.entity'
+
 import { CpInfo } from '../cp/auth/entities/cp-infos.entity'
 import { Connection, Repository } from 'typeorm'
-import { Lesson } from 'src/common/lessons/entities/lessons.entity'
+import { Cp } from '../cp/auth/entities/cp.entity'
+import { Lesson } from '../common/lessons/entities/lessons.entity'
 
 @Injectable()
 export class AdminService {

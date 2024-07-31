@@ -5,6 +5,7 @@ import { Observable, catchError } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ConfigService } from '@nestjs/config'
 import SendBird from 'sendbird'
+import FormData from 'form-data'
 
 @Injectable()
 export class SendBirdService implements OnModuleInit, OnModuleDestroy {
@@ -77,14 +78,16 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
       )
   }
 
-  //메세지 전송
-  sendMessage(channelUrl: string, message: string, userId: string): Observable<AxiosResponse<any>> {
+  // 메세지 전송
+  sendMessage(channelUrl: string, message: string, userId: string): Observable<any> {
     const url = `${this.BASE_URL}/group_channels/${channelUrl}/messages`
     const data = {
       message_type: 'MESG',
       user_id: userId,
       message: message,
     }
+
+    console.log('data:', data)
     return this.httpService
       .post(url, data, {
         headers: {
@@ -100,11 +103,12 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
   }
 
   //채팅방 생성
-  createChannel(name: string, userIds: string[]): Observable<AxiosResponse<any>> {
+  createChannel(name: string, userIds: string[]): Observable<any> {
     const url = `${this.BASE_URL}/group_channels`
     const data = {
       name: name,
       user_ids: userIds,
+      is_distinct: true,
     }
     return this.httpService
       .post(url, data, {
@@ -121,7 +125,7 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
   }
 
   //채팅방 종류 조회
-  getChannelTypes(): Observable<AxiosResponse<any>> {
+  getChannelTypes(): Observable<any> {
     const url = `${this.BASE_URL}/group_channels`
     return this.httpService
       .get(url, {
@@ -137,11 +141,10 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
       )
   }
 
-  //채팅방 메세지 조회
-  getChannelMessages(channelUrl: string, limit: number = 100, messageTs?: number): Observable<AxiosResponse<any>> {
+  // 채팅방 메세지 조회
+  getChannelMessages(channelUrl: string, limit: number = 20, messageTs?: number): Observable<AxiosResponse<any>> {
     const url = `${this.BASE_URL}/group_channels/${channelUrl}/messages`
 
-    // If messageTs is not provided, use current timestamp
     if (!messageTs) {
       messageTs = Math.floor(Date.now() / 1000)
     }
@@ -153,6 +156,7 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
       message_ts: messageTs,
     }
 
+    console.log('params:', params)
     return this.httpService
       .get(url, {
         headers: {
@@ -162,6 +166,56 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
       })
       .pipe(
         map((response) => response.data),
+        catchError((error) => {
+          throw new HttpException(error.response?.data || 'SendBird API Error', HttpStatus.INTERNAL_SERVER_ERROR)
+        }),
+      )
+  }
+
+  //채팅방 삭제
+  deleteChannel(channelUrl: string): Observable<any> {
+    const url = `${this.BASE_URL}/group_channels/${channelUrl}`
+    return this.httpService
+      .delete(url, {
+        headers: {
+          'Api-Token': this.API_TOKEN,
+        },
+      })
+      .pipe(
+        map((response: AxiosResponse) => response.data),
+        catchError((error) => {
+          throw new HttpException(error.response?.data || 'SendBird API Error', HttpStatus.INTERNAL_SERVER_ERROR)
+        }),
+      )
+  }
+
+  // 파일 전송
+  sendFile(channelUrl: string, file: Express.Multer.File, userId: string): Observable<any> {
+    const url = `${this.BASE_URL}/group_channels/${channelUrl}/messages`
+    const formData = new FormData()
+    formData.append('file', file.buffer, {
+      filename: file.originalname,
+      contentType: file.mimetype,
+    })
+    formData.append('message_type', 'FILE')
+    formData.append('user_id', userId)
+    formData.append('require_auth', 'false')
+
+    return this.httpService
+      .post(url, formData, {
+        headers: {
+          'Api-Token': this.API_TOKEN,
+          ...formData.getHeaders(),
+        },
+      })
+      .pipe(
+        map((response) => {
+          return {
+            file_url: response.data.file.url,
+            file_name: response.data.file.name,
+            file_type: response.data.file.type,
+          }
+        }),
         catchError((error) => {
           throw new HttpException(error.response?.data || 'SendBird API Error', HttpStatus.INTERNAL_SERVER_ERROR)
         }),

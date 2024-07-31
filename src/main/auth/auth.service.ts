@@ -11,15 +11,15 @@ import { User } from '../users/entities/user.entity'
 import { Repository } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import { SignUpDto } from './dtos/sign-up.dto'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { SMSService } from '../../common/sms/sms.service'
-import { RedisService } from 'src/common/redis/redis.service'
+import { RedisService } from '../../common/redis/redis.service'
 import { UserInfos } from '../users/entities/user-infos.entity'
 import { SignInDto } from './dtos/sign-in.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
-import { TokenService } from 'src/common/auth/token/token.service'
-import { JwtPayload } from 'src/common/auth/token/interface/jwt-payload.interface'
-import { SendBirdService } from 'src/common/sendbird/sendbird.service'
+import { TokenService } from '../../common/auth/token/token.service'
+import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interface'
+import { SendBirdService } from '../../common/sendbird/sendbird.service'
 import { lastValueFrom } from 'rxjs'
 
 @Injectable()
@@ -166,7 +166,6 @@ export class AuthService {
     return false
   }
   async signIn(userUid: string, email: string) {
-    console.log(1231321313123123)
     const payload: JwtPayload = { uid: userUid, email, type: 'main' }
     const tokens = await this.tokenService.generateTokens(payload)
 

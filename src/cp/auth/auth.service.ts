@@ -14,9 +14,10 @@ import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interf
 import { InjectRepository } from '@nestjs/typeorm'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { CpInfo } from './entities/cp-infos.entity'
-import { CP_MESSAGE_CONSTANT } from 'src/common/messages/cp.message'
+
 import { SignInDto } from './dto/sign-in.dto'
-import { TokenService } from 'src/common/auth/token/token.service'
+import { TokenService } from '../../common/auth/token/token.service'
+import { CP_MESSAGE_CONSTANT } from '../../common/messages/cp.message'
 
 @Injectable()
 export class CpAuthService {
@@ -66,11 +67,11 @@ export class CpAuthService {
     const payload: JwtPayload = { uid, email, type: 'cp' }
     console.log(payload)
 
-    // 로그인 여부 확인
-    const loginRecord = await this.refreshTokenRepository.findOne({ where: { cp: { uid } } })
-    if (loginRecord && loginRecord.refreshtoken) {
-      throw new BadRequestException(CP_MESSAGE_CONSTANT.AUTH.SIGN_IN.FAILED)
-    }
+    // 로그인 여부 확인/쿠키 삭제시 db에는 리프레시토큰있으니까 영원히 로그인이 안되는거 해결
+    // const loginRecord = await this.refreshTokenRepository.findOne({ where: { cp: { uid } } })
+    // if (loginRecord && loginRecord.refreshtoken) {
+    //   throw new BadRequestException(CP_MESSAGE_CONSTANT.AUTH.SIGN_IN.FAILED)
+    // }
 
     // 토큰 발급
     const tokens = await this.tokenService.generateTokens(payload)

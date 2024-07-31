@@ -1,6 +1,20 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Request, UseGuards } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
 import { BandService } from './band.service'
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
+
 import { CreateBandDto } from './dto/create-band.dto'
 import { GetBandDetailParamsDTO } from './dto/get-band-detail-params.dto'
 import { UpdateBandParamsDTO } from './dto/update-band-params.dto'
@@ -21,7 +35,7 @@ import { LikeBandPostParamsDTO } from './dto/like-band-post-params.dto'
 import { UnlikeBandPostParamsDTO } from './dto/unlike-band-post-params.dto'
 import { CreateBandCommentParamsDTO } from './dto/create-band-comment-params.dto'
 import { CreateBandCommentDTO } from './dto/create-band-comment.dto'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
+
 import { GetBandCommentParamsDTO } from './dto/get-band-comment-params.dto'
 import { UpdateBandCommentParamsDTO } from './dto/update-band-comment-params.dto'
 import { UpdateBandCommentDTO } from './dto/update-band-comment.dto'
@@ -29,11 +43,19 @@ import { DeleteBandCommentParamsDTO } from './dto/delete-band-comment-params.dto
 import { LikeBandCommentParamsDTO } from './dto/like-band-comment-params.dto'
 import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { SendBirdService } from '../../common/sendbird/sendbird.service'
+import { GetUser } from '../../common/sendbird/send-bird.dto.ts/decorators/get-user.decorator'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @ApiTags('밴드 관련 API')
-@Controller('bands')
+@Controller({ host: 'localhost', path: 'bands' })
 export class BandController {
-  constructor(private readonly bandService: BandService) {}
+  constructor(
+    private readonly bandService: BandService,
+    private readonly sendBirdService: SendBirdService,
+  ) {}
 
   /**
    * 밴드 생성
@@ -423,5 +445,49 @@ export class BandController {
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UNLIKE_BAND_COMMENT.SUCCEED,
       data: unLikedBandComment,
     }
+  }
+
+  // 메세지 전송
+  @Post(':bandsUid/messages')
+  @UseGuards(JwtAuthGuard)
+  sendMessage(@Param('bandsUid') bandsUid: string, @Body('message') message: string, @GetUser() user) {
+    const userUid = user.uid
+    return this.bandService.sendMessageToBand(bandsUid, message, userUid)
+  }
+
+  // 유저가 가입한 밴드 채팅방 종류 조회
+  @Get(':bandsUid/channels')
+  @UseGuards(JwtAuthGuard)
+  getChannelTypes(@Param('bandsUid') bandsUid: string, @GetUser() user) {
+    const userUid = user.uid
+    return this.bandService.getBandChannels(bandsUid, userUid)
+  }
+
+  // 채팅방 메세지 조회
+  @Get(':bandsUid/messages')
+  @UseGuards(JwtAuthGuard)
+  getChannelMessages(
+    @Param('bandsUid') bandsUid: string,
+    @GetUser() user,
+    @Query('limit') limit?: string,
+    @Query('messageTs') messageTs?: number,
+  ) {
+    const userUid = user.uid
+    const limitNumber = limit ? parseInt(limit, 10) : 20 // 기본값 20
+    return this.bandService.getChannelMessages(userUid, bandsUid, limitNumber, messageTs)
+  }
+  // 채팅방 삭제
+  @Delete(':bandsUid/channels/:channelUrl')
+  deleteChannel(@Param('channelUrl') channelUrl: string) {
+    return this.sendBirdService.deleteChannel(channelUrl)
+  }
+
+  // 파일 첨부 전송
+  @Post(':bandsUid/files')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  sendFile(@Param('bandsUid') bandsUid: string, @UploadedFile() file: Express.Multer.File, @GetUser() user) {
+    const userUid = user.uid
+    return this.bandService.sendMessageFileToBand(bandsUid, file, userUid)
   }
 }

@@ -189,6 +189,30 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
     },
   },
+  PAYMENT: {
+    PAYMENT_CART: {
+      ADD_CART: {
+        SUCCESS: '장바구니 추가에 성공하였습니다.',
+        NOT_FOUND: '해당 수업은 존재하지 않습니다.',
+        BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
+        AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
+        CONFLICT: '이미 장바구니에 있는 수업입니다.',
+      },
+      GET_CART_LIST: {
+        SUCCESS: '장바구니 목록 조회에 성공하였습니다.',
+      },
+      DELETE_CART: {
+        SUCCESS: '장바구니 삭제에 성공하였습니다.',
+        NOT_FOUND: '비울 수 없는 물품입니다.',
+      },
+    },
+    COMMON: {
+      PAYMENT_CART_ENTITY: {
+        BATCH_UID: '기수 UID를 입력해 주세요',
+        CART_UID: '장바구니 UID를 입력해 주세요',
+      },
+    },
+  },
   USER: {
     CONTROLLER: {
       FIND_ME: '내 정보 조회에 성공했습니다.',
@@ -201,6 +225,21 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_MATCHED_CHANGE_CAPASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
       EXISTED_NICKNAME: '중복되는 닉네임이 존재합니다.',
       NOT_FOUND_USER_LESSON: '수강중인 강의를 찾을 수 없습니다.',
+    },
+  },
+  BATCH: {
+    CONTROLLER: {
+      CREATE: '기수 생성에 성공했습니다.',
+      FINDALL: '기수 목록 찾기에 성공했습니다.',
+      FINDONE: '기수 목록 상세 조회에 성공했습니다.',
+      UPDATE: '기수 업데이트에 성공했습니다.',
+      DELETE: '기수 삭제에 성공했습니다.',
+    },
+    SERVICE: {
+      FIND: '강의를 찾을 수 없습니다.',
+      NOT_EXISTING_BATCH: '존재하는 기수가 없습니다.',
+      NOT_AUTHORIZED_LESSON: '해당 기업은 강의에 대한 권한이 없습니다.',
+      EXISTING_BATCH: '이미 있는 기수입니다.',
     },
   },
 }

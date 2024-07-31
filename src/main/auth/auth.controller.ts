@@ -1,15 +1,15 @@
 import { Body, Controller, Delete, Headers, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
-import { MAIN_MESSAGE_CONSTANT } from 'src/common/messages/main.message'
 import { SignUpDto } from './dtos/sign-up.dto'
 import { AuthService } from './auth.service'
 import { SignInDto } from './dtos/sign-in.dto'
-import { LocalAuthGuard } from 'src/common/guards/local-auth.guard'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 
 @ApiTags('유저 인증')
-@Controller('auth')
+@Controller({ host: 'localhost', path: 'auth' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
