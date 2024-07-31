@@ -1,0 +1,86 @@
+name: seclsecl CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev, main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Setup environment variables
+        run: |
+          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" > .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "MAIN_HOST=${{ secrets.MAIN_HOST }}" >> .env
+          echo "CP_HOST=${{ secrets.CP_HOST }}" >> .env
+          echo "ADMIN_HOST=${{ secrets.ADMIN_HOST }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_SYNC=${{ secrets.DB_SYNC }}" >> .env
+          echo "MAIN_REFRESH_TOKEN_EXPIRES=${{secrets.MAIN_REFRESH_TOKEN_EXPIRES}}" >> .env
+          echo "MAIN_REFRESH_TOKEN_SECRET=${{secrets.MAIN_REFRESH_TOKEN_SECRET}}" >> .env
+          echo "MAIN_ACCESS_TOKEN_EXPIRES=${{secrets.MAIN_ACCESS_TOKEN_EXPIRES}}" >> .env
+          echo "MAIN_ACCESS_TOKEN_SECRET=${{secrets.MAIN_ACCESS_TOKEN_SECRET}}" >> .env
+          echo "CP_REFRESH_TOKEN_EXPIRES=${{secrets.CP_REFRESH_TOKEN_EXPIRES}}" >> .env
+          echo "CP_REFRESH_TOKEN_SECRET=${{secrets.CP_REFRESH_TOKEN_SECRET}}" >> .env
+          echo "CP_ACCESS_TOKEN_EXPIRES=${{secrets.CP_ACCESS_TOKEN_EXPIRES}}" >> .env
+          echo "CP_ACCESS_TOKEN_SECRET=${{secrets.CP_ACCESS_TOKEN_SECRET}}" >> .env
+          echo "ADMIN_REFRESH_TOKEN_EXPIRES=${{secrets.ADMIN_REFRESH_TOKEN_EXPIRES}}" >> .env
+          echo "ADMIN_REFRESH_TOKEN_SECRET=${{secrets.ADMIN_REFRESH_TOKEN_SECRET}}" >> .env
+          echo "ADMIN_ACCESS_TOKEN_EXPIRES=${{secrets.ADMIN_ACCESS_TOKEN_EXPIRES}}" >> .env
+          echo "ADMIN_ACCESS_TOKEN_SECRET=${{secrets.ADMIN_ACCESS_TOKEN_SECRET}}" >> .env
+          echo "REDIS_HOST=${{secrets.REDIS_HOST}}" >> .env
+          echo "REDIS_PORT=${{secrets.REDIS_PORT}}" >> .env
+          echo "REDIS_USER=${{secrets.REDIS_USER}}" >> .env
+          echo "REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}}" >> .env
+          echo "REDIS_TLS=${{secrets.REDIS_TLS}}" >> .env
+          echo "JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}}" >> .env
+          echo "AWS_REGION=${{secrets.AWS_REGION}}" >> .env
+          echo "AWS_S3_BUCKET=${{secrets.AWS_S3_BUCKET}}" >> .env
+          echo "SENDBIRD_API_TOKEN=${{secrets.SENDBIRD_API_TOKEN}}" >> .env
+          echo "SENDBIRD_APP_ID=${{secrets.SENDBIRD_APP_ID}}" >> .env
+          echo "BASE_URL=${{secrets.BASE_URL}}" >> .env
+
+      - name: Build project
+        run: npm run build
+
+      - name: zip build File
+        run: zip -qq -r ./build-app.zip .
+        shell: bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{secrets.AWS_REGION}}
+
+      - name: Upload to S3 # Upload build file to S3
+        run: |
+          aws s3 cp --region ap-northeast-2 ./build-app.zip s3://seclsecl-deploy/build-app.zip
+
+      - name: Deploy # Deploy to EC2
+        run: |
+          aws deploy create-deployment \
+            --application-name seclsecl-codedeploy \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name seclsecl-deploy-group \
+            --s3-location bucket=seclsecl-deploy,key=build-app.zip,bundleType=zip

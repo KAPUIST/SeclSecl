@@ -21,7 +21,6 @@ import { CreateLessonDto } from './dtos/create-lesson.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { LessonOpenStatus } from '../../common/lessons/types/lessons-type'
 import { validateDto } from '../../common/utils/validator-dto'
-
 import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 

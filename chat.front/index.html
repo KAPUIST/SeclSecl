@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+  </head>
+  <body>
+    <h1>User Chat</h1>
+    <div id="createRoomSection">
+      <input id="cpId" type="text" placeholder="Enter CP ID" />
+      <button onclick="createRoom()">Create Room</button>
+    </div>
+    <div id="chatRoomSection" style="display: none">
+      <h2>Chat Room</h2>
+      <div id="chat"></div>
+      <input id="message" type="text" placeholder="Enter message" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+      const token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJiMjkxZmIzNi1lZDcwLTRkZjEtYWE1NC1mYzQ3NWI5YzA3MjYiLCJlbWFpbCI6InllZXdvb29vb25AZ21haWwuY29tIiwidHlwZSI6Im1haW4iLCJpYXQiOjE3MjIzNDQ2OTUsImV4cCI6MTcyMjM1MTg5NX0.NWA1A6Nwa0jgJJR8cesDzgh8p-kfTJfweFxn4I1PJR8' // 실제 사용자 JWT 토큰으로 교체
+      const decodedToken = jwt_decode(token)
+      const userId = decodedToken.uid // JWT에서 userId 추출
+
+      let chatRoomId
+
+      const socket = new WebSocket(`ws://localhost:3000/?token=${token}`)
+
+      socket.onopen = function () {
+        console.log('User WebSocket connection opened')
+      }
+
+      socket.onerror = function (error) {
+        console.error('WebSocket error:', error)
+      }
+
+      socket.onclose = function (event) {
+        console.log('WebSocket connection closed', event)
+      }
+
+      socket.onmessage = function (event) {
+        const message = JSON.parse(event.data)
+        if (message.event === 'joinedRoom') {
+          chatRoomId = message.data
+          console.log('Joined room with ID:', chatRoomId)
+          showChatRoom()
+        } else if (message.event === 'receiveMessage') {
+          document.getElementById('chat').innerHTML += `<p>${message.data.content}</p>`
+        }
+      }
+
+      function createRoom() {
+        const cpId = document.getElementById('cpId').value
+        socket.send(JSON.stringify({ event: 'joinRoom', data: { cpId: cpId } }))
+      }
+
+      function sendMessage() {
+        const message = document.getElementById('message').value
+        socket.send(JSON.stringify({ event: 'sendMessage', data: { chatRoomId: chatRoomId, content: message } }))
+        document.getElementById('message').value = ''
+      }
+
+      function showChatRoom() {
+        document.getElementById('createRoomSection').style.display = 'none'
+        document.getElementById('chatRoomSection').style.display = 'block'
+      }
+    </script>
+  </body>
+</html>

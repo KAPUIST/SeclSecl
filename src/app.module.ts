@@ -8,12 +8,19 @@ import { configModuleValidationSchema } from './config/env-validation.config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { adminTypeOrmModuleOptions, cpTypeOrmModuleOptions, typeOrmModuleOptions } from './config/typeorm.config'
 import { BatchesModule } from './main/batches/batches.module'
+import { ChatModule } from './main/chat/chat.module'
 import { CpModule } from './cp/cp.module'
-import { SendbirdModule } from './common/sendbird/sendbird.module'
 import { HttpModule } from '@nestjs/axios'
+import { ServeStaticModule } from '@nestjs/serve-static'
+import { join } from 'path'
+import { BatchNoticeModule } from './main/batch-notice/batch-notice.module'
+
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'), // public 폴더 경로 설정
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: configModuleValidationSchema,
@@ -21,11 +28,13 @@ import { HttpModule } from '@nestjs/axios'
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     TypeOrmModule.forRootAsync(cpTypeOrmModuleOptions),
     TypeOrmModule.forRootAsync(adminTypeOrmModuleOptions),
+    MainModule,
     AdminModule,
     CpModule,
-    MainModule,
     HttpModule,
     BatchesModule,
+    ChatModule,
+    BatchNoticeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

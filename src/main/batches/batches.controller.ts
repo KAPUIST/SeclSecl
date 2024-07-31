@@ -6,7 +6,7 @@ import { ApiBearerAuth } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
-@Controller('lesson')
+@Controller({ host: 'localhost', path: 'lesson' })
 export class BatchesController {
   constructor(private readonly batchesService: BatchesService) {}
 
@@ -28,24 +28,82 @@ export class BatchesController {
       data,
     }
   }
+  /**
+   * 기수 목록 조회
+   * @param lessonId
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('/:lessonId/batches')
+  async findAll(@Request() req, @Param('lessonId') lessonId: string) {
+    const data = await this.batchesService.findAll(req.user.uid, lessonId)
 
-  @Get()
-  findAll() {
-    return this.batchesService.findAll()
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH.CONTROLLER.FINDALL,
+      data,
+    }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.batchesService.findOne(+id)
+  /**
+   * 기수 목록 상세 조회
+   * @param lessonId
+   * @param batchId
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('/:lessonId/batches/:batchId')
+  async findOne(@Request() req, @Param('lessonId') lessonId: string, @Param('batchId') batchId: string) {
+    const data = await this.batchesService.findOne(req.user.uid, lessonId, batchId)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH.CONTROLLER.FINDONE,
+      data,
+    }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBatchDto: UpdateBatchDto) {
-    return this.batchesService.update(+id, updateBatchDto)
+  /**
+   * 기수 수정
+   * @param lessonId
+   * @param batchId
+   * @param updateBatchDto
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Patch('/:lessonId/batches/:batchId')
+  async update(
+    @Request() req,
+    @Param('lessonId') lessonId: string,
+    @Param('batchId') batchId: string,
+    @Body() updateBatchDto: UpdateBatchDto,
+  ) {
+    const data = await this.batchesService.update(req.user.uid, lessonId, batchId, updateBatchDto)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH.CONTROLLER.UPDATE,
+      data,
+    }
   }
+  /**
+   * 기수 삭제
+   * @param lessonId
+   * @param batchId
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Delete('/:lessonId/batches/:batchId')
+  async remove(@Request() req, @Param('lessonId') lessonId: string, @Param('batchId') batchId: string) {
+    const data = await this.batchesService.remove(req.user.uid, lessonId, batchId)
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.batchesService.remove(+id)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH.CONTROLLER.DELETE,
+      data,
+    }
   }
 }

@@ -34,7 +34,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) implements OnModul
     const domain = req.hostname.split('.')[0] // 도메인 정보를 헤더에서 추출
 
     let user: any
-
     switch (domain) {
       case 'admin':
         user = await this.adminAuthService.validateUser(email, password)
