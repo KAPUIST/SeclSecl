@@ -6,7 +6,7 @@ import { AddCartParamsDTO } from './dto/add-cart-params.dto'
 import { DeleteCartParamsDTO } from './dto/delete-cart-params.dto'
 import { PurchaseItemDto } from './dto/purchase-item.dto'
 
-@Controller('payments')
+@Controller({ host: 'localhost', path: 'payments' })
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
 

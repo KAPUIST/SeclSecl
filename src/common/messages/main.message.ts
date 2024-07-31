@@ -261,4 +261,16 @@ export const MAIN_MESSAGE_CONSTANT = {
       EXISTING_BATCH: '이미 있는 기수입니다.',
     },
   },
+  BATCH_NOTICE: {
+    CONTROLLER: {
+      CREATE: '기수 공지 생성에 성공했습니다.',
+      FINDALL: '기수 공지 목록 찾기에 성공했습니다.',
+      UPDATE: '기수 공지 업데이트에 성공했습니다.',
+      DELETE: '기수 공지 삭제에 성공했습니다.',
+    },
+    SERVICE: {
+      NOT_FIND_NOTICE: '기수 공지를 찾을 수 없습니다.',
+      NOT_AUTHORIZED_NOTICE: '공지를 읽을 수 있는 권한이 없습니다.',
+    },
+  },
 }
