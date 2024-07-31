@@ -11,9 +11,14 @@ import { BatchesModule } from './main/batches/batches.module'
 import { ChatModule } from './main/chat/chat.module'
 import { CpModule } from './cp/cp.module'
 import { HttpModule } from '@nestjs/axios'
+import { ServeStaticModule } from '@nestjs/serve-static'
+import { join } from 'path'
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'), // public 폴더 경로 설정
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: configModuleValidationSchema,

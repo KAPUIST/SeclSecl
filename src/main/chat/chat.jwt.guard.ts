@@ -5,9 +5,7 @@ import * as jwt from 'jsonwebtoken'
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {
-  constructor(
-    private readonly configService: ConfigService, 
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const client = context.switchToWs().getClient() // WebSocket 클라이언트 객체를 가져온다
