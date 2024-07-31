@@ -52,6 +52,8 @@ export class ChatGateway {
     try {
       let chatRoom
       const loginId = client.data.user.uid
+      console.log('cpId:', data.cpId)
+      console.log('userId:', data.userId)
 
       if (data.cpId) {
         const cpId = data.cpId
