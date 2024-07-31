@@ -1,4 +1,4 @@
-import { Controller, HttpCode, HttpStatus, Post, UseGuards, Request, Get, Param } from '@nestjs/common'
+import { Controller, HttpCode, HttpStatus, UseGuards, Get, Query, Param } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { MainLessonsService } from './mainlessons.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
@@ -17,9 +17,7 @@ export class MainLessonsController {
   @ApiResponse({ status: 200, description: '전체 레슨 조회 성공' })
   @ApiResponse({ status: 401, description: '인증 실패' })
   @ApiBearerAuth()
-  async getAllLessons(
-    @Request() req,
-  ): Promise<{ statusCode: number; message: string; lessons: MainLessonResponseDto[] }> {
+  async getAllLessons(): Promise<{ statusCode: number; message: string; lessons: MainLessonResponseDto[] }> {
     const data = await this.mainLessonsService.getAllLessons()
     return {
       statusCode: HttpStatus.OK,
@@ -35,9 +33,7 @@ export class MainLessonsController {
   @ApiResponse({ status: 200, description: '인기 레슨 조회 성공' })
   @ApiResponse({ status: 401, description: '인증 실패' })
   @ApiBearerAuth()
-  async getrRcentLessons(
-    @Request() req,
-  ): Promise<{ statusCode: number; message: string; lessons: RecentLessonResponseDto[] }> {
+  async getRecentLessons(): Promise<{ statusCode: number; message: string; lessons: RecentLessonResponseDto[] }> {
     const data = await this.mainLessonsService.getRecentLessons()
     return {
       statusCode: HttpStatus.OK,
@@ -46,8 +42,31 @@ export class MainLessonsController {
     }
   }
 
+  @Get('/search')
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '레슨 검색' })
+  @ApiResponse({ status: 200, description: '레슨 검색 성공' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiBearerAuth()
+  async searchLesson(
+    @Query('title') title: string,
+    @Query('teacher') teacher: string,
+    @Query('description') description: string,
+    @Query('price') price: number,
+    @Query('status') status: string,
+    @Query('location') location: string,
+  ): Promise<{ statusCode: number; message: string; lessons: MainLessonResponseDto[] }> {
+    const data = await this.mainLessonsService.searchLesson({ title, teacher, description, price, status, location })
+    return {
+      statusCode: HttpStatus.OK,
+      message: '레슨 검색 성공',
+      lessons: data,
+    }
+  }
+
   @Get('/:lessonId')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '레슨 상세 조회' })
   @ApiResponse({ status: 200, description: '레슨 상세 조회 성공' })
