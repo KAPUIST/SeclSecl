@@ -1,11 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Request, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpStatus,
+  Request,
+  UseGuards,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common'
 import { BatchNoticeService } from './batch-notice.service'
 import { CreateBatchNoticeDto } from './dto/create-batch-notice.dto'
 import { UpdateBatchNoticeDto } from './dto/update-batch-notice.dto'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { DeleteBandCommentParamsDTO } from '../band/dto/delete-band-comment-params.dto'
+import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
 
 @ApiTags('기수 공지')
 @ApiBearerAuth()
@@ -22,13 +35,21 @@ export class BatchNoticeController {
    * @returns
    */
   @Post()
+  @UseInterceptors(FilesInterceptor('files', 10)) // 파일 필드 'files'에서 최대 10개의 파일 업로드
   async create(
     @Request() req,
     @Param('lessonId') lessonId: string,
     @Param('batchId') batchId: string,
     @Body() createBatchNoticeDto: CreateBatchNoticeDto,
+    @UploadedFiles() files: Express.Multer.File[], // 파일 배열을 주입받음
   ) {
-    const data = await this.batchNoticeService.create(req.user.uid, lessonId, batchId, createBatchNoticeDto)
+    const data = await this.batchNoticeService.create(
+      req.user.uid,
+      lessonId,
+      batchId,
+      files, // 파일 배열을 서비스로 전달
+      createBatchNoticeDto,
+    )
 
     return {
       statusCode: HttpStatus.OK,
