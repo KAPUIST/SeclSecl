@@ -6,7 +6,7 @@ import { ApiBearerAuth } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
-@Controller('lesson')
+@Controller({ host: 'localhost', path: 'lesson' })
 export class BatchesController {
   constructor(private readonly batchesService: BatchesService) {}
 

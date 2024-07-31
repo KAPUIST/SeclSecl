@@ -15,6 +15,7 @@ import { Band } from '../../band/entities/band.entity'
 import { BandMember } from '../../band/entities/band-members.entity'
 import { Payment } from '../../payments/entities/payments.entity'
 import { PaymentCart } from '../../payments/entities/payment-carts.entity'
+import { LessonBookmarks } from '../../../common/lessons/entities/lesson-bookmark.entity'
 
 @Entity({ name: 'users' })
 export class User {
@@ -56,4 +57,7 @@ export class User {
 
   @OneToMany(() => PaymentCart, (paymentCart) => paymentCart.user)
   paymentCarts: PaymentCart[]
+
+  @OneToMany(() => LessonBookmarks, (lessonBookmarks) => lessonBookmarks.user)
+  lessonBookmarks: LessonBookmarks[]
 }

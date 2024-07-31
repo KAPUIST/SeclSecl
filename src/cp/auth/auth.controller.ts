@@ -2,11 +2,11 @@ import { Body, Controller, Headers, HttpStatus, Post, Request, UseGuards } from 
 import { SignUpDto } from './dto/sign-up.dto'
 import { CpAuthService } from './auth.service'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-
 import { SignInDto } from './dto/sign-in.dto'
 import { CP_MESSAGE_CONSTANT } from '../../common/messages/cp.message'
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
+
 @ApiTags('업체 AUTH')
 @Controller({ host: 'cp.localhost', path: 'auth' })
 export class CpAuthController {

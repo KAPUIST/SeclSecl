@@ -9,7 +9,7 @@ import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 
 @ApiTags('유저 인증')
-@Controller('auth')
+@Controller({ host: 'localhost', path: 'auth' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
