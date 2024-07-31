@@ -1,7 +1,6 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
-
 import { CreateLessonDto } from './dtos/create-lesson.dto'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { S3Service } from '../../common/s3/s3.service'
@@ -48,7 +47,7 @@ export class LessonsService {
 
       await queryRunner.commitTransaction()
 
-      return plainToInstance(LessonResponseDto, savedLesson)
+      return savedLesson
     } catch (error) {
       await queryRunner.rollbackTransaction()
 
