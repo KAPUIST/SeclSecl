@@ -13,6 +13,7 @@ import { PaymentCart } from '../../payments/entities/payment-carts.entity'
 import { PaymentDetail } from '../../payments/entities/payment-details.entity'
 import { Lesson } from '../../../common/lessons/entities/lessons.entity'
 import { UserLesson } from '../../users/entities/user-lessons.entity'
+import { PaymentOrder } from '../../payments/entities/payment-orders.entity'
 
 @Entity({ name: 'batches' })
 export class Batch {
@@ -57,6 +58,9 @@ export class Batch {
 
   @OneToMany(() => PaymentDetail, (paymentDetail) => paymentDetail.batch)
   paymentDetails: PaymentDetail[]
+
+  @OneToMany(() => PaymentOrder, (paymentOrder) => paymentOrder.batch)
+  paymentOrders: PaymentOrder[]
 
   @ManyToOne(() => Lesson, (lesson) => lesson.batches)
   @JoinColumn({ name: 'lesson_uid' })

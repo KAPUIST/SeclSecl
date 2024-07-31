@@ -1,13 +1,40 @@
-import { Controller, Delete, Get, HttpStatus, Param, Post, Request, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Request, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { PaymentsService } from './payments.service'
-import { AddCartParamsDTO } from './dto/add-cart-params-dto'
-import { DeleteCartParamsDTO } from './dto/delete-cart-params-dto'
+import { AddCartParamsDTO } from './dto/add-cart-params.dto'
+import { DeleteCartParamsDTO } from './dto/delete-cart-params.dto'
+import { PurchaseItemDto } from './dto/purchase-item.dto'
 
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
+
+  // 주문 결제
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  async purchaseItem(@Request() req, @Body() purchaseItemDto: PurchaseItemDto) {
+    const userUid = req.user.uid
+    const purchasedItems = await this.paymentService.purchaseItem(userUid, purchaseItemDto)
+    return {
+      status: HttpStatus.CREATED,
+      message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.SUCCESS,
+      data: purchasedItems,
+    }
+  }
+
+  // 주문 정보 생성
+  @UseGuards(JwtAuthGuard)
+  @Post('/orders')
+  async createOrder(@Request() req, @Body() body: any) {
+    const userUid = req.user.uid
+    const createdOrder = await this.paymentService.createOrder(userUid, body)
+    return {
+      status: HttpStatus.CREATED,
+      message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.SUCCESS,
+      data: createdOrder,
+    }
+  }
 
   // 장바구니 추가
   @UseGuards(JwtAuthGuard)
@@ -29,7 +56,7 @@ export class PaymentsController {
     const userUid = req.user.uid
     const cartList = await this.paymentService.getCartList(userUid)
     return {
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.GET_CART_LIST.SUCCESS,
       data: cartList,
     }
@@ -41,7 +68,7 @@ export class PaymentsController {
     const userUid = req.user.uid
     const deletedLesson = await this.paymentService.deleteCart(userUid, params)
     return {
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.DELETE_CART.SUCCESS,
       data: deletedLesson,
     }
