@@ -242,4 +242,12 @@ export const MAIN_MESSAGE_CONSTANT = {
       EXISTING_BATCH: '이미 있는 기수입니다.',
     },
   },
+  BATCH_NOTICE: {
+    CONTROLLER: {
+      CREATE: '기수 공지 생성에 성공했습니다.',
+      FINDALL: '기수 공지 목록 찾기에 성공했습니다.',
+      UPDATE: '기수 공지 업데이트에 성공했습니다.',
+      DELETE: '기수 공지 삭제에 성공했습니다.',
+    },
+  },
 }
