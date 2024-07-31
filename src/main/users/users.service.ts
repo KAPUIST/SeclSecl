@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { User } from './entities/user.entity'
 import { DataSource, EntityManager, Repository } from 'typeorm'
@@ -6,15 +6,22 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UserInfos } from './entities/user-infos.entity'
 import * as bcrypt from 'bcrypt'
 import { UserLesson } from './entities/user-lessons.entity'
+import { LessonBookmarks } from '../../common/lessons/entities/lesson-bookmark.entity'
+import { ToggleLessonBookmarkRO } from './ro/toggle-favorite.ro'
+import { Lesson } from '../../common/lessons/entities/lessons.entity'
+import { FavoriteLessonRO } from './ro/favorite-lesson.ro'
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Lesson)
+    private readonly lessonRepository: Repository<Lesson>,
     @InjectRepository(UserLesson)
     private readonly userLessonRepository: Repository<UserLesson>,
-
+    @InjectRepository(LessonBookmarks)
+    private readonly lessonBookmarkRepository: Repository<LessonBookmarks>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) {}
@@ -102,5 +109,77 @@ export class UsersService {
     }
 
     return findOneUser
+  }
+
+  async toggleFavorite({ userUid, lessonId }: { userUid: string; lessonId: string }): Promise<ToggleLessonBookmarkRO> {
+    try {
+      const existingFavorite = await this.lessonBookmarkRepository.findOne({
+        where: { user: { uid: userUid }, lesson: { uid: lessonId } },
+        relations: ['lesson'],
+      })
+
+      if (existingFavorite) {
+        return this.removeFavorite(existingFavorite)
+      } else {
+        return this.addFavorite({ userUid, lessonId })
+      }
+    } catch (error) {
+      console.log(error)
+      if (error instanceof NotFoundException) {
+        throw error
+      } else {
+        throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.USER.FAVORITE.FAILED)
+      }
+    }
+  }
+
+  private async addFavorite({
+    userUid,
+    lessonId,
+  }: {
+    userUid: string
+    lessonId: string
+  }): Promise<ToggleLessonBookmarkRO> {
+    const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
+    if (!lesson) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.FAVORITE.NOT_FOUND_LESSON)
+    }
+
+    const favorite = this.lessonBookmarkRepository.create({ user: { uid: userUid }, lesson: { uid: lessonId } })
+    await this.lessonBookmarkRepository.save(favorite)
+
+    return {
+      message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.ADD_FAVORITE,
+      lessonId: favorite.lesson.uid,
+      title: lesson.title,
+    }
+  }
+
+  private async removeFavorite(existingFavorite: LessonBookmarks): Promise<ToggleLessonBookmarkRO> {
+    const title = existingFavorite.lesson ? existingFavorite.lesson.title : null
+    await this.lessonBookmarkRepository.remove(existingFavorite)
+
+    return {
+      message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.DELETE_FAVORITE,
+      title,
+      lessonId: existingFavorite.lesson.uid,
+    }
+  }
+
+  async getFavorite(userUid: string): Promise<FavoriteLessonRO[]> {
+    try {
+      const favorites = await this.lessonBookmarkRepository.find({
+        where: { user: { uid: userUid } },
+        relations: ['lesson'],
+      })
+
+      return favorites.map((fav) => ({
+        lessonId: fav.lesson.uid,
+        title: fav.lesson.title,
+      }))
+    } catch (error) {
+      console.error(error)
+      throw new InternalServerErrorException('찜한 강의 목록을 가져오는데 실패했습니다.')
+    }
   }
 }

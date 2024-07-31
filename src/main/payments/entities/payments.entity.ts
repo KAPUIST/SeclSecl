@@ -38,7 +38,7 @@ export class Payment {
   status: string
 
   @Column()
-  createdAt: Date
+  requestedAt: Date
 
   @Column()
   approvedAt: Date

@@ -193,6 +193,9 @@ export const MAIN_MESSAGE_CONSTANT = {
     ORDER: {
       PURCHASE_ITEM: {
         SUCCESS: '주문 결제에 성공하였습니다.',
+        NOT_FOUND_ORDER: '존재하지 않거나 완료 처리된 주문 정보 입니다.',
+        CONFLICT_PRICE: '주문 금액과 결제 금액이 같지 않습니다.',
+        TRANSACTION_ERROR: '결제 진행중 오류가 생겼습니다.',
       },
       CREATE_ORDER: {
         SUCCESS: '주문 결제에 성공하였습니다.',
@@ -244,6 +247,13 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_MATCHED_CHANGE_CAPASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
       EXISTED_NICKNAME: '중복되는 닉네임이 존재합니다.',
       NOT_FOUND_USER_LESSON: '수강중인 강의를 찾을 수 없습니다.',
+    },
+    FAVORITE: {
+      ADD_FAVORITE: '강의를 찜했습니다.',
+      DELETE_FAVORITE: '찜하기가 취소되었습니다.',
+      NOT_FOUND_LESSON: '강의를 찾을수 없습니다.',
+      FAILED: '강의 찜하기를 실패했습니다.',
+      FIND_FAVORITE: '찜한목록 조회에 성공했습니다.',
     },
   },
   BATCH: {
