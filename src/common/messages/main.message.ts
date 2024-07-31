@@ -193,6 +193,9 @@ export const MAIN_MESSAGE_CONSTANT = {
     ORDER: {
       PURCHASE_ITEM: {
         SUCCESS: '주문 결제에 성공하였습니다.',
+        NOT_FOUND_ORDER: '존재하지 않거나 완료 처리된 주문 정보 입니다.',
+        CONFLICT_PRICE: '주문 금액과 결제 금액이 같지 않습니다.',
+        TRANSACTION_ERROR: '결제 진행중 오류가 생겼습니다.',
       },
       CREATE_ORDER: {
         SUCCESS: '주문 결제에 성공하였습니다.',

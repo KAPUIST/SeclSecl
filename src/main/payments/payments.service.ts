@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
 import { PaymentCart } from './entities/payment-carts.entity'
@@ -12,16 +18,20 @@ import { ConfigService } from '@nestjs/config'
 import { PaymentOrder } from './entities/payment-orders.entity'
 import { OrderStatus } from './types/order-status.type'
 import { UserLesson } from '../users/entities/user-lessons.entity'
+import { Payment } from './entities/payments.entity'
+import { PaymentDetail } from './entities/payment-details.entity'
 
 @Injectable()
 export class PaymentsService {
   constructor(
+    @InjectRepository(Payment)
+    private readonly paymentRepository: Repository<Payment>,
     @InjectRepository(PaymentCart)
     private readonly paymentCartRepository: Repository<PaymentCart>,
-    @InjectRepository(Batch)
-    private readonly batchRepository: Repository<Batch>,
     @InjectRepository(PaymentOrder)
     private readonly paymentOrderRepository: Repository<PaymentOrder>,
+    @InjectRepository(Batch)
+    private readonly batchRepository: Repository<Batch>,
     @InjectRepository(UserLesson)
     private readonly userLessonRepository: Repository<UserLesson>,
     private dataSource: DataSource,
@@ -29,32 +39,96 @@ export class PaymentsService {
   ) {}
   // 주문 결제 로직
   async purchaseItem(userUid: string, purchaseItemDto: PurchaseItemDto) {
-    return this.dataSource.transaction(async (manager) => {
-      // const cartList = await manager.find(PaymentCart, { where: { userUid }, relations: { batch: { lesson: true } } })
-      const apiSecretKey = this.configService.get<string>('API_SECRET_KEY')
-      const encryptedApiSecretKey = 'Basic ' + Buffer.from(apiSecretKey + ':').toString('base64')
-      const { paymentKey, orderId, amount } = purchaseItemDto
-      // 주문 정보가 없거나, 이미 완료되거나 실패한 주문일 때 에러처리
-      const orderList = await manager.find(PaymentOrder, { where: { orderId, status: OrderStatus.Pending } })
-      if (_.isNil(orderList)) {
-      }
-
-      const response = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
-        method: 'POST',
-        headers: {
-          Authorization: encryptedApiSecretKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ paymentKey, orderId, amount }),
-      })
-      const data = await response.json()
-      console.log('data', data)
-
-      return { status: response.status, data }
+    const apiSecretKey = this.configService.get<string>('API_SECRET_KEY')
+    const encryptedApiSecretKey = 'Basic ' + Buffer.from(apiSecretKey + ':').toString('base64')
+    const { paymentKey, orderId, amount } = purchaseItemDto
+    const orderList = await this.paymentOrderRepository.find({
+      where: { orderId, status: OrderStatus.Pending },
+      relations: { batch: { lesson: true } },
     })
+    // 주문 정보가 없거나, 이미 완료되거나 실패한 주문일 때 에러처리
+    if (orderList.length === 0) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.NOT_FOUND_ORDER)
+    }
+    // 주문 정보의 금액과 결제 금액이 맞지 않는 경우, 실패 시 주문등록 상태 컨트롤을 위해 트랜잭션에서 분리
+    const orderTotalPrice = orderList.reduce((acc, cur) => acc + cur.batch.lesson.price, 0)
+    if (orderTotalPrice !== amount) {
+      // 주문 실패 시 주문 데이터 상태 처리
+      if (orderList.length > 0) {
+        for (const order of orderList) {
+          await this.paymentOrderRepository.update(
+            { orderId, batchUid: order.batchUid },
+            { status: OrderStatus.Failed },
+          )
+        }
+      }
+      throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.CONFLICT_PRICE)
+    }
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        // 승인 요청
+        const response = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
+          method: 'POST',
+          headers: {
+            Authorization: encryptedApiSecretKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ paymentKey, orderId, amount }),
+        })
+        const data = await response.json()
+        console.log('data', data)
+
+        // 결제 테이블 생성
+        const payment = await manager.save(Payment, {
+          userUid,
+          totalAmount: amount,
+          vat: data.vat,
+          requestedAt: data.requestedAt,
+          approvedAt: data.approvedAt,
+          currency: data.currency,
+          method: data.method,
+          orderId,
+          orderName: data.orderName,
+          lastTransactionKey: data.lastTransactionKey,
+          paymentKey: data.paymentKey,
+          status: data.status,
+        })
+        for (const order of orderList) {
+          // 상세 결제 테이블 생성
+          await manager.save(PaymentDetail, {
+            payment_id: payment.uid,
+            batchUid: order.batchUid,
+            amount: order.batch.lesson.price,
+          })
+          // 장바구니 삭제
+          await manager.delete(PaymentCart, { userUid, batchUid: order.batchUid })
+          // 주문 데이터 상태 처리
+          await manager.update(PaymentOrder, { orderId, batchUid: order.batchUid }, { status: OrderStatus.Completed })
+          // 유저 강의 추가
+          await manager.save(UserLesson, {
+            userUid,
+            batchUid: order.batchUid,
+          })
+        }
+        return data
+      })
+    } catch (err) {
+      // 주문 데이터 상태 처리
+      const orderList = await this.paymentOrderRepository.find({ where: { orderId } })
+      // 주문 실패 시 주문 데이터 상태 처리
+      if (orderList.length > 0) {
+        for (const order of orderList) {
+          await this.paymentOrderRepository.update(
+            { orderId, batchUid: order.batchUid },
+            { status: OrderStatus.Failed },
+          )
+        }
+      }
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.TRANSACTION_ERROR)
+    }
   }
 
-  // 주문 정보 생성 로직
+  // 주문 정보 생성 로직(body 타입 추후 지정)
   async createOrder(userUid: string, body: any) {
     return this.dataSource.transaction(async (manager) => {
       const orderId = body.orderId
