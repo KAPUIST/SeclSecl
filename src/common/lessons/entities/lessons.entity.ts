@@ -64,6 +64,6 @@ export class Lesson {
   @OneToMany(() => Batch, (batch) => batch.lesson)
   batches: Batch[]
 
-  @OneToMany(()=> LessonReview, (reviews) => reviews.lesson)
+  @OneToMany(() => LessonReview, (reviews) => reviews.lesson)
   reviews: LessonReview[]
 }

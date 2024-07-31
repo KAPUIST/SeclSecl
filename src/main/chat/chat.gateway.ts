@@ -12,7 +12,8 @@ import { ChatService } from './chat.service'
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['Authorization'],
     credentials: true,
-  }, namespace: "chatting"
+  },
+  namespace: 'chatting',
 })
 // @UseGuards(WsAuthGuard)
 export class ChatGateway {

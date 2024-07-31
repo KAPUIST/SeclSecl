@@ -1,7 +1,7 @@
 export enum Rate {
-  ONE = "⭐",
-  TWO = "⭐⭐",
-  THREE = "⭐⭐⭐",
-  FOUR = "⭐⭐⭐⭐",
-  FIVE = "⭐⭐⭐⭐⭐",
+  ONE = '⭐',
+  TWO = '⭐⭐',
+  THREE = '⭐⭐⭐',
+  FOUR = '⭐⭐⭐⭐',
+  FIVE = '⭐⭐⭐⭐⭐',
 }
