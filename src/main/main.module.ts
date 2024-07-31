@@ -12,7 +12,7 @@ import { LessonsModule } from '../common/lessons/lessons.module'
 import { ChatModule } from './chat/chat.module'
 import { PaymentsModule } from './payments/payments.module'
 import { ReviewModule } from './review/lesson.review.module'
-import { RivewService } from './rivew/rivew.service'
+import { LessonReviewService } from '../main/review/lesson.review.service'
 
 @Module({
   imports: [
@@ -25,6 +25,6 @@ import { RivewService } from './rivew/rivew.service'
     ReviewModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService, RivewService],
+  providers: [UsersService, LessonReviewService],
 })
 export class MainModule {}
