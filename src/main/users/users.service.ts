@@ -110,7 +110,7 @@ export class UsersService {
     return findOneUser
   }
 
-  async toggleFavorites({ userUid, lessonId }: { userUid: string; lessonId: string }): Promise<ToggleLessonBookmarkRO> {
+  async toggleFavorite({ userUid, lessonId }: { userUid: string; lessonId: string }): Promise<ToggleLessonBookmarkRO> {
     try {
       const existingFavorite = await this.lessonBookmarkRepository.findOne({
         where: { user: { uid: userUid }, lesson: { uid: lessonId } },
@@ -118,25 +118,9 @@ export class UsersService {
       })
 
       if (existingFavorite) {
-        const title = existingFavorite.lesson ? existingFavorite.lesson.title : null
-        await this.lessonBookmarkRepository.remove(existingFavorite)
-        return {
-          message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.DELETE_FAVORITE,
-          title,
-          lessonId,
-        }
+        return this.removeFavorite(existingFavorite)
       } else {
-        const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
-        if (!lesson) {
-          throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.FAVORITE.NOT_FOUND_LESSON)
-        }
-        const favorite = this.lessonBookmarkRepository.create({ user: { uid: userUid }, lesson: { uid: lessonId } })
-        await this.lessonBookmarkRepository.save(favorite)
-        return {
-          message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.ADD_FAVORITE,
-          lessonId: favorite.lesson.uid,
-          title: lesson.title,
-        }
+        return this.addFavorite({ userUid, lessonId })
       }
     } catch (error) {
       console.log(error)
@@ -145,6 +129,39 @@ export class UsersService {
       } else {
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.USER.FAVORITE.FAILED)
       }
+    }
+  }
+
+  private async addFavorite({
+    userUid,
+    lessonId,
+  }: {
+    userUid: string
+    lessonId: string
+  }): Promise<ToggleLessonBookmarkRO> {
+    const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
+    if (!lesson) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.FAVORITE.NOT_FOUND_LESSON)
+    }
+
+    const favorite = this.lessonBookmarkRepository.create({ user: { uid: userUid }, lesson: { uid: lessonId } })
+    await this.lessonBookmarkRepository.save(favorite)
+
+    return {
+      message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.ADD_FAVORITE,
+      lessonId: favorite.lesson.uid,
+      title: lesson.title,
+    }
+  }
+
+  private async removeFavorite(existingFavorite: LessonBookmarks): Promise<ToggleLessonBookmarkRO> {
+    const title = existingFavorite.lesson ? existingFavorite.lesson.title : null
+    await this.lessonBookmarkRepository.remove(existingFavorite)
+
+    return {
+      message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.DELETE_FAVORITE,
+      title,
+      lessonId: existingFavorite.lesson.uid,
     }
   }
 }

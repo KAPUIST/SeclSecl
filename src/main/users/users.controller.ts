@@ -56,7 +56,7 @@ export class UsersController {
   @ApiBearerAuth()
   async toggleFavorite(@Request() req, @Body('lessonId') lessonId: string) {
     const userUid: string = req.user.uid
-    const favorites = await this.userService.toggleFavorites({ userUid, lessonId })
+    const favorites = await this.userService.toggleFavorite({ userUid, lessonId })
     return {
       statusCode: HttpStatus.CREATED,
       message: favorites.message,
