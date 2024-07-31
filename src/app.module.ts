@@ -15,7 +15,6 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { BatchNoticeModule } from './main/batch-notice/batch-notice.module'
 
-
 @Module({
   imports: [
     ServeStaticModule.forRoot({
