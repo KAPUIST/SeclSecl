@@ -6,12 +6,12 @@ import { ChatJwtStrategy } from './chat.jwt.strategy'
 import { ChatService } from './chat.service'
 
 @WebSocketGateway({
-  cors: {    
-  origin: '*',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true
-}
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true,
+  },
 })
 // @UseGuards(WsAuthGuard)
 export class ChatGateway {
