@@ -1,4 +1,19 @@
-import { PartialType } from '@nestjs/swagger'
-import { CreateBatchNoticeDto } from './create-batch-notice.dto'
+import { ApiProperty } from '@nestjs/swagger'
+import { IsOptional, IsString } from 'class-validator'
 
-export class UpdateBatchNoticeDto extends PartialType(CreateBatchNoticeDto) {}
+export class UpdateBatchNoticeDto {
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  title: string
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  content: string
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  lessonNote?: string
+}
