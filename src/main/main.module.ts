@@ -13,13 +13,14 @@ import { ChatModule } from './chat/chat.module'
 import { PaymentsModule } from './payments/payments.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserInfos, UserLesson]),
-            AuthModule,
-            BandModule,
-            LessonsModule,
-            ChatModule,
-            PaymentsModule,
-            ],
+  imports: [
+    TypeOrmModule.forFeature([User, UserInfos, UserLesson]),
+    AuthModule,
+    BandModule,
+    LessonsModule,
+    ChatModule,
+    PaymentsModule,
+  ],
   controllers: [UsersController],
   providers: [UsersService],
 })

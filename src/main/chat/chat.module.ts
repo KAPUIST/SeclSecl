@@ -7,10 +7,13 @@ import { Message } from './entities/message.entity'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { JwtService } from '@nestjs/jwt'
 import { ChatJwtStrategy } from './chat.jwt.strategy'
+import { WsAuthGuard } from './chat.jwt.guard'
+import { ConfigModule } from '@nestjs/config'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ChatRoom, Message])],
+  imports: [TypeOrmModule.forFeature([ChatRoom, Message]),
+  ConfigModule],
   controllers: [ChatController],
-  providers: [ChatService, ChatGateway, JwtService, ChatJwtStrategy],
+  providers: [ChatService, ChatGateway, JwtService, ChatJwtStrategy, WsAuthGuard],
 })
 export class ChatModule {}
