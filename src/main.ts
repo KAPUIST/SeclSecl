@@ -4,7 +4,6 @@ import { ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AdminModule } from './admin/admin.module'
-import { CpModule } from './cp/cp.module'
 import { IoAdapter } from '@nestjs/platform-socket.io'
 
 async function bootstrap() {

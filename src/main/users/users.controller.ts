@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Patch, Request, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, HttpStatus, Patch, Post, Request, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { UsersService } from './users.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
@@ -47,6 +47,23 @@ export class UsersController {
       statusCode: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.USER.CONTROLLER.FIND_MY_LESSONS,
       data,
+    }
+  }
+  /** 강의 찜하기!
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post('/favorites')
+  @ApiBearerAuth()
+  async toggleFavorite(@Request() req, @Body('lessonId') lessonId: string) {
+    const userUid: string = req.user.uid
+    const favorites = await this.userService.toggleFavorites({ userUid, lessonId })
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: favorites.message,
+      data: {
+        title: favorites.title,
+        lessonId: favorites.lessonId,
+      },
     }
   }
 }

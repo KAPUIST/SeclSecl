@@ -6,9 +6,11 @@ import { Band } from '../band/entities/band.entity'
 import { User } from './entities/user.entity'
 import { UserInfos } from './entities/user-infos.entity'
 import { UserLesson } from './entities/user-lessons.entity'
+import { LessonBookmarks } from '../../common/lessons/entities/lesson-bookmark.entity'
+import { Lesson } from '../../common/lessons/entities/lessons.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Band, User, UserInfos, UserLesson])],
+  imports: [TypeOrmModule.forFeature([Band, User, UserInfos, UserLesson, LessonBookmarks, Lesson])],
   controllers: [UsersController],
   providers: [UsersService],
 })
