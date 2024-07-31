@@ -12,6 +12,7 @@ import { CpModule } from './cp/cp.module'
 import { SendbirdModule } from './common/sendbird/sendbird.module'
 import { HttpModule } from '@nestjs/axios'
 import { BatchNoticeModule } from './main/batch-notice/batch-notice.module'
+import { BatchPostsModule } from './main/batch-posts/batch-posts.module'
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { BatchNoticeModule } from './main/batch-notice/batch-notice.module'
     HttpModule,
     BatchesModule,
     BatchNoticeModule,
+    BatchPostsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,6 +6,7 @@ import { Batch } from '../batches/entities/batch.entity'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { BatchNotice } from './entities/batch-notice.entity'
 import { UserLesson } from '../users/entities/user-lessons.entity'
+import { S3Module } from '../../common/s3/s3.module'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Lesson, Batch, BatchNotice, UserLesson])],

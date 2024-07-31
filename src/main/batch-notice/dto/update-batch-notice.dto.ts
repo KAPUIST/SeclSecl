@@ -16,4 +16,9 @@ export class UpdateBatchNoticeDto {
   @IsString()
   @IsOptional()
   lessonNote?: string
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  field?: string
 }

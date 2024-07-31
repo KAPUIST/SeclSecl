@@ -14,6 +14,7 @@ import { PaymentDetail } from '../../payments/entities/payment-details.entity'
 import { Lesson } from '../../../common/lessons/entities/lessons.entity'
 import { UserLesson } from '../../users/entities/user-lessons.entity'
 import { BatchNotice } from '../../batch-notice/entities/batch-notice.entity'
+import { BatchPost } from '../../batch-posts/entities/batch-post.entity'
 
 @Entity({ name: 'batches' })
 export class Batch {
@@ -65,4 +66,7 @@ export class Batch {
 
   @OneToMany(() => BatchNotice, (notice) => notice.batch)
   batchNotices: BatchNotice[]
+
+  @OneToMany(() => BatchNotice, (post) => post.batch)
+  batchPosts: BatchPost[]
 }

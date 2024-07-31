@@ -5,7 +5,6 @@ import { UpdateBatchNoticeDto } from './dto/update-batch-notice.dto'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { DeleteBandCommentParamsDTO } from '../band/dto/delete-band-comment-params.dto'
 
 @ApiTags('기수 공지')
 @ApiBearerAuth()
