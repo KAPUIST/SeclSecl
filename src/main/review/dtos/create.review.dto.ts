@@ -1,13 +1,7 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator'
 import { Rate } from '../type/lesson.review.rate'
 
-export class LessonReviewDto {
-  /**
-   * lessonUid
-   */
-  @IsUUID()
-  @IsNotEmpty({ message: '이메일을 입력해주세요.' })
-  lessonId: string
+export class CreateReviewDto {
 
   /**
    * 리뷰 내용
@@ -17,7 +11,10 @@ export class LessonReviewDto {
   @IsNotEmpty({ message: '리뷰내용을 입력해주세요.' })
   content: string
 
+  /**
+   * 별점
+   */
   @IsEnum(Rate)
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '별점을 입력하지 않으셨습니다.' })
   rate: Rate
 }

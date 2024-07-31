@@ -11,7 +11,6 @@ import { UserLesson } from './users/entities/user-lessons.entity'
 import { LessonsModule } from '../common/lessons/lessons.module'
 import { ChatModule } from './chat/chat.module'
 import { PaymentsModule } from './payments/payments.module'
-import { ReviewModule } from './review/lesson.review.module'
 import { LessonReviewService } from '../main/review/lesson.review.service'
 
 @Module({
@@ -22,7 +21,6 @@ import { LessonReviewService } from '../main/review/lesson.review.service'
     LessonsModule,
     ChatModule,
     PaymentsModule,
-    ReviewModule,
   ],
   controllers: [UsersController],
   providers: [UsersService, LessonReviewService],
