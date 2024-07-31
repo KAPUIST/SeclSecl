@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { LessonResponseDto } from '../../cp/lessons/dtos/lessons-response.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
@@ -85,6 +85,24 @@ COUNT(payment_detail.uid)를 선택하여 각 강의의 판매량을 계산하�
     } catch (error) {
       console.error(error)
       throw new InternalServerErrorException('인기 수업 조회에 실패 하였습니다.')
+    }
+  }
+
+  async getLessonById(lessonId: string): Promise<MainLessonResponseDto> {
+    try {
+      const lesson = await this.lessonsRepository.findOne({
+        where: { uid: lessonId },
+        relations: ['images'],
+      })
+
+      if (!lesson) {
+        throw new NotFoundException('레슨을 찾을 수 없습니다.')
+      }
+
+      return plainToInstance(MainLessonResponseDto, lesson)
+    } catch (error) {
+      console.error(error)
+      throw new InternalServerErrorException('레슨 조회에 실패하였습니다.')
     }
   }
 }

@@ -10,7 +10,7 @@ import { UsersModule } from './users/users.module'
 import { MainLessonsModule } from './mainlessons/mainlessons.module'
 
 @Module({
-  imports: [AuthModule, BandModule, LessonsModule, ChatModule, PaymentsModule, UsersModule],
+  imports: [AuthModule, BandModule, LessonsModule, ChatModule, PaymentsModule, UsersModule, MainLessonsModule],
   controllers: [],
   providers: [],
 })

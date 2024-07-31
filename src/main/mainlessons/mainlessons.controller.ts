@@ -1,4 +1,4 @@
-import { Controller, HttpCode, HttpStatus, Post, UseGuards, Request, Get } from '@nestjs/common'
+import { Controller, HttpCode, HttpStatus, Post, UseGuards, Request, Get, Param } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { MainLessonsService } from './mainlessons.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
@@ -43,6 +43,24 @@ export class MainLessonsController {
       statusCode: HttpStatus.OK,
       message: '인기 수업 조회 성공',
       lessons: data,
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:lessonId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '레슨 상세 조회' })
+  @ApiResponse({ status: 200, description: '레슨 상세 조회 성공' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiBearerAuth()
+  async getLesson(
+    @Param('lessonId') lessonId: string,
+  ): Promise<{ statusCode: number; message: string; lesson: MainLessonResponseDto }> {
+    const data = await this.mainLessonsService.getLessonById(lessonId)
+    return {
+      statusCode: HttpStatus.OK,
+      message: '레슨 상세 조회 성공',
+      lesson: data,
     }
   }
 }
