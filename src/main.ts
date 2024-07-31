@@ -4,12 +4,16 @@ import { ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AdminModule } from './admin/admin.module'
+import { CpModule } from './cp/cp.module'
+import { IoAdapter } from '@nestjs/platform-socket.io'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.enableCors()
   const configService = app.get(ConfigService)
   const port = configService.get<number>('SERVER_PORT')
+
+  app.useWebSocketAdapter(new IoAdapter(app))
 
   app.setGlobalPrefix('api', { exclude: ['/health-check'] })
   app.useGlobalPipes(
@@ -27,6 +31,9 @@ async function bootstrap() {
 
     next()
   })
+
+  app.enableCors()
+
   const config = new DocumentBuilder()
     .setTitle('seclsecl')
     .setDescription('seclsecl PROJECT')
