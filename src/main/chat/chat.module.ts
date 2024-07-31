@@ -11,8 +11,7 @@ import { WsAuthGuard } from './chat.jwt.guard'
 import { ConfigModule } from '@nestjs/config'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ChatRoom, Message]),
-  ConfigModule],
+  imports: [TypeOrmModule.forFeature([ChatRoom, Message]), ConfigModule],
   controllers: [ChatController],
   providers: [ChatService, ChatGateway, JwtService, ChatJwtStrategy, WsAuthGuard],
 })
