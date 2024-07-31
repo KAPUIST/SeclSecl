@@ -1,7 +1,7 @@
 export enum Rate {
-    ONE = 1,
-    TWO,
-    THREE,
-    FOUR,
-    FIVE,
-  }
+  ONE = 1,
+  TWO,
+  THREE,
+  FOUR,
+  FIVE,
+}

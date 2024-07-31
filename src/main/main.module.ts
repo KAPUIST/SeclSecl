@@ -10,8 +10,8 @@ import { UserInfos } from './users/entities/user-infos.entity'
 import { UserLesson } from './users/entities/user-lessons.entity'
 import { LessonsModule } from '../common/lessons/lessons.module'
 import { PaymentsModule } from './payments/payments.module'
-import { ReviewModule } from './review/lesson.review.module';
-import { RivewService } from './rivew/rivew.service';
+import { ReviewModule } from './review/lesson.review.module'
+import { RivewService } from './rivew/rivew.service'
 
 @Module({
   imports: [
