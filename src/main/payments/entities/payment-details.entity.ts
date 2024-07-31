@@ -22,7 +22,7 @@ export class PaymentDetail {
   batchUid: string
 
   @Column()
-  amount: string
+  amount: number
 
   @CreateDateColumn()
   createdAt: Date
