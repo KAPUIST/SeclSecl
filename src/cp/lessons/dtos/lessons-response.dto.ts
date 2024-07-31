@@ -2,6 +2,7 @@ import { Exclude, Type } from 'class-transformer'
 import { IsString, IsNotEmpty, IsNumber, IsBoolean } from 'class-validator'
 import { LessonImages } from '../../../common/lessons/entities/lesson-image.entity'
 import { Batch } from '../../../main/batches/entities/batch.entity'
+import { LessonReview } from '../../../main/review/entities/lesson.review.entity'
 
 export class LessonResponseDto {
   @IsString()
@@ -60,4 +61,7 @@ export class LessonResponseDto {
 
   @Type(() => Batch)
   batches: Batch[]
+
+  @Type(() => LessonReview)
+  reviews: LessonReview[]
 }

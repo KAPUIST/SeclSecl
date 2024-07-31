@@ -8,10 +8,11 @@ import { ChatService } from './chat.service'
 @WebSocketGateway({
   cors: {
     origin: '*',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Authorization'],
     credentials: true,
-  },
+  }, namespace: "chatting"
 })
 // @UseGuards(WsAuthGuard)
 export class ChatGateway {
