@@ -11,7 +11,13 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UserLesson } from '../users/entities/user-lessons.entity'
 import { BatchPostComment } from './entities/batch-post-comments.entity'
 import { CreateBatchCommentRO } from './ro/create-batch-comment.ro'
-import { GetBandCommentParamsDTO } from '../band/dto/get-band-comment-params.dto'
+import { GetBatchCommentRO } from './ro/get-batch-comment.ro'
+import { UpdateBatchCommentParamsDTO } from './dto/update-batch-comment-params.dto'
+import { UpdateBatchCommentDTO } from './dto/update-batch-comment.dto'
+import { GetBatchCommentParamsDTO } from './dto/get-batch-comment-params.dto'
+import { DeleteBatchCommentParamsDTO } from './dto/delete-batch-comment-params.dto'
+import { UpdateBatchCommentRO } from './ro/update-batch-comment.ro'
+import { DeleteBatchCommentRO } from './ro/delete-batch-comment.ro'
 
 @Injectable()
 export class BatchPostsService {
@@ -77,7 +83,7 @@ export class BatchPostsService {
     }
   }
   // 기수별 커뮤니티 댓글 조회 로직
-  async getBatchComment(userUid: string, params: GetBandCommentParamsDTO) {
+  async getBatchComment(userUid: string, params: GetBatchCommentParamsDTO): Promise<GetBatchCommentRO[]> {
     const batchPostUid = params.postUid
     // 게시물이 존재하지 않을 시 에러처리
     const batchPost = await this.batchPostRepository.findOne({ where: { uid: batchPostUid } })
@@ -91,8 +97,66 @@ export class BatchPostsService {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.CREATE_BATCH_COMMENT.NOT_FOUND_USER)
     }
     const batchCommentList = await this.batchPostCommentRepository.find({ where: { batchPostUid } })
-    return batchCommentList
+    return batchCommentList.map((comment) => ({
+      uid: comment.uid,
+      userUid,
+      batchPostUid,
+      parentCommentUid: comment.parentCommentUid,
+      content: comment.content,
+      likeCount: comment.likeCount,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+    }))
   }
   // 기수별 커뮤니티 댓글 수정 로직
+  async updateBatchComment(
+    userUid: string,
+    params: UpdateBatchCommentParamsDTO,
+    updateBatchCommentDTO: UpdateBatchCommentDTO,
+  ): Promise<UpdateBatchCommentRO> {
+    const uid = params.commentUid
+    const batchComment = await this.batchPostCommentRepository.findOne({
+      relations: { batchPost: true },
+      where: { uid },
+    })
+    // 댓글이 존재하지 않을 시 에러처리
+    if (_.isNil(batchComment)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UPDATE_BATCH_COMMENT.NOT_FOUND_COMMENT)
+    }
+    // 유저가 댓글작성자가 아닐 시 에러 처리
+    const isMember = await this.batchPostCommentRepository.findOne({ where: { uid, userUid } })
+    if (_.isNil(isMember)) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UPDATE_BATCH_COMMENT.NOT_MATCHED)
+    }
+
+    await this.batchPostCommentRepository.update({ uid }, updateBatchCommentDTO)
+    const updatedPatchComment = await this.batchPostCommentRepository.findOne({
+      where: { uid },
+    })
+    return {
+      userUid,
+      batchCommentUid: uid,
+      parentCommentUid: updatedPatchComment.parentCommentUid,
+      content: updatedPatchComment.content,
+    }
+  }
   // 기수별 커뮤니티 댓글 삭제 로직
+  async deleteBatchComment(userUid: string, params: DeleteBatchCommentParamsDTO): Promise<DeleteBatchCommentRO> {
+    const uid = params.commentUid
+    const batchComment = await this.batchPostCommentRepository.findOne({
+      relations: { batchPost: true },
+      where: { uid },
+    })
+    // 댓글이 존재하지 않을 시 에러처리
+    if (_.isNil(batchComment)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UPDATE_BATCH_COMMENT.NOT_FOUND_COMMENT)
+    }
+    // 유저가 댓글작성자가 아닐 시 에러 처리
+    const isMember = await this.batchPostCommentRepository.findOne({ where: { uid, userUid } })
+    if (_.isNil(isMember)) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UPDATE_BATCH_COMMENT.NOT_MATCHED)
+    }
+    await this.batchPostCommentRepository.softDelete({ uid })
+    return { deletedCommentUid: uid }
+  }
 }

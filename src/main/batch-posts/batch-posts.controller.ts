@@ -7,7 +7,10 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { CreateBatchCommentDTO } from './dto/create-batch-comment.dto'
 import { CreateBatchCommentParamsDTO } from './dto/create-batch-comment-params.dto'
-import { GetBandCommentParamsDTO } from '../band/dto/get-band-comment-params.dto'
+import { UpdateBatchCommentParamsDTO } from './dto/update-batch-comment-params.dto'
+import { UpdateBatchCommentDTO } from './dto/update-batch-comment.dto'
+import { GetBatchCommentParamsDTO } from './dto/get-batch-comment-params.dto'
+import { DeleteBatchCommentParamsDTO } from './dto/delete-batch-comment-params.dto'
 
 @ApiTags('기수 커뮤니티')
 @ApiBearerAuth()
@@ -75,15 +78,58 @@ export class BatchPostsController {
     }
   }
 
-  // 기수별 커뮤니티 댓글 조회
+  /**
+   * 기수별 커뮤니티 댓글 조회
+   * @param req
+   * @param params
+   * @returns
+   */
   @Get('/posts/:postUid/comments')
-  async getBatchComment(@Request() req, @Param() params: GetBandCommentParamsDTO) {
+  async getBatchComment(@Request() req, @Param() params: GetBatchCommentParamsDTO) {
     const userUid = req.user.uid
     const batchCommentList = await this.batchPostsService.getBatchComment(userUid, params)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.GET_BATCH_COMMENT.SUCCEED,
       data: batchCommentList,
+    }
+  }
+  /**
+   * 기수별 커뮤니티 댓글 수정
+   * @param req
+   * @param params
+   * @param updateBatchCommentDTO
+   * @returns
+   */
+  @Patch('/posts/comments/:commentUid')
+  async updateBatchComment(
+    @Request() req,
+    @Param() params: UpdateBatchCommentParamsDTO,
+    @Body() updateBatchCommentDTO: UpdateBatchCommentDTO,
+  ) {
+    const userUid = req.user.uid
+    const updatedBatchComment = await this.batchPostsService.updateBatchComment(userUid, params, updateBatchCommentDTO)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.UPDATE_BATCH_COMMENT.SUCCEED,
+      data: updatedBatchComment,
+    }
+  }
+
+  /**
+   * 기수별 커뮤니티 댓글 삭제
+   * @param req
+   * @param params
+   * @returns
+   */
+  @Delete('/posts/comments/:commentUid')
+  async deleteBatchComment(@Request() req, @Param() params: DeleteBatchCommentParamsDTO) {
+    const userUid = req.user.uid
+    const deletedBatchCommentUid = await this.batchPostsService.deleteBatchComment(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.DELETE_BATCH_COMMENT.SUCCEED,
+      data: deletedBatchCommentUid,
     }
   }
 }

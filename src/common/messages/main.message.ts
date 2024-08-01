@@ -322,7 +322,13 @@ export const MAIN_MESSAGE_CONSTANT = {
         SUCCEED: '기수 커뮤니티 댓글 생성에 성공하였습니다.',
       },
       GET_BATCH_COMMENT: {
-        SUCCEED: '밴드 댓글 조회에 성공하였습니다.',
+        SUCCEED: '기수 커뮤니티 댓글 조회에 성공하였습니다.',
+      },
+      UPDATE_BATCH_COMMENT: {
+        SUCCEED: '기수 커뮤니티 댓글 수정에 성공하였습니다.',
+      },
+      DELETE_BATCH_COMMENT: {
+        SUCCEED: '기수 커뮤니티 댓글 삭제에 성공하였습니다.',
       },
     },
     SERVICE: {
@@ -333,6 +339,14 @@ export const MAIN_MESSAGE_CONSTANT = {
       GET_BATCH_COMMENT: {
         NOT_FOUND_POST: '존재하지 않는 기수 커뮤니티입니다.',
         NOT_FOUND_USER: '기수 멤버가 아닙니다.',
+      },
+      UPDATE_BATCH_COMMENT: {
+        NOT_FOUND_COMMENT: '존재하지 않는 댓글 입니다.',
+        NOT_MATCHED: '댓글 작성자만 수정할 수 있습니다.',
+      },
+      DELETE_BATCH_COMMENT: {
+        NOT_FOUND_Comment: '존재하지 않는 댓글입니다.',
+        NOT_MATCHED: '댓글 작성자만 수정할 수 있습니다.',
       },
     },
     COMMON: {
@@ -345,6 +359,9 @@ export const MAIN_MESSAGE_CONSTANT = {
         },
       },
       BAND_POSTS_COMMENTS_ENTITY: {
+        UID: {
+          REQUIRED: '기수 커뮤니티 댓글 UID를 입력해 주세요',
+        },
         CONTENT: {
           REQUIRED: '기수 게시판 댓글 내용을 입력해 주세요',
         },
