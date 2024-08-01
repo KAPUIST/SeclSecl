@@ -47,56 +47,49 @@ export class BatchNoticeService {
     const uploadedFiles: { location: string; key: string }[] = []
 
     try {
-      const { ...noticeInfo } = createBatchNoticeDto
-
       // cp가 권한이 있는지 확인
       await this.authorizedCp(uid, lessonId)
-
       // 기수가 존재하는지 확인
       await this.findBatchOrThrow(lessonId, batchId)
 
       const newBatchNotice = this.batchNoticeRepository.create({
-        ...noticeInfo,
+        ...createBatchNoticeDto,
         batchUid: batchId,
         cpUid: uid,
       })
+      const savedBatchNotice = await queryRunner.manager.save(BatchNotice, newBatchNotice)
+
+      delete savedBatchNotice.deletedAt
 
       const fileEntities = []
       for (const file of files) {
-        const { location, key } = await this.s3Service.uploadFile(file, 'batch-file')
+        const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
         const fileEntity = this.lessonNoteRepository.create({
           lessonNote: location, // 파일 위치 URL
           field: file.originalname, // 파일 원본 이름
+          noticeUid: savedBatchNotice.uid,
         })
+
         fileEntities.push(fileEntity)
         uploadedFiles.push({ location, key })
       }
-      console.log('fileEntities', fileEntities)
-      console.log('uploadedFiles', uploadedFiles)
 
-      console.log('newBatchNotice', newBatchNotice)
+      const batchNotice = await queryRunner.manager.save(BatchNotice, newBatchNotice)
+      const lessonNote = await queryRunner.manager.save(LessonNote, fileEntities)
 
-      const savedBatchNotice = await queryRunner.manager.save(BatchNotice, newBatchNotice)
-      console.log('savedBatchNotice', savedBatchNotice)
-      await queryRunner.manager.save(LessonNote, fileEntities)
+      lessonNote.forEach((note) => {
+        delete note.deletedAt
+      })
 
       await queryRunner.commitTransaction()
 
-      return savedBatchNotice
+      return [batchNotice, lessonNote]
     } catch (error) {
       await queryRunner.rollbackTransaction()
 
       // 업로드된 파일 삭제
       for (const file of uploadedFiles) {
-        try {
-          await this.s3Service.deleteFile(file.key)
-        } catch (deleteError) {
-          console.error('파일 삭제 중 오류 발생:', deleteError)
-        }
-      }
-
-      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
-        throw error
+        await this.s3Service.deleteFile(file.key)
       }
 
       throw new InternalServerErrorException('공지 등록 중 오류가 발생했습니다.')
@@ -104,52 +97,7 @@ export class BatchNoticeService {
       await queryRunner.release()
     }
   }
-  // async create(uid, lessonId, batchId, files: Express.Multer.File[], createBatchNoticeDto: CreateBatchNoticeDto) {
-  //   const queryRunner = this.dataSource.createQueryRunner()
-  //   await queryRunner.connect()
-  //   await queryRunner.startTransaction()
-  //   const uploadedFiles: { location: string; key: string }[] = []
-  //   try {
-  //     const { ...noticeInfo } = createBatchNoticeDto
-
-  //     //cp가 권한이 있는지 확인
-  //     await this.authorizedCp(uid, lessonId)
-
-  //     // 기수가 존재하는지 확인
-  //     await this.findBatchOrThrow(lessonId, batchId)
-
-  //     const pdfEntities = []
-
-  //     for (const file of files) {
-  //       const { location, key } = await this.s3Service.uploadFile(file, 'batch-pdf')
-  //       const pdfEntitity = this.lessonNoteRepository.create({ url: location, lesson: savedLesson })
-  //       pdfEntities.push(pdfEntitity)
-  //       uploadedFiles.push({ location, key })
-  //     }
-
-  //     const newBatchNotice = {
-  //       ...noticeInfo,
-  //       batchUid: batchId,
-  //       cpUid: uid,
-  //     }
-
-  //     const data = await queryRunner.manager.save(BatchNotice, newBatchNotice)
-
-  //     delete data.deletedAt
-
-  //     return newBatchNotice
-  //   } catch (error) {
-  //     await queryRunner.rollbackTransaction() // 업로드된 파일 삭제
-  //     for (const file of uploadedFiles) {
-  //       await this.s3Service.deleteFile(file.key)
-  //     }
-
-  //     throw new InternalServerErrorException('기수 공지 생성 중 오류가 발생했습니다.')
-  //   } finally {
-  //     await queryRunner.release()
-  //   }
-  // }
-
+  // 기수 공지 전체조회
   async findAll(uid, lessonId, batchId) {
     // 기수가 존재하는지 확인
     await this.findBatchOrThrow(lessonId, batchId)
@@ -164,7 +112,7 @@ export class BatchNoticeService {
       throw new ForbiddenException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_AUTHORIZED_NOTICE)
     }
 
-    const data = await this.batchNoticeRepository.find({ where: { batchUid: batchId } })
+    const data = await this.batchNoticeRepository.find({ where: { batchUid: batchId }, relations: ['lessonNotes'] })
 
     // deletedAt 필드 삭제
     data.forEach((notice) => {
@@ -173,45 +121,123 @@ export class BatchNoticeService {
 
     return data
   }
-  // 기수 수정
-  async update(uid, lessonId, batchId, notification, updateBatchNoticeDto: UpdateBatchNoticeDto) {
-    const { ...noticeInfo } = updateBatchNoticeDto
-    //cp가 권한이 있는지 확인
-    await this.authorizedCp(uid, lessonId)
+  // 기수 공지 수정
+  async update(
+    uid,
+    lessonId,
+    batchId,
+    notification,
+    files: Express.Multer.File[],
+    updateBatchNoticeDto: UpdateBatchNoticeDto,
+  ) {
+    const queryRunner = this.dataSource.createQueryRunner()
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
+    const uploadedFiles: { location: string; key: string }[] = []
+    const oldFiles: string[] = []
+    try {
+      //cp가 권한이 있는지 확인
+      await this.authorizedCp(uid, lessonId)
+      // 기수가 존재하는지 확인
+      await this.findBatchOrThrow(lessonId, batchId)
 
-    // 기수가 존재하는지 확인
-    await this.findBatchOrThrow(lessonId, batchId)
+      const { ...noticeInfo } = updateBatchNoticeDto
+      const existingBatchNotice = await this.batchNoticeRepository.findOne({
+        where: { uid: notification },
+        relations: ['lessonNotes'],
+      })
 
-    const existingBatchNotice = await this.batchNoticeRepository.findOne({ where: { uid: notification } })
+      if (!existingBatchNotice) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_FIND_NOTICE)
+      }
 
-    if (!existingBatchNotice) {
-      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_FIND_NOTICE)
+      if (existingBatchNotice.lessonNotes && existingBatchNotice.lessonNotes.length > 0) {
+        for (const note of existingBatchNotice.lessonNotes) {
+          oldFiles.push(note.lessonNote)
+          console.log('oldFiles', oldFiles)
+          const sssss = await this.s3Service.deleteFile(note.lessonNote.split('/').pop()) // 파일 이름 추출하여 삭제
+          console.log('sssss', sssss)
+        }
+        await queryRunner.manager.delete(LessonNote, existingBatchNotice.lessonNotes)
+      }
+      // 새로운 이미지 업로드
+      const fileEntities = []
+      for (const file of files) {
+        const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
+        const fileEntity = this.lessonNoteRepository.create({
+          lessonNote: location, // 파일 위치 URL
+          field: file.originalname, // 파일 원본 이름
+          noticeUid: notification.uid,
+        })
+        fileEntities.push(fileEntity)
+        uploadedFiles.push({ location, key })
+      }
+
+      Object.assign(existingBatchNotice, noticeInfo)
+
+      const data = await queryRunner.manager.save(BatchNotice, existingBatchNotice)
+      console.log('data', data)
+      await queryRunner.manager.save(LessonNote, fileEntities)
+
+      delete data.deletedAt
+      await queryRunner.commitTransaction()
+
+      return data
+    } catch (error) {
+      await queryRunner.rollbackTransaction()
+
+      // 업로드된 파일 삭제
+      for (const file of uploadedFiles) {
+        await this.s3Service.deleteFile(file.key)
+      }
+      if (error instanceof NotFoundException) {
+        throw error
+      } else {
+        throw new InternalServerErrorException('기수 공지 수정 중 오류가 발생했습니다.')
+      }
+    } finally {
+      await queryRunner.release()
     }
-
-    Object.assign(existingBatchNotice, noticeInfo)
-
-    const data = await this.batchNoticeRepository.save(existingBatchNotice)
-
-    delete data.deletedAt
-
-    return data
   }
   // 기수 공지 삭제
-  async remove(uid, lessonId, batchId, notification) {
-    //cp가 해당 강의의 권한이 있는지 확인
-    await this.authorizedCp(uid, lessonId)
-    // 기수가 존재하는지 확인
-    await this.findBatchOrThrow(lessonId, batchId)
+  async remove(uid: string, lessonId: string, batchId: string, notification: string) {
+    const queryRunner = this.dataSource.createQueryRunner()
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
+    try {
+      //cp가 해당 강의의 권한이 있는지 확인
+      await this.authorizedCp(uid, lessonId)
+      // 기수가 존재하는지 확인
+      await this.findBatchOrThrow(lessonId, batchId)
 
-    const existingNotification = await this.batchNoticeRepository.findOne({ where: { uid: notification } })
+      const existingNotification = await queryRunner.manager.findOne(BatchNotice, {
+        where: { uid: notification },
+        relations: ['lessonNotes'],
+      })
 
-    if (!existingNotification) {
-      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_FIND_NOTICE)
+      if (!existingNotification) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_FIND_NOTICE)
+      }
+      const lessonNotes = existingNotification.lessonNotes
+      if (lessonNotes && lessonNotes.length > 0) {
+        await queryRunner.manager.softRemove(LessonNote, lessonNotes)
+      }
+
+      const deleteBatch = await queryRunner.manager.softRemove(BatchNotice, existingNotification)
+
+      await queryRunner.commitTransaction()
+
+      return deleteBatch
+    } catch (error) {
+      await queryRunner.rollbackTransaction()
+      if (error instanceof NotFoundException) {
+        throw error
+      } else {
+        throw new InternalServerErrorException('수업 삭제 중 오류가 발생했습니다.')
+      }
+    } finally {
+      await queryRunner.release()
     }
-
-    const deleteBatch = await this.batchNoticeRepository.softRemove(existingNotification)
-
-    return deleteBatch
   }
 
   // 기수가 존재하는지 확인
