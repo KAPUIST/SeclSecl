@@ -210,6 +210,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         CONFLICT_LESSON: '이미 보유한 강의입니다.',
         BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
         AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
+        TRANSACTION_ERROR: '주문 생성 중 오류가 생겼습니다.',
       },
       GET_PAYMENT_LIST: {
         SUCCESS: '결제 목록 조회에 성공하였습니다.',
@@ -228,6 +229,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
         CONFLICT_CART: '이미 장바구니에 있는 수업입니다.',
         CONFLICT_LESSON: '이미 보유한 강의입니다.',
+        TRANSACTION_ERROR: '장바구니 추가 중 오류가 생겼습니다.',
       },
       GET_CART_LIST: {
         SUCCESS: '장바구니 목록 조회에 성공하였습니다.',
