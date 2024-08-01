@@ -48,9 +48,9 @@ export class MainLessonResponseDto {
 
   updatedAt: Date
 
-  @Type(() => LessonImages)
-  images: LessonImages[]
+  // @Type(() => LessonImages)
+  // images: LessonImages[]
 
-  @Type(() => Batch)
-  batches: Batch[]
+  // @Type(() => Batch)
+  // batches: Batch[]
 }
