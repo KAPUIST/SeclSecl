@@ -5,6 +5,8 @@ import { PaymentsService } from './payments.service'
 import { AddCartParamsDTO } from './dto/add-cart-params.dto'
 import { DeleteCartParamsDTO } from './dto/delete-cart-params.dto'
 import { PurchaseItemDto } from './dto/purchase-item.dto'
+import { RefundPaymentParamsDTO } from './dto/refund-payment-params.dto'
+import { GetPaymentDetailParamsDTO } from './dto/get-payment-detail-params.dto'
 
 @Controller({ host: 'localhost', path: 'payments' })
 export class PaymentsController {
@@ -23,6 +25,19 @@ export class PaymentsController {
     }
   }
 
+  // 결제 환불
+  @UseGuards(JwtAuthGuard)
+  @Post('/refunds/:paymentsUid')
+  async refundPayment(@Request() req, @Param() params: RefundPaymentParamsDTO) {
+    const userUid = req.user.uid
+    const refundedPayment = await this.paymentService.refundPayment(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.SUCCESS,
+      data: refundedPayment,
+    }
+  }
+
   // 주문 정보 생성
   @UseGuards(JwtAuthGuard)
   @Post('/orders')
@@ -33,6 +48,32 @@ export class PaymentsController {
       status: HttpStatus.CREATED,
       message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.SUCCESS,
       data: createdOrder,
+    }
+  }
+
+  // 결제 목록 조회
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getPaymentList(@Request() req) {
+    const userUid = req.user.uid
+    const paymentList = await this.paymentService.getPaymentList(userUid)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_LIST.SUCCESS,
+      data: paymentList,
+    }
+  }
+
+  // 결제 상세 조회
+  @UseGuards(JwtAuthGuard)
+  @Get('/details/:paymentDetailUid')
+  async getPaymentDetail(@Request() req, @Param() params: GetPaymentDetailParamsDTO) {
+    const userUid = req.user.uid
+    const payment = await this.paymentService.getPaymentDetail(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_DETAIL.SUCCESS,
+      data: payment,
     }
   }
 

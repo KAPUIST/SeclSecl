@@ -16,6 +16,7 @@ import { BandMember } from '../../band/entities/band-members.entity'
 import { Payment } from '../../payments/entities/payments.entity'
 import { PaymentCart } from '../../payments/entities/payment-carts.entity'
 import { LessonBookmarks } from '../../../common/lessons/entities/lesson-bookmark.entity'
+import { LessonReview } from '../../review/entities/lesson.review.entity'
 
 @Entity({ name: 'users' })
 export class User {
@@ -60,4 +61,7 @@ export class User {
 
   @OneToMany(() => LessonBookmarks, (lessonBookmarks) => lessonBookmarks.user)
   lessonBookmarks: LessonBookmarks[]
+
+  @OneToMany(() => LessonReview, (lessonReview) => lessonReview.user)
+  lessonReviews: LessonReview[]
 }

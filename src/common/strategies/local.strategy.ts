@@ -11,8 +11,8 @@ import { CpAuthService } from '../../cp/auth/auth.service'
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) implements OnModuleInit {
-  private authService: any
-  private cpAuthService: any
+  private authService: AuthService
+  private cpAuthService: CpAuthService
   private adminAuthService: AdminAuthService
 
   constructor(private moduleRef: ModuleRef) {

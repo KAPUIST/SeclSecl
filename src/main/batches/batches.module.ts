@@ -4,6 +4,7 @@ import { BatchesController } from './batches.controller'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Batch } from './entities/batch.entity'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
+import { LessonReview } from '../review/entities/lesson.review.entity'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Lesson, Batch])],

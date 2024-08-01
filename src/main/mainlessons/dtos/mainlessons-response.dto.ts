@@ -1,10 +1,9 @@
-import { Exclude, Type } from 'class-transformer'
-import { IsString, IsNotEmpty, IsNumber, IsBoolean } from 'class-validator'
+import { Type } from 'class-transformer'
+import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator'
 import { LessonImages } from '../../../common/lessons/entities/lesson-image.entity'
-import { Batch } from '../../../main/batches/entities/batch.entity'
-import { LessonReview } from '../../../main/review/entities/lesson.review.entity'
+import { Batch } from 'typeorm'
 
-export class LessonResponseDto {
+export class MainLessonResponseDto {
   @IsString()
   @IsNotEmpty()
   uid: string
@@ -45,23 +44,13 @@ export class LessonResponseDto {
   @IsNotEmpty()
   shuttle: boolean
 
-  @IsBoolean()
-  @IsNotEmpty()
-  is_verified: boolean
-
   createdAt: Date
 
   updatedAt: Date
 
-  @Exclude()
-  deletedAt: Date
+  // @Type(() => LessonImages)
+  // images: LessonImages[]
 
-  @Type(() => LessonImages)
-  images: LessonImages[]
-
-  @Type(() => Batch)
-  batches: Batch[]
-
-  @Type(() => LessonReview)
-  reviews: LessonReview[]
+  // @Type(() => Batch)
+  // batches: Batch[]
 }

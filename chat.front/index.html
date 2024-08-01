@@ -6,6 +6,7 @@
     <title>User Chat</title>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
   </head>
   <body>
     <h1>User Chat</h1>
@@ -13,7 +14,7 @@
       <input id="cpId" type="text" placeholder="Enter CP ID" />
       <button onclick="createRoom()">Create Room</button>
     </div>
-    <div id="chatRoomSection" style="display: none">
+    <div id="chatRoomSection" style="">
       <h2>Chat Room</h2>
       <div id="chat"></div>
       <input id="message" type="text" placeholder="Enter message" />
@@ -22,25 +23,27 @@
 
     <script>
       const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJiMjkxZmIzNi1lZDcwLTRkZjEtYWE1NC1mYzQ3NWI5YzA3MjYiLCJlbWFpbCI6InllZXdvb29vb25AZ21haWwuY29tIiwidHlwZSI6Im1haW4iLCJpYXQiOjE3MjIzNDQ2OTUsImV4cCI6MTcyMjM1MTg5NX0.NWA1A6Nwa0jgJJR8cesDzgh8p-kfTJfweFxn4I1PJR8' // 실제 사용자 JWT 토큰으로 교체
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIwNmViYzZjMy0wODVjLTQyODEtYjA2NC1iZWI5MTAxNTlmZmIiLCJlbWFpbCI6InRoc3hvcm5qczEyQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIyNDI2NDY1LCJleHAiOjE3MjI0MzM2NjV9.NcUNVzW51920IvqO7eAO3vnIghVefmez7fnPL2XROps' // 실제 사용자 JWT 토큰으로 교체
       const decodedToken = jwt_decode(token)
       const userId = decodedToken.uid // JWT에서 userId 추출
 
       let chatRoomId
 
-      const socket = new WebSocket(`ws://localhost:3000/?token=${token}`)
+      const socket = io(`http://localhost:3000/?token=${token}`, {
+        query: { token },
+      })
 
-      socket.onopen = function () {
+      socket.on('connect', () => {
         console.log('User WebSocket connection opened')
-      }
+      })
 
-      socket.onerror = function (error) {
-        console.error('WebSocket error:', error)
-      }
+      // socket.onerror = function (error) {
+      //   console.error('WebSocket error:', error)
+      // }
 
-      socket.onclose = function (event) {
-        console.log('WebSocket connection closed', event)
-      }
+      // socket.onclose = function (event) {
+      //   console.log('WebSocket connection closed', event)
+      // }
 
       socket.onmessage = function (event) {
         const message = JSON.parse(event.data)
@@ -55,12 +58,13 @@
 
       function createRoom() {
         const cpId = document.getElementById('cpId').value
-        socket.send(JSON.stringify({ event: 'joinRoom', data: { cpId: cpId } }))
+        console.log(cpId)
+        socket.emit('joinRoom', { cpId: cpId })
       }
 
       function sendMessage() {
         const message = document.getElementById('message').value
-        socket.send(JSON.stringify({ event: 'sendMessage', data: { chatRoomId: chatRoomId, content: message } }))
+        socket.emit('sendMessage', { chatRoomId: chatRoomId, content: message })
         document.getElementById('message').value = ''
       }
 

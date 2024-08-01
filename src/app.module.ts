@@ -18,7 +18,7 @@ import { BatchNoticeModule } from './main/batch-notice/batch-notice.module'
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'), // public 폴더 경로 설정
+      rootPath: join(__dirname, '..', 'chat.front'),
     }),
     ConfigModule.forRoot({
       isGlobal: true,
