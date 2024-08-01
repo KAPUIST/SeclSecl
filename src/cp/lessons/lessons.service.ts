@@ -186,7 +186,7 @@ export class LessonsService {
     try {
       const reviews = await this.lessonReviewRepository.find({
         where: { lesson: { uid: lessonId, cp_uid: cpUid } },
-        relations: ['lesson'],
+        relations: ['lesson', 'comment'],
       })
 
       return reviews.map(
@@ -196,6 +196,13 @@ export class LessonsService {
           lessonId: review.lesson.uid,
           reviewUid: review.uid,
           createdAt: review.createdAt,
+          comment: review.comment
+            ? {
+                commentUid: review.comment.uid,
+                content: review.comment.content,
+                createdAt: review.comment.createdAt,
+              }
+            : null,
         }),
       )
     } catch (error) {
@@ -203,5 +210,4 @@ export class LessonsService {
       throw new InternalServerErrorException(error)
     }
   }
-  async createReviewComment() {}
 }

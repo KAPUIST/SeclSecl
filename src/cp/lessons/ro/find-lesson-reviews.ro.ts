@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDate, IsInt, IsString } from 'class-validator'
+import { IsDate, IsInt, IsOptional, IsString } from 'class-validator'
+import { CreateReviewCommentRO } from '../../reviews/ro/create-review-comment.ro'
 
 export class FindLessonReviewRO {
   @ApiProperty({ description: '리뷰내용' })
@@ -22,6 +23,12 @@ export class FindLessonReviewRO {
   @IsDate()
   createdAt: Date
 
-  // @ApiProperty({ description: '리뷰 아이디' })
-  // @IsString()
+  @ApiProperty({
+    description: '리뷰에 달린 댓글 정보',
+    required: false,
+    type: () => CreateReviewCommentRO,
+    nullable: true,
+  })
+  @IsOptional()
+  comment?: CreateReviewCommentRO
 }

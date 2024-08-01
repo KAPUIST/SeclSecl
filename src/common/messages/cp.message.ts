@@ -32,6 +32,8 @@ export const CP_MESSAGE_CONSTANT = {
       NOT_FOUND: '리뷰가 존재하지 않습니다.',
     },
     COMMENT: {
+      UPDATE_COMMENT: '답글 수정 성공',
+      DELETE_COMMENT: '답글 삭제 성공',
       CREATE_COMMENT: '리뷰 답글 작성 성공',
       EXIST_COMMENT: '이미 작성한 답글이 존재합니다',
       FAILED: '리뷰 답글 작성에 실패 하였습니다.',
