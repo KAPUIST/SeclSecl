@@ -29,9 +29,6 @@ export class BatchNotice {
   @Column({ type: 'text' })
   content: string
 
-  @Column()
-  lessonNote?: string
-
   @CreateDateColumn()
   createdAt: Date
 
