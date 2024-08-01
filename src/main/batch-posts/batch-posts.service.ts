@@ -204,7 +204,7 @@ export class BatchPostsService {
 
         delete data.deletedAt
 
-        return [data, lessonNote]
+        return data
       } catch (error) {
         console.log('error', error)
         // 업로드된 파일 삭제
