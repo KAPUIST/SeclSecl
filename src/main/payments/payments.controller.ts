@@ -5,6 +5,7 @@ import { PaymentsService } from './payments.service'
 import { AddCartParamsDTO } from './dto/add-cart-params.dto'
 import { DeleteCartParamsDTO } from './dto/delete-cart-params.dto'
 import { PurchaseItemDto } from './dto/purchase-item.dto'
+import { RefundPaymentParamsDTO } from './dto/refund-payment-params.dto'
 
 @Controller({ host: 'localhost', path: 'payments' })
 export class PaymentsController {
@@ -20,6 +21,19 @@ export class PaymentsController {
       status: HttpStatus.CREATED,
       message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.SUCCESS,
       data: purchasedItems,
+    }
+  }
+
+  // 결제 환불
+  @UseGuards(JwtAuthGuard)
+  @Post('/refunds/:paymentsUid')
+  async refundPayment(@Request() req, @Param() params: RefundPaymentParamsDTO) {
+    const userUid = req.user.uid
+    const refundedPayment = await this.paymentService.refundPayment(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.SUCCESS,
+      data: refundedPayment,
     }
   }
 

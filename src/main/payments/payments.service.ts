@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
@@ -20,6 +21,7 @@ import { OrderStatus } from './types/order-status.type'
 import { UserLesson } from '../users/entities/user-lessons.entity'
 import { Payment } from './entities/payments.entity'
 import { PaymentDetail } from './entities/payment-details.entity'
+import { RefundPaymentParamsDTO } from './dto/refund-payment-params.dto'
 
 @Injectable()
 export class PaymentsService {
@@ -96,7 +98,7 @@ export class PaymentsService {
         for (const order of orderList) {
           // 상세 결제 테이블 생성
           await manager.save(PaymentDetail, {
-            payment_id: payment.uid,
+            paymentUid: payment.uid,
             batchUid: order.batchUid,
             amount: order.batch.lesson.price,
           })
@@ -124,8 +126,66 @@ export class PaymentsService {
           )
         }
       }
+      // 트랜잭션 실패 시 결제 된 항목 취소
+      const response = await fetch(`https://api.tosspayments.com/v1/payments/${paymentKey}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: encryptedApiSecretKey,
+        },
+        body: '{"cancelReason":"서버 에러로 인한 결제 취소"}',
+      })
+      const data = await response.json()
+      console.log('data', data)
+      if (data.code) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.BAD_REQUEST)
+      }
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.TRANSACTION_ERROR)
     }
+  }
+
+  // 주문 환불 로직
+  async refundPayment(userUid: string, params: RefundPaymentParamsDTO) {
+    return await this.dataSource.transaction(async (manager) => {
+      const apiSecretKey = this.configService.get<string>('API_SECRET_KEY')
+      const encryptedApiSecretKey = 'Basic ' + Buffer.from(apiSecretKey + ':').toString('base64')
+      const payment = await manager.findOne(Payment, { where: { uid: params.paymentsUid } })
+      const paymentKey = payment.paymentKey
+
+      // 유저가 결제 테이블의 유저와 다를 때 에러처리
+      if (userUid !== payment.userUid) {
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.NOT_MATCHED_USER)
+      }
+      // 환불 요청
+      const response = await fetch(`https://api.tosspayments.com/v1/payments/${paymentKey}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: encryptedApiSecretKey,
+        },
+        body: '{"cancelReason":"고객이 취소를 원함"}',
+      })
+      const data = await response.json()
+      console.log('data', data)
+      if (data.code) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.BAD_REQUEST)
+      }
+
+      try {
+        const detailList = await manager.find(PaymentDetail, { where: { paymentUid: payment.uid } })
+
+        // 유저 강의 데이터 삭제
+        for (const detail of detailList) {
+          console.log(userUid, detail.batchUid)
+          await manager.delete(UserLesson, { userUid, batchUid: detail.batchUid })
+        }
+        // 결제 테이블, 상세 테이블 데이터 삭제
+        await manager.delete(Payment, { paymentKey })
+        return data
+      } catch (err) {
+        throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.TRANSACTION_ERROR)
+      }
+    })
   }
 
   // 주문 정보 생성 로직(body 타입 추후 지정)
