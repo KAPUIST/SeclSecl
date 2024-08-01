@@ -73,7 +73,7 @@ export class BatchPostsController {
     }
   }
   /**
-   * 기수 공지 상세 목록 조회
+   * 기수 게시글 상세 목록 조회
    * @param batchUid
    * @param postUid
    * @returns
@@ -88,16 +88,33 @@ export class BatchPostsController {
       data,
     }
   }
+  /**
+   * 기수 게시글 수정
+   * @param batchUid
+   * @param postUid
+   * @returns
+   */
 
   @Patch('/:batchUid/posts/:postUid')
-  update(@Param() postUid: string, @Body() updateBatchPostDto: UpdateBatchPostDto) {
-    return this.batchPostsService.update(postUid, updateBatchPostDto)
+  @UseInterceptors(FilesInterceptor('files', 10)) // 파일 필드 'files'에서 최대 10개의 파일 업로드
+  async update(
+    @Request() req,
+    @Param('batchUid') batchUid: string,
+    @Param('postUid') postUid: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() updateBatchPostDto: UpdateBatchPostDto,
+  ) {
+    const data = await this.batchPostsService.update(req.user.uid, batchUid, postUid, files, updateBatchPostDto)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.UPDATE,
+      data,
+    }
   }
   /**
-   * 기수 공지 삭제
-   * @param lessonUid
+   * 기수 게시글 삭제
    * @param batchUid
-   * @param notificationUid
+   * @param postUid
    * @returns
    */
   @Delete('/:batchUid/posts/:postUid')

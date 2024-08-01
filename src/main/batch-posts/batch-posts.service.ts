@@ -126,7 +126,7 @@ export class BatchPostsService {
       where: { uid: postUid },
       relations: ['postImages'],
     })
-    if (!existingBatchPost) {
+    if (!(existingBatchPost.length > 0)) {
       throw new NotFoundException('게시물을 찾을 수 없습니다.')
     }
 
@@ -141,8 +141,75 @@ export class BatchPostsService {
     return existingBatchPost
   }
 
-  async update(postUid: string, updateBatchPostDto: UpdateBatchPostDto) {
-    return
+  async update(
+    uid: string,
+    batchUid: string,
+    postUid: string,
+    files: Express.Multer.File[],
+    updateBatchPostDto: UpdateBatchPostDto,
+  ) {
+    return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
+      const uploadedFiles: { location: string; key: string }[] = []
+      const oldFiles: string[] = []
+
+      try {
+        //유저 권한 확인
+        await this.checkUserPermission(uid)
+        //기수가 존재하나 확인
+        await this.verifyBatchExistence(batchUid)
+
+        const existingBatchPost = await transactionalEntityManager.findOne(BatchPost, {
+          where: { uid: postUid },
+          relations: ['postImages'],
+        })
+        if (!existingBatchPost) {
+          throw new NotFoundException('게시물을 찾을 수 없습니다.')
+        }
+
+        const { ...postInfo } = updateBatchPostDto
+
+        if (existingBatchPost.postImages && existingBatchPost.postImages.length > 0) {
+          for (const image of existingBatchPost.postImages) {
+            oldFiles.push(image.postImage)
+            await this.s3Service.deleteFile(image.postImage.split('/').pop()) // 파일 이름 추출하여 삭제
+          }
+          await transactionalEntityManager.delete(PostImage, existingBatchPost.postImages)
+        }
+        // 새로운 이미지 업로드
+        const fileEntities = []
+        for (const file of files) {
+          const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
+          const fileEntity = this.postImageRepository.create({
+            postImage: location, // 파일 위치 URL
+            field: file.originalname, // 파일 원본 이름
+            postUid,
+          })
+          fileEntities.push(fileEntity)
+          uploadedFiles.push({ location, key })
+        }
+
+        Object.assign(existingBatchPost, postInfo)
+
+        const data = await transactionalEntityManager.save(BatchPost, existingBatchPost)
+
+        const lessonNote = await transactionalEntityManager.save(PostImage, fileEntities)
+
+        lessonNote.forEach((note) => {
+          delete note.deletedAt
+        })
+
+        delete data.deletedAt
+
+        return [data, lessonNote]
+      } catch (error) {
+        console.log('error', error)
+        // 업로드된 파일 삭제
+        for (const file of uploadedFiles) {
+          await this.s3Service.deleteFile(file.key)
+        }
+        throw new InternalServerErrorException('기수 커뮤니티 수정에 실패했습니다.')
+      }
+    })
   }
 
   async remove(uid: string, batchUid: string, postUid: string) {
