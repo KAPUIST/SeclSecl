@@ -30,6 +30,10 @@ import { BatchLike } from './entities/batch-likes.entity'
 import { UnlikeBatchCommentParamsDTO } from './dto/unlike-batch-comment-params.dto'
 import { LikeBatchCommentRO } from './ro/like-batch-comment.ro'
 import { UnlikeBatchCommentRO } from './ro/unlike-batch-comment.ro'
+import { LikeBatchPostParamsDTO } from './dto/like-batch-post-params.dto'
+import { LikeBatchPostRO } from './ro/like-batch-post.ro'
+import { UnlikeBatchPostParamsDTO } from './dto/unlike-batch-post-params.dto'
+import { UnlikeBatchPostRO } from './ro/unlike-batch-post.ro'
 
 @Injectable()
 export class BatchPostsService {
@@ -63,6 +67,81 @@ export class BatchPostsService {
 
   remove(id: number) {
     return `This action removes a #${id} batchPost`
+  }
+  // 기수별 커뮤니티 게시글 좋아요 로직
+  async likeBatchPost(userUid: string, params: LikeBatchPostParamsDTO): Promise<LikeBatchPostRO> {
+    return this.dataSource.transaction(async (manager) => {
+      const uid = params.postUid
+      const batchPost = await manager.findOne(BatchPost, { where: { uid } })
+      // 게시글이 존재하지 않을 시 에러처리
+      if (_.isNil(batchPost)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_POST.NOT_FOUND_COMMENT)
+      }
+      // 유저가 기수 멤버가 아닐 시 에러 처리
+      const batchUid = batchPost.batchUid
+      const isMember = await manager.findOne(UserLesson, { where: { batchUid, userUid } })
+      if (_.isNil(isMember)) {
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_POST.NOT_FOUND_USER)
+      }
+      // 이미 좋아요 누른 게시물일 시 에러 처리
+      const isLike = await manager.findOne(BatchLike, { where: { batchPostUid: uid, userUid } })
+      if (isLike) {
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.BAD_REQUEST)
+      }
+      try {
+        await manager.save(BatchLike, { batchPostUid: uid, userUid })
+        const newCount = batchPost.likeCount + 1
+        await manager.update(BatchPost, { uid }, { likeCount: newCount })
+        return {
+          uid,
+          userUid,
+        }
+      } catch (err) {
+        throw new InternalServerErrorException(
+          MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_POST.TRANSACTION_ERROR,
+        )
+      }
+    })
+  }
+
+  // 기수별 커뮤니티 게시글 좋아요 취소 로직
+  async UnlikeBatchPost(userUid: string, params: UnlikeBatchPostParamsDTO): Promise<UnlikeBatchPostRO> {
+    return this.dataSource.transaction(async (manager) => {
+      const uid = params.postUid
+      const batchPost = await manager.findOne(BatchPost, { where: { uid } })
+      // 게시글이 존재하지 않을 시 에러처리
+      if (_.isNil(batchPost)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.NOT_FOUND_COMMENT)
+      }
+      // 유저가 기수 멤버가 아닐 시 에러 처리
+      const batchUid = batchPost.batchUid
+      const isMember = await manager.findOne(UserLesson, { where: { batchUid, userUid } })
+      if (_.isNil(isMember)) {
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.NOT_FOUND_USER)
+      }
+      // 좋아요 누르지 않은 게시물일 시 에러 처리
+      const isLike = await manager.findOne(BatchLike, { where: { batchPostUid: uid, userUid } })
+      if (_.isNil(isLike)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.NOT_FOUND_Like)
+      }
+      // 좋아요 수가 0일때 에러 처리
+      if (batchPost.likeCount < 1) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.BAD_REQUEST)
+      }
+      try {
+        await manager.delete(BatchLike, { batchPostUid: uid, userUid })
+        const newCount = batchPost.likeCount - 1
+        await manager.update(BatchPost, { uid }, { likeCount: newCount })
+        return {
+          uid,
+          userUid,
+        }
+      } catch (err) {
+        throw new InternalServerErrorException(
+          MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.TRANSACTION_ERROR,
+        )
+      }
+    })
   }
 
   // 기수별 커뮤니티 댓글 작성 로직
@@ -182,18 +261,18 @@ export class BatchPostsService {
       })
       // 댓글이 존재하지 않을 시 에러처리
       if (_.isNil(batchComment)) {
-        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.Like_BATCH_COMMENT.NOT_FOUND_COMMENT)
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_COMMENT.NOT_FOUND_COMMENT)
       }
       // 유저가 기수 멤버가 아닐 시 에러 처리
       const batchUid = batchComment.batchPost.batchUid
       const isMember = await manager.findOne(UserLesson, { where: { batchUid, userUid } })
       if (_.isNil(isMember)) {
-        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.Like_BATCH_COMMENT.NOT_FOUND_USER)
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_COMMENT.NOT_FOUND_USER)
       }
       // 이미 좋아요 누른 게시물일 시 에러 처리
       const isLike = await manager.findOne(BatchLike, { where: { batchCommentUid: uid, userUid } })
       if (isLike) {
-        throw new ConflictException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.Like_BATCH_COMMENT.CONFLICT)
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_COMMENT.CONFLICT)
       }
       try {
         await manager.save(BatchLike, { batchCommentUid: uid, userUid })
@@ -206,7 +285,7 @@ export class BatchPostsService {
         }
       } catch (err) {
         throw new InternalServerErrorException(
-          MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.Like_BATCH_COMMENT.TRANSACTION_ERROR,
+          MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_COMMENT.TRANSACTION_ERROR,
         )
       }
     })
