@@ -312,4 +312,12 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_AUTHORIZED_NOTICE: '공지를 읽을 수 있는 권한이 없습니다.',
     },
   },
+  BATCH_POST: {
+    CONTROLLER: {
+      CREATE: '기수 커뮤니티 생성에 성공했습니다.',
+      FINDALL: '기수 커뮤니티 목록 찾기에 성공했습니다.',
+      UPDATE: '기수 커뮤니티 업데이트에 성공했습니다.',
+      DELETE: '기수 커뮤니티 삭제에 성공했습니다.',
+    },
+  },
 }

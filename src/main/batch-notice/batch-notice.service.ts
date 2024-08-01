@@ -101,7 +101,7 @@ export class BatchNoticeService {
   async findAll(uid, lessonId, batchId) {
     // 기수가 존재하는지 확인
     await this.findBatchOrThrow(lessonId, batchId)
-
+    // 기수 게시판에 업체 아이디로 조회하게 수정하기
     const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonId, cp_uid: uid } })
 
     const authorizedUser = await this.userLessonRepository.findOne({
@@ -126,7 +126,7 @@ export class BatchNoticeService {
     uid,
     lessonId,
     batchId,
-    notification,
+    notificationId,
     files: Express.Multer.File[],
     updateBatchNoticeDto: UpdateBatchNoticeDto,
   ) {
@@ -143,20 +143,17 @@ export class BatchNoticeService {
 
       const { ...noticeInfo } = updateBatchNoticeDto
       const existingBatchNotice = await this.batchNoticeRepository.findOne({
-        where: { uid: notification },
+        where: { uid: notificationId },
         relations: ['lessonNotes'],
       })
 
       if (!existingBatchNotice) {
         throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_FIND_NOTICE)
       }
-
       if (existingBatchNotice.lessonNotes && existingBatchNotice.lessonNotes.length > 0) {
         for (const note of existingBatchNotice.lessonNotes) {
           oldFiles.push(note.lessonNote)
-          console.log('oldFiles', oldFiles)
-          const sssss = await this.s3Service.deleteFile(note.lessonNote.split('/').pop()) // 파일 이름 추출하여 삭제
-          console.log('sssss', sssss)
+          await this.s3Service.deleteFile(note.lessonNote.split('/').pop()) // 파일 이름 추출하여 삭제
         }
         await queryRunner.manager.delete(LessonNote, existingBatchNotice.lessonNotes)
       }
@@ -165,9 +162,9 @@ export class BatchNoticeService {
       for (const file of files) {
         const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
         const fileEntity = this.lessonNoteRepository.create({
+          noticeUid: notificationId,
           lessonNote: location, // 파일 위치 URL
           field: file.originalname, // 파일 원본 이름
-          noticeUid: notification.uid,
         })
         fileEntities.push(fileEntity)
         uploadedFiles.push({ location, key })
@@ -176,8 +173,12 @@ export class BatchNoticeService {
       Object.assign(existingBatchNotice, noticeInfo)
 
       const data = await queryRunner.manager.save(BatchNotice, existingBatchNotice)
-      console.log('data', data)
-      await queryRunner.manager.save(LessonNote, fileEntities)
+
+      const lessonNote = await queryRunner.manager.save(LessonNote, fileEntities)
+
+      lessonNote.forEach((note) => {
+        delete note.deletedAt
+      })
 
       delete data.deletedAt
       await queryRunner.commitTransaction()
@@ -200,7 +201,7 @@ export class BatchNoticeService {
     }
   }
   // 기수 공지 삭제
-  async remove(uid: string, lessonId: string, batchId: string, notification: string) {
+  async remove(uid: string, lessonId: string, batchId: string, notificationId: string) {
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
@@ -211,7 +212,7 @@ export class BatchNoticeService {
       await this.findBatchOrThrow(lessonId, batchId)
 
       const existingNotification = await queryRunner.manager.findOne(BatchNotice, {
-        where: { uid: notification },
+        where: { uid: notificationId },
         relations: ['lessonNotes'],
       })
 

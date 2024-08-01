@@ -82,12 +82,12 @@ export class BatchNoticeController {
    * @returns
    */
   @UseInterceptors(FilesInterceptor('files', 10)) // 파일 필드 'files'에서 최대 10개의 파일 업로드
-  @Patch('/:notification')
+  @Patch('/:notificationId')
   async update(
     @Request() req,
     @Param('lessonId') lessonId: string,
     @Param('batchId') batchId: string,
-    @Param('notification') notification: string,
+    @Param('notificationId') notificationId: string,
     @UploadedFiles() files: Express.Multer.File[], // 파일 배열을 주입받음
     @Body() updateBatchNoticeDto: UpdateBatchNoticeDto,
   ) {
@@ -95,7 +95,7 @@ export class BatchNoticeController {
       req.user.uid,
       lessonId,
       batchId,
-      notification,
+      notificationId,
       files, // 파일 배열을 서비스로 전달
       updateBatchNoticeDto,
     )
@@ -118,9 +118,9 @@ export class BatchNoticeController {
     @Request() req,
     @Param('lessonId') lessonId: string,
     @Param('batchId') batchId: string,
-    @Param('notification') notification: string,
+    @Param('notificationId') notificationId: string,
   ) {
-    const data = await this.batchNoticeService.remove(req.user.uid, lessonId, batchId, notification)
+    const data = await this.batchNoticeService.remove(req.user.uid, lessonId, batchId, notificationId)
 
     return {
       statusCode: HttpStatus.OK,
