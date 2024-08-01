@@ -4,25 +4,26 @@ import { UpdateBatchPostDto } from './dto/update-batch-post.dto'
 
 @Injectable()
 export class BatchPostsService {
-  create(uid, batchId, createBatchPostDto: CreateBatchPostDto) {
+  create(uid: string, batchUid: string, files, createBatchPostDto: CreateBatchPostDto) {
+    //유저 강의를 이용해서 권한 검사
     const { ...postImfo } = createBatchPostDto
 
     return postImfo
   }
 
   findAll() {
-    return `This action returns all batchPosts`
+    return
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} batchPost`
+  findOne(postUid: string) {
+    return
   }
 
   update(id: number, updateBatchPostDto: UpdateBatchPostDto) {
-    return `This action updates a #${id} batchPost`
+    return
   }
 
   remove(id: number) {
-    return `This action removes a #${id} batchPost`
+    return
   }
 }
