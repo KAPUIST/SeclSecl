@@ -312,4 +312,43 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_AUTHORIZED_NOTICE: '공지를 읽을 수 있는 권한이 없습니다.',
     },
   },
+  BATCH_POST: {
+    CONTROLLER: {
+      CREATE: '기수 커뮤니티 생성에 성공했습니다.',
+      FINDALL: '기수 커뮤니티 목록 찾기에 성공했습니다.',
+      UPDATE: '기수 커뮤니티 업데이트에 성공했습니다.',
+      DELETE: '기수 커뮤니티 삭제에 성공했습니다.',
+      CREATE_BATCH_COMMENT: {
+        SUCCEED: '기수 커뮤니티 댓글 생성에 성공하였습니다.',
+      },
+      GET_BATCH_COMMENT: {
+        SUCCEED: '밴드 댓글 조회에 성공하였습니다.',
+      },
+    },
+    SERVICE: {
+      CREATE_BATCH_COMMENT: {
+        NOT_FOUND_POST: '존재하지 않는 기수 커뮤니티입니다.',
+        NOT_FOUND_USER: '기수 멤버가 아닙니다.',
+      },
+      GET_BATCH_COMMENT: {
+        NOT_FOUND_POST: '존재하지 않는 기수 커뮤니티입니다.',
+        NOT_FOUND_USER: '기수 멤버가 아닙니다.',
+      },
+    },
+    COMMON: {
+      BATCH_POST_ENTITY: {
+        UID: {
+          REQUIRED: '기수 커뮤니티 UID를 입력해 주세요',
+        },
+        BATCH_UID: {
+          REQUIRED: '기수 UID를 입력해 주세요',
+        },
+      },
+      BAND_POSTS_COMMENTS_ENTITY: {
+        CONTENT: {
+          REQUIRED: '기수 게시판 댓글 내용을 입력해 주세요',
+        },
+      },
+    },
+  },
 }
