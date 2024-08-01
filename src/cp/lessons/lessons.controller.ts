@@ -23,6 +23,7 @@ import { LessonOpenStatus } from '../../common/lessons/types/lessons-type'
 import { validateDto } from '../../common/utils/validator-dto'
 import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { SalesResponseDto } from './dtos/sales-response-dto'
 
 @ApiTags('레슨 관리')
 @Controller({ host: 'cp.localhost', path: 'lessons' })

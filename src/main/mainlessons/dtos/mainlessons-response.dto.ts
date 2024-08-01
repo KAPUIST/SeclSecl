@@ -1,7 +1,4 @@
-import { Type } from 'class-transformer'
 import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator'
-import { LessonImages } from '../../../common/lessons/entities/lesson-image.entity'
-import { Batch } from 'typeorm'
 
 export class MainLessonResponseDto {
   @IsString()

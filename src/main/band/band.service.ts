@@ -42,7 +42,7 @@ import { LikeBandCommentParamsDTO } from './dto/like-band-comment-params.dto'
 import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { SendBirdService } from '../../common/sendbird/sendbird.service'
-import { lastValueFrom, map } from 'rxjs'
+import { lastValueFrom } from 'rxjs'
 
 @Injectable()
 export class BandService {
@@ -521,112 +521,6 @@ export class BandService {
           MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.UNLIKE_BAND_COMMENT.TRANSACTION_ERROR,
         )
       }
-    })
-  }
-
-  async sendMessageToBand(bandsUid: string, message: string, userUid: string) {
-    return this.dataSource.transaction(async (manager) => {
-      const band = await manager.findOne(Band, { where: { uid: bandsUid } })
-      if (!band) {
-        throw new NotFoundException('없는 밴드입니다.')
-      }
-
-      const members = await manager.find(BandMember, { where: { bandUid: bandsUid } })
-      const memberUids = members.map((member) => member.userUid)
-
-      if (!memberUids.includes(userUid)) {
-        throw new UnauthorizedException('가입되지 않은 밴드입니다.')
-      }
-
-      const chatUrl = band.chatUrl
-      if (!chatUrl) {
-        throw new NotFoundException('밴드와 다른 채팅방입니다.')
-      }
-
-      return this.sendBirdService.sendMessage(chatUrl, message, userUid)
-    })
-  }
-
-  //밴드 채널 조회
-  async getBandChannels(bandsUid: string, userUid: string) {
-    return this.dataSource.transaction(async (manager) => {
-      const band = await manager.findOne(Band, { where: { uid: bandsUid } })
-      if (!band) {
-        throw new NotFoundException('없는 밴드입니다.')
-      }
-
-      const members = await manager.find(BandMember, { where: { bandUid: bandsUid } })
-      const memberUids = members.map((member) => member.userUid)
-
-      if (!memberUids.includes(userUid)) {
-        throw new UnauthorizedException('가입되지 않은 밴드입니다.')
-      }
-
-      const chatUrl = band.chatUrl
-      if (!chatUrl) {
-        throw new NotFoundException('밴드와 다른 채팅방입니다.')
-      }
-
-      return this.sendBirdService.getChannelTypes().pipe(
-        map((response) => {
-          const channels = response.channels
-          const uniqueChannels = []
-          const channelMap = new Map()
-          for (const channel of channels) {
-            if (!channelMap.has(channel.channel_url)) {
-              channelMap.set(channel.channel_url, true)
-              uniqueChannels.push(channel)
-            }
-          }
-          return uniqueChannels
-        }),
-      )
-    })
-  }
-
-  async getChannelMessages(userUid: string, bandsUid: string, limit?: number, messageTs?: number) {
-    return this.dataSource.transaction(async (manager) => {
-      const band = await manager.findOne(Band, { where: { uid: bandsUid } })
-      if (!band) {
-        throw new NotFoundException('없는 밴드입니다.')
-      }
-
-      const members = await manager.find(BandMember, { where: { bandUid: bandsUid } })
-      const memberUids = members.map((member) => member.userUid)
-
-      if (!memberUids.includes(userUid)) {
-        throw new UnauthorizedException('가입되지 않은 밴드입니다.')
-      }
-
-      const chatUrl = band.chatUrl
-      if (!chatUrl) {
-        throw new NotFoundException('밴드와 다른 채팅방입니다.')
-      }
-
-      return this.sendBirdService.getChannelMessages(chatUrl, limit, messageTs)
-    })
-  }
-
-  async sendMessageFileToBand(bandsUid: string, file: Express.Multer.File, userUid: string) {
-    return this.dataSource.transaction(async (manager) => {
-      const band = await manager.findOne(Band, { where: { uid: bandsUid } })
-      if (!band) {
-        throw new NotFoundException('없는 밴드입니다.')
-      }
-
-      const members = await manager.find(BandMember, { where: { bandUid: bandsUid } })
-      const memberUids = members.map((member) => member.userUid)
-
-      if (!memberUids.includes(userUid)) {
-        throw new UnauthorizedException('가입되지 않은 밴드입니다.')
-      }
-
-      const chatUrl = band.chatUrl
-      if (!chatUrl) {
-        throw new NotFoundException('밴드와 다른 채팅방입니다.')
-      }
-
-      return this.sendBirdService.sendFile(chatUrl, file, userUid)
     })
   }
 }

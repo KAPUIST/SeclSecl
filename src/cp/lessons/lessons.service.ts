@@ -9,6 +9,9 @@ import { Cp } from '../auth/entities/cp.entity'
 import { plainToInstance } from 'class-transformer'
 import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { UpdateLessonDto } from './dtos/update-lesson.dto'
+import { PaymentDetail } from '../../main/payments/entities/payment-details.entity'
+import { Batch } from '../../main/batches/entities/batch.entity'
+import { SalesResponseDto } from './dtos/sales-response-dto'
 
 @Injectable()
 export class LessonsService {
@@ -19,9 +22,14 @@ export class LessonsService {
     private readonly lessonImagesRepository: Repository<LessonImages>,
     @InjectRepository(Cp, 'cp')
     private readonly cpRepository: Repository<Cp>,
+    @InjectRepository(PaymentDetail)
+    private readonly paymentDetailsRepository: Repository<PaymentDetail>,
+    @InjectRepository(Batch)
+    private readonly batchesRepository: Repository<Batch>,
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,
   ) {}
+
   async createLesson(cpUid: string, createLessonDto: CreateLessonDto, files: Express.Multer.File[]): Promise<Lesson> {
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
