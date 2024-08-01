@@ -52,15 +52,26 @@ export class BatchPostsController {
       data,
     }
   }
+  /**
+   * 기수 공지 목록
+   * @param batchUid
+   * @returns
+   */
 
-  @Get()
-  findAll() {
-    return this.batchPostsService.findAll()
+  @Get('/:batchUid/posts')
+  async findAll(@Request() req, @Param('batchUid') batchUid: string) {
+    const data = await this.batchPostsService.findAll(req.user.uid, batchUid)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.FINDALL,
+      data,
+    }
   }
 
-  @Get('/:postUid')
-  findOne(@Param('postUid') postUid: string) {
-    return this.batchPostsService.findOne(postUid)
+  @Get('/:batchUid/posts/:postUid')
+  findOne(@Request() req, @Param('batchUid') batchUid: string, @Param('postUid') postUid: string) {
+    return this.batchPostsService.findOne(req.user.uid,batchUid,postUid)
   }
 
   @Patch(':postUid')

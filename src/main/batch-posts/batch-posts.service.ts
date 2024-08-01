@@ -5,7 +5,7 @@ import { CreateBatchCommentParamsDTO } from './dto/create-batch-comment-params.d
 import { CreateBatchCommentDTO } from './dto/create-batch-comment.dto'
 import { BatchPost } from './entities/batch-post.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { DataSource, EntityManager, Repository } from 'typeorm'
+import { DataSource, EntityManager, Not, Repository } from 'typeorm'
 import _ from 'lodash'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UserLesson } from '../users/entities/user-lessons.entity'
@@ -14,6 +14,7 @@ import { CreateBatchCommentRO } from './ro/create-batch-comment.ro'
 import { GetBandCommentParamsDTO } from '../band/dto/get-band-comment-params.dto'
 import { S3Service } from '../../common/s3/s3.service'
 import { PostImage } from './entities/post-image.entity'
+import { Batch } from '../batches/entities/batch.entity'
 
 @Injectable()
 export class BatchPostsService {
@@ -26,6 +27,8 @@ export class BatchPostsService {
     private readonly userLessonRepository: Repository<UserLesson>,
     @InjectRepository(PostImage)
     private readonly postImageRepository: Repository<PostImage>,
+    @InjectRepository(Batch)
+    private readonly batchRepository: Repository<Batch>,
 
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,
@@ -35,11 +38,8 @@ export class BatchPostsService {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       const uploadedFiles: { location: string; key: string }[] = []
       try {
-        const userLesson = await transactionalEntityManager.findOne(UserLesson, { where: { userUid: uid } })
-
-        if (!userLesson) {
-          throw new NotFoundException('권한이 있는 유저가 아닙니다.')
-        }
+        //유저 권한 확인
+        await this.checkUserPermission(uid)
 
         const newBatchPost = await transactionalEntityManager.create(BatchPost, {
           ...createBatchPostDto,
@@ -70,7 +70,6 @@ export class BatchPostsService {
 
         return [savedBatchPost, postImages]
       } catch (error) {
-        console.error('에러:', error)
         // 업로드된 파일 삭제
         for (const file of uploadedFiles) {
           await this.s3Service.deleteFile(file.key)
@@ -80,19 +79,35 @@ export class BatchPostsService {
     })
   }
 
-  findAll() {
+  async findAll(uid: string, batchUid: string) {
+    //유저 권한 확인
+    await this.checkUserPermission(uid)
+    //기수가 존재하나 확인
+    await this.verifyBatchExistence(batchUid)
+
+    const data = await this.batchPostRepository.find({ where: { batchUid }, relations: ['postImages'] })
+
+    // deletedAt 필드 삭제
+    data.forEach((post) => {
+      delete post.deletedAt
+      post.postImages.forEach((image) => {
+        delete image.deletedAt
+      })
+    })
+    return data
+  }
+
+  async findOne(uid: string, batchUid: string, postUid: string) {
+    await this.checkUserPermission(uid)
+
     return
   }
 
-  findOne(postUid: string) {
+  async update(postUid: string, updateBatchPostDto: UpdateBatchPostDto) {
     return
   }
 
-  update(postUid: string, updateBatchPostDto: UpdateBatchPostDto) {
-    return
-  }
-
-  remove(id: number) {
+  async remove(id: number) {
     return
   }
 
@@ -145,4 +160,20 @@ export class BatchPostsService {
   }
   // 기수별 커뮤니티 댓글 수정 로직
   // 기수별 커뮤니티 댓글 삭제 로직
+
+  private async checkUserPermission(uid: string) {
+    const userAuthorization = await this.userLessonRepository.findOne({ where: { userUid: uid } })
+
+    if (!userAuthorization) {
+      throw new NotFoundException('권한이 있는 유저가 아닙니다.')
+    }
+  }
+
+  private async verifyBatchExistence(batchUid: string) {
+    const existingLesson = await this.batchRepository.findOne({ where: { uid: batchUid } })
+
+    if (!existingLesson) {
+      throw new NotFoundException('기수를 찾을 수 없습니다.')
+    }
+  }
 }
