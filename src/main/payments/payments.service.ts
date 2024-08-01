@@ -22,6 +22,9 @@ import { UserLesson } from '../users/entities/user-lessons.entity'
 import { Payment } from './entities/payments.entity'
 import { PaymentDetail } from './entities/payment-details.entity'
 import { RefundPaymentParamsDTO } from './dto/refund-payment-params.dto'
+import { GetPaymentDetailParamsDTO } from './dto/get-payment-detail-params.dto'
+import { GetPaymentDetailRO } from './ro/get-payment-detail.ro'
+import { GetPaymentListRO } from './ro/get-payment-List.ro'
 
 @Injectable()
 export class PaymentsService {
@@ -32,6 +35,8 @@ export class PaymentsService {
     private readonly paymentCartRepository: Repository<PaymentCart>,
     @InjectRepository(PaymentOrder)
     private readonly paymentOrderRepository: Repository<PaymentOrder>,
+    @InjectRepository(PaymentDetail)
+    private readonly paymentDetailRepository: Repository<PaymentDetail>,
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
     @InjectRepository(UserLesson)
@@ -229,6 +234,45 @@ export class PaymentsService {
       }
       return orderList
     })
+  }
+  // 결제 목록 조회 로직
+  async getPaymentList(userUid: string): Promise<GetPaymentListRO[]> {
+    const paymentList = await this.paymentRepository.find({ where: { userUid } })
+    return paymentList.map((payment) => ({
+      userUid,
+      paymentUid: payment.uid,
+      orderName: payment.orderName,
+      totalAmount: payment.totalAmount,
+      vat: payment.vat,
+      currency: payment.currency,
+      method: payment.method,
+      paymentTime: payment.approvedAt,
+    }))
+  }
+
+  // 결제 상세 조회 로직
+  async getPaymentDetail(userUid: string, params: GetPaymentDetailParamsDTO): Promise<GetPaymentDetailRO> {
+    const paymentDetail = await this.paymentDetailRepository.findOne({
+      where: { uid: params.paymentDetailUid },
+      relations: { payment: true, batch: { lesson: true } },
+    })
+    // 해당 UID의 정보가 유효하지 않을 때
+    if (_.isNil(paymentDetail)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_DETAIL.NOT_FOUND)
+    }
+    // 결제한 유저가 아닐 시 에러 처리
+    if (userUid !== paymentDetail.payment.userUid) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_DETAIL.NOT_MATCHED_USER)
+    }
+    return {
+      lessonName: paymentDetail.batch.lesson.title,
+      lessonUid: paymentDetail.batch.lesson.uid,
+      batchNumber: paymentDetail.batch.batchNumber,
+      batchUid: paymentDetail.batch.uid,
+      amount: paymentDetail.batch.lesson.price,
+      paymentUid: paymentDetail.paymentUid,
+      paymentTime: paymentDetail.payment.approvedAt,
+    }
   }
 
   // 장바구니 추가 로직

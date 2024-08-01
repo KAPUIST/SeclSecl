@@ -211,6 +211,14 @@ export const MAIN_MESSAGE_CONSTANT = {
         BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
         AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
       },
+      GET_PAYMENT_LIST: {
+        SUCCESS: '결제 목록 조회에 성공하였습니다.',
+      },
+      GET_PAYMENT_DETAIL: {
+        SUCCESS: '결제 상세 조회에 성공하였습니다.',
+        NOT_MATCHED_USER: '해당 정보를 결제한 유저가 아닙니다.',
+        NOT_FOUND: '해당 결제 정보는 존재하지 않습니다.',
+      },
     },
     PAYMENT_CART: {
       ADD_CART: {
@@ -236,6 +244,9 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
       PAYMENT_ENTITY: {
         PAYMENT_UID: '결제 UID를 입력해 주세요',
+      },
+      PAYMENT_DETAIL: {
+        UID: '결제 상세 UID를 입력해 주세요',
       },
       PAYMENT_TOSS: {
         PAYMENT_KEY: '결제키를 입력해 주세요',
