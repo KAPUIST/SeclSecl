@@ -12,8 +12,8 @@ export class ReviewController {
   constructor(private readonly lessonReviewService: LessonReviewService) {}
 
   @Post('/:lessonId/reviews')
-  async createReview(@Param('lessonId') id: string, @Req() req, @Body() createReviewDto: CreateReviewDto) {
-    const data = await this.lessonReviewService.createReview(id, req.user.uid, createReviewDto)
+  async createReview(@Param('lessonId') id: string, @Req() req, @Body() createReviewDto: CreateReviewDto, batchUid: string) {
+    const data = await this.lessonReviewService.createReview(id, req.user.uid, batchUid, createReviewDto)
 
     return {
       status: HttpStatus.CREATED,
@@ -50,11 +50,7 @@ export class ReviewController {
   }
 
   @Delete('/:lessons/reviews/:reviewId')
-  async removeReview(
-    @Param('lessonId') lessonId: string,
-    @Param('reviewId') reviewId: string,
-    @Req() req,
-  ) {
+  async removeReview(@Param('lessonId') lessonId: string, @Param('reviewId') reviewId: string, @Req() req) {
     const data = await this.lessonReviewService.removeReview(lessonId, reviewId, req.user.uid)
 
     return {
@@ -63,6 +59,4 @@ export class ReviewController {
       data,
     }
   }
-
-
 }

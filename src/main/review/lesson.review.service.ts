@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
-import { UserInfos } from '../users/entities/user-infos.entity'
+import { UserLesson } from '../users/entities/user-lessons.entity'
 import { User } from '../users/entities/user.entity'
 import { CreateReviewDto } from './dtos/create.review.dto'
 import { LessonReviewResponseDto } from './dtos/lesson.review.response.dto'
@@ -18,19 +18,33 @@ export class LessonReviewService {
     private readonly lessonRepository: Repository<Lesson>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserLesson)
+    private readonly userLessonRepository: Repository<UserLesson>
   ) {
     console.log('LessonReviewService created')
   }
 
   //리뷰 등록
-  async createReview(id: string, uid, createReviewDto: CreateReviewDto): Promise<LessonReviewResponseDto> {
+  async createReview(id: string, uid, batchUid:string, createReviewDto: CreateReviewDto): Promise<LessonReviewResponseDto> {
     const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
 
     if (!lesson) {
       throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
     }
 
-    //강의 기수별로 리뷰 1개씩 넣기 조건 추가
+    //batch별 리뷰 존재 확인 
+    const batch = await this.userLessonRepository.findOne({ where: {batchUid: batchUid}})
+
+    if(!batch) {
+        throw new NotFoundException('수강중인 기수를 찾을 수 없습니다.')
+    }
+
+    const existedReview = await this.lessonReviewRepository.findOne({ where:{batch:{uid: batchUid}, user:{uid:uid}}})
+
+    if (existedReview) {
+        throw new Error('이미 리뷰를 작성했습니다.')
+    }
+
 
     const user = await this.userRepository.findOne({
       where: { uid: uid },
@@ -120,11 +134,7 @@ export class LessonReviewService {
   }
 
   //리뷰 삭제
-  async removeReview(
-    lessonId: string,
-    reviewId: string,
-    uid: string,
-  ): Promise<LessonReviewResponseDto> {
+  async removeReview(lessonId: string, reviewId: string, uid: string): Promise<LessonReviewResponseDto> {
     const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
 
     if (!lesson) {
@@ -143,7 +153,7 @@ export class LessonReviewService {
     })
 
     await this.lessonReviewRepository.delete(reviewId)
-    
+
     const response = new LessonReviewResponseDto()
     response.uid = review.uid
     response.content = review.content
@@ -151,7 +161,6 @@ export class LessonReviewService {
     response.lessonUid = lesson.uid
     response.nickname = user.userInfo.nickname
     response.createdAt = review.createdAt
-
 
     return response
   }

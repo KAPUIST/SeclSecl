@@ -16,4 +16,8 @@ export class CreateReviewDto {
   @IsEnum(Rate)
   @IsNotEmpty({ message: '별점을 입력하지 않으셨습니다.' })
   rate: Rate
+
+  @IsString()
+  @IsNotEmpty({ message: '수강하신 기수를 입력해주세요'})
+  batchUid: string
 }

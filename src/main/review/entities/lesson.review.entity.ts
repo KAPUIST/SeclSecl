@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 import { Lesson } from '../../../common/lessons/entities/lessons.entity'
+import { Batch } from '../../batches/entities/batch.entity'
 import { User } from '../../users/entities/user.entity'
 import { Rate } from '../type/lesson.review.rate'
 
@@ -41,4 +42,8 @@ export class LessonReview {
   @ManyToOne(() => User, (user) => user.lessonReviews)
   @JoinColumn({ name: 'userUid' })
   user: User
+
+  @ManyToOne(()=> Batch, (batch)=> batch.reviews)
+  @JoinColumn({ name: 'batchUid'})
+  batch: Batch
 }
