@@ -33,6 +33,7 @@ export class ChatGateway {
   handleConnection(client: Socket, ...args: any[]) {
     try {
       const token = client.handshake.query.token as string
+
       const payload = this.chatJwtStrategy.validateToken(token)
       client.data.user = payload
       this.logger.log(`Client connected: ${client.id}`)
@@ -50,6 +51,7 @@ export class ChatGateway {
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: { cpId?: string; userId?: string }) {
     try {
+      console.log(data)
       let chatRoom
       const loginId = client.data.user.uid
       console.log('cpId:', data.cpId)
