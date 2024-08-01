@@ -27,6 +27,8 @@ import { GetBatchCommentParamsDTO } from './dto/get-batch-comment-params.dto'
 import { DeleteBatchCommentParamsDTO } from './dto/delete-batch-comment-params.dto'
 import { UnlikeBatchCommentParamsDTO } from './dto/unlike-batch-comment-params.dto'
 import { LikeBatchCommentParamsDTO } from './dto/like-batch-comment-params.dto'
+import { LikeBatchPostParamsDTO } from './dto/like-batch-post-params.dto'
+import { UnlikeBatchPostParamsDTO } from './dto/unlike-batch-post-params.dto'
 
 @ApiTags('기수 커뮤니티')
 @ApiBearerAuth()
@@ -129,9 +131,38 @@ export class BatchPostsController {
   }
 
   /**
+   * 기수별 커뮤니티 게시글 좋아요 로직
+   * @param req
+   * @param params
+   * @returns
+   */
+  @Post('/posts/:postUid/likes')
+  async likeBatchPost(@Request() req, @Param() params: LikeBatchPostParamsDTO) {
+    const userUid = req.user.uid
+    const likedBatchPost = await this.batchPostsService.likeBatchPost(userUid, params)
+    return {
+      status: HttpStatus.CREATED,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.LIKE_BATCH_POST.SUCCEED,
+      data: likedBatchPost,
+    }
+  }
+
+  // 기수별 커뮤니티 게시글 좋아요 취소 로직
+  @Delete('/posts/:postUid/likes')
+  async UnlikeBatchPost(@Request() req, @Param() params: UnlikeBatchPostParamsDTO) {
+    const userUid = req.user.uid
+    const unLikedBatchPost = await this.batchPostsService.UnlikeBatchPost(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.UNLIKE_BATCH_POST.SUCCEED,
+      data: unLikedBatchPost,
+    }
+  }
+
+  /**
    * 기수별 커뮤니티 댓글 작성
    * @param req
-   * @param parmas
+   * @param params
    * @param createBatchCommentDTO
    * @returns
    */
@@ -204,18 +235,29 @@ export class BatchPostsController {
       data: deletedBatchCommentUid,
     }
   }
-  // 기수별 커뮤니티 댓글 좋아요
+
+  /**
+   * 기수별 커뮤니티 댓글 좋아요
+   * @param req
+   * @param params
+   * @returns
+   */
   @Post('/posts/comments/:commentUid/likes')
   async likeBatchComment(@Request() req, @Param() params: LikeBatchCommentParamsDTO) {
     const userUid = req.user.uid
     const likedBatchComment = await this.batchPostsService.likeBatchComment(userUid, params)
     return {
-      status: HttpStatus.OK,
-      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.Like_BATCH_COMMENT.SUCCEED,
+      status: HttpStatus.CREATED,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.LIKE_BATCH_COMMENT.SUCCEED,
       data: likedBatchComment,
     }
   }
-  // 기수별 커뮤니티 댓글 좋아요 취소
+  /**
+   * 기수별 커뮤니티 댓글 좋아요 취소
+   * @param req
+   * @param params
+   * @returns
+   */
   @Delete('/posts/comments/:commentUid/likes')
   async UnlikeBatchComment(@Request() req, @Param() params: UnlikeBatchCommentParamsDTO) {
     const userUid = req.user.uid
