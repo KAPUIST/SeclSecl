@@ -197,6 +197,12 @@ export const MAIN_MESSAGE_CONSTANT = {
         CONFLICT_PRICE: '주문 금액과 결제 금액이 같지 않습니다.',
         TRANSACTION_ERROR: '결제 진행중 오류가 생겼습니다.',
       },
+      REFUND_PAYMENT: {
+        SUCCESS: '주문 환불에 성공하였습니다.',
+        BAD_REQUEST: '잘못된 환불 요청입니다.',
+        TRANSACTION_ERROR: '환불 진행중 오류가 생겼습니다.',
+        NOT_MATCHED_USER: '환불할 결제 기록에 해당하는 유저가 아닙니다.',
+      },
       CREATE_ORDER: {
         SUCCESS: '주문 결제에 성공하였습니다.',
         NOT_FOUND: '해당 수업은 존재하지 않습니다.',
@@ -227,6 +233,9 @@ export const MAIN_MESSAGE_CONSTANT = {
       PAYMENT_CART_ENTITY: {
         BATCH_UID: '기수 UID를 입력해 주세요',
         CART_UID: '장바구니 UID를 입력해 주세요',
+      },
+      PAYMENT_ENTITY: {
+        PAYMENT_UID: '결제 UID를 입력해 주세요',
       },
       PAYMENT_TOSS: {
         PAYMENT_KEY: '결제키를 입력해 주세요',
