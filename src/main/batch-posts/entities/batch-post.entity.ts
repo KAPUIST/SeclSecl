@@ -8,7 +8,10 @@ import {
   DeleteDateColumn,
   JoinColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm'
+import { BatchPostComment } from './batch-post-comments.entity'
+import { BatchLike } from './batch-likes.entity'
 
 @Entity({ name: 'batch_posts' })
 export class BatchPost {
@@ -27,7 +30,7 @@ export class BatchPost {
   @Column()
   content: string
 
-  @Column()
+  @Column({ nullable: true })
   communityImage: string
 
   @Column({ default: 0 })
@@ -45,4 +48,10 @@ export class BatchPost {
   @ManyToOne(() => Batch, (batch) => batch.batchPosts)
   @JoinColumn({ name: 'batch_uid' })
   batch: Batch
+
+  @OneToMany(() => BatchPostComment, (batchPostComment) => batchPostComment.batchPost)
+  batchPostComments: BatchPostComment[]
+
+  @OneToMany(() => BatchLike, (batchLike) => batchLike.batchPost)
+  batchLikes: BatchLike[]
 }
