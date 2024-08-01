@@ -33,7 +33,7 @@ export class BatchPostsService {
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,
   ) {}
-
+  // 기수 커뮤니티 생성
   async create(uid: string, batchUid: string, files: Express.Multer.File[], createBatchPostDto: CreateBatchPostDto) {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       const uploadedFiles: { location: string; key: string }[] = []
@@ -78,7 +78,7 @@ export class BatchPostsService {
       }
     })
   }
-
+  //기수 커뮤니티 전체 조회
   async findAll(uid: string, batchUid: string) {
     //유저 권한 확인
     await this.checkUserPermission(uid)
@@ -98,9 +98,28 @@ export class BatchPostsService {
   }
 
   async findOne(uid: string, batchUid: string, postUid: string) {
+    //유저 권한 확인
     await this.checkUserPermission(uid)
+    //기수가 존재하나 확인
+    await this.verifyBatchExistence(batchUid)
 
-    return
+    const existingBatchPost = await this.batchPostRepository.find({
+      where: { uid: postUid },
+      relations: ['postImages'],
+    })
+    if (!existingBatchPost) {
+      throw new NotFoundException('게시물을 찾을 수 없습니다.')
+    }
+
+    // deletedAt 필드 삭제
+    existingBatchPost.forEach((post) => {
+      delete post.deletedAt
+      post.postImages.forEach((image) => {
+        delete image.deletedAt
+      })
+    })
+
+    return existingBatchPost
   }
 
   async update(postUid: string, updateBatchPostDto: UpdateBatchPostDto) {
@@ -170,9 +189,9 @@ export class BatchPostsService {
   }
 
   private async verifyBatchExistence(batchUid: string) {
-    const existingLesson = await this.batchRepository.findOne({ where: { uid: batchUid } })
+    const existingBatch = await this.batchRepository.findOne({ where: { uid: batchUid } })
 
-    if (!existingLesson) {
+    if (!existingBatch) {
       throw new NotFoundException('기수를 찾을 수 없습니다.')
     }
   }

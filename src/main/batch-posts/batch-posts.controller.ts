@@ -57,7 +57,6 @@ export class BatchPostsController {
    * @param batchUid
    * @returns
    */
-
   @Get('/:batchUid/posts')
   async findAll(@Request() req, @Param('batchUid') batchUid: string) {
     const data = await this.batchPostsService.findAll(req.user.uid, batchUid)
@@ -68,18 +67,23 @@ export class BatchPostsController {
       data,
     }
   }
-
+  /**
+   * 기수 공지 목록
+   * @param batchUid
+   * @param postUid
+   * @returns
+   */
   @Get('/:batchUid/posts/:postUid')
   findOne(@Request() req, @Param('batchUid') batchUid: string, @Param('postUid') postUid: string) {
-    return this.batchPostsService.findOne(req.user.uid,batchUid,postUid)
+    return this.batchPostsService.findOne(req.user.uid, batchUid, postUid)
   }
 
-  @Patch(':postUid')
+  @Patch('/:batchUid/posts/:postUid')
   update(@Param() postUid: string, @Body() updateBatchPostDto: UpdateBatchPostDto) {
     return this.batchPostsService.update(postUid, updateBatchPostDto)
   }
 
-  @Delete(':id')
+  @Delete('/:batchUid/posts/:postUid')
   remove(@Param() id: string) {
     return this.batchPostsService.remove(+id)
   }
