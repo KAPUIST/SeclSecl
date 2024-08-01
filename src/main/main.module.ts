@@ -11,7 +11,16 @@ import { ReviewModule } from './review/lesson.review.module'
 import { MainLessonsModule } from './mainlessons/mainlessons.module'
 
 @Module({
-  imports: [AuthModule, BandModule, LessonsModule, ChatModule, PaymentsModule, UsersModule, ReviewModule, MainLessonsModule],
+  imports: [
+    AuthModule,
+    BandModule,
+    LessonsModule,
+    ChatModule,
+    PaymentsModule,
+    UsersModule,
+    ReviewModule,
+    MainLessonsModule,
+  ],
   controllers: [],
   providers: [],
 })

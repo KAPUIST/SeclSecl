@@ -36,8 +36,8 @@ export class BatchNoticeService {
 
   async create(
     uid: string,
-    lessonId: string,
-    batchId: string,
+    lessonUid: string,
+    batchUid: string,
     files: Express.Multer.File[],
     createBatchNoticeDto: CreateBatchNoticeDto,
   ) {
@@ -48,13 +48,13 @@ export class BatchNoticeService {
 
     try {
       // cp가 권한이 있는지 확인
-      await this.authorizedCp(uid, lessonId)
+      await this.authorizedCp(uid, lessonUid)
       // 기수가 존재하는지 확인
-      await this.findBatchOrThrow(lessonId, batchId)
+      await this.findBatchOrThrow(lessonUid, batchUid)
 
       const newBatchNotice = this.batchNoticeRepository.create({
         ...createBatchNoticeDto,
-        batchUid: batchId,
+        batchUid,
         cpUid: uid,
       })
       const savedBatchNotice = await queryRunner.manager.save(BatchNotice, newBatchNotice)
@@ -98,21 +98,21 @@ export class BatchNoticeService {
     }
   }
   // 기수 공지 전체조회
-  async findAll(uid, lessonId, batchId) {
+  async findAll(uid, lessonUid, batchUid) {
     // 기수가 존재하는지 확인
-    await this.findBatchOrThrow(lessonId, batchId)
+    await this.findBatchOrThrow(lessonUid, batchUid)
     // 기수 게시판에 업체 아이디로 조회하게 수정하기
-    const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonId, cp_uid: uid } })
+    const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonUid, cp_uid: uid } })
 
     const authorizedUser = await this.userLessonRepository.findOne({
-      where: { uid: lessonId, userUid: uid, batchUid: batchId },
+      where: { uid: lessonUid, userUid: uid, batchUid },
     })
 
     if (!authorizedUser && !authorizedCp) {
       throw new ForbiddenException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_AUTHORIZED_NOTICE)
     }
 
-    const data = await this.batchNoticeRepository.find({ where: { batchUid: batchId }, relations: ['lessonNotes'] })
+    const data = await this.batchNoticeRepository.find({ where: { batchUid }, relations: ['lessonNotes'] })
 
     // deletedAt 필드 삭제
     data.forEach((notice) => {
@@ -124,9 +124,9 @@ export class BatchNoticeService {
   // 기수 공지 수정
   async update(
     uid,
-    lessonId,
-    batchId,
-    notificationId,
+    lessonUid,
+    batchUid,
+    notificationUid,
     files: Express.Multer.File[],
     updateBatchNoticeDto: UpdateBatchNoticeDto,
   ) {
@@ -137,13 +137,13 @@ export class BatchNoticeService {
     const oldFiles: string[] = []
     try {
       //cp가 권한이 있는지 확인
-      await this.authorizedCp(uid, lessonId)
+      await this.authorizedCp(uid, lessonUid)
       // 기수가 존재하는지 확인
-      await this.findBatchOrThrow(lessonId, batchId)
+      await this.findBatchOrThrow(lessonUid, batchUid)
 
       const { ...noticeInfo } = updateBatchNoticeDto
       const existingBatchNotice = await this.batchNoticeRepository.findOne({
-        where: { uid: notificationId },
+        where: { uid: notificationUid },
         relations: ['lessonNotes'],
       })
 
@@ -162,7 +162,7 @@ export class BatchNoticeService {
       for (const file of files) {
         const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
         const fileEntity = this.lessonNoteRepository.create({
-          noticeUid: notificationId,
+          noticeUid: notificationUid,
           lessonNote: location, // 파일 위치 URL
           field: file.originalname, // 파일 원본 이름
         })
@@ -201,30 +201,31 @@ export class BatchNoticeService {
     }
   }
   // 기수 공지 삭제
-  async remove(uid: string, lessonId: string, batchId: string, notificationId: string) {
+  async remove(uid: string, lessonUid: string, batchUid: string, notificationUid: string) {
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
     try {
       //cp가 해당 강의의 권한이 있는지 확인
-      await this.authorizedCp(uid, lessonId)
+      await this.authorizedCp(uid, lessonUid)
       // 기수가 존재하는지 확인
-      await this.findBatchOrThrow(lessonId, batchId)
-
+      await this.findBatchOrThrow(lessonUid, batchUid)
       const existingNotification = await queryRunner.manager.findOne(BatchNotice, {
-        where: { uid: notificationId },
+        where: { uid: notificationUid },
         relations: ['lessonNotes'],
       })
 
+      console.log('existingNotification', existingNotification)
       if (!existingNotification) {
         throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_FIND_NOTICE)
       }
+
+      const deleteBatch = await queryRunner.manager.softRemove(BatchNotice, existingNotification)
+
       const lessonNotes = existingNotification.lessonNotes
       if (lessonNotes && lessonNotes.length > 0) {
         await queryRunner.manager.softRemove(LessonNote, lessonNotes)
       }
-
-      const deleteBatch = await queryRunner.manager.softRemove(BatchNotice, existingNotification)
 
       await queryRunner.commitTransaction()
 
