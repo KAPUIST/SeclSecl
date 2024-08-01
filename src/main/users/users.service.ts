@@ -13,6 +13,7 @@ import { FavoriteLessonRO } from './ro/favorite-lesson.ro'
 import { findMyLessonDetailParamsDTO } from './dto/find-my-lesson-detail-params.dto'
 import _ from 'lodash'
 import { FindMyLessonDetailRO } from './ro/find-my-lesson-detail.ro'
+import { UserFindOneRO } from './ro/user-find-ro'
 
 @Injectable()
 export class UsersService {
@@ -29,17 +30,33 @@ export class UsersService {
     private readonly dataSource: DataSource,
   ) {}
   // 내 정보 조회
-  async findOne(uid: string) {
+  async findOne(uid: string): Promise<UserFindOneRO> {
     const user = await this.userRepository.findOne({ where: { uid }, relations: ['userInfo'] })
 
     if (!user) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER)
     }
 
+    const userInfo = user.userInfo
+
     const { deletedAt, ...data } = user
     delete data.userInfo.deletedAt
 
-    return data
+    return {
+      email: user.email,
+      name: userInfo.name,
+      phoneNumber: userInfo.phoneNumber,
+      address: userInfo.address,
+      dong: userInfo.dong,
+      sido: userInfo.sido,
+      sigungu: userInfo.sigungu,
+      gender: userInfo.gender,
+      birthDate: userInfo.birthDate,
+      role: userInfo.role,
+      nickname: userInfo.nickname,
+      provider: userInfo.provider,
+      password: user.password,
+    }
   }
   //내 정보 수정
   async update(uid: string, updateUserInfoDto) {
