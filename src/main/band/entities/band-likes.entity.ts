@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { BandPost } from './band-posts.entity'
 import { BandPostComment } from './band-post-comments.entity'
 
@@ -15,6 +15,9 @@ export class BandLike {
 
   @Column()
   userUid: string
+
+  @CreateDateColumn()
+  createdAt: Date
 
   @ManyToOne(() => BandPost, (bandPost) => bandPost.bandLikes)
   @JoinColumn({ name: 'band_post_uid' })

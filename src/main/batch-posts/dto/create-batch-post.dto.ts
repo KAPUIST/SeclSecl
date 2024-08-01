@@ -15,5 +15,5 @@ export class CreateBatchPostDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  community_image?: string
+  likeCount: number
 }
