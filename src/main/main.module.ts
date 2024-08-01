@@ -25,7 +25,7 @@ import { BandChatModule } from './bandsChats/bandChat.module'
     ReviewModule,
 
     MainLessonsModule,
-    ,
+
     BandChatModule,
   ],
   controllers: [],
