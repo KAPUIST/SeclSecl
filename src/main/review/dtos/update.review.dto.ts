@@ -8,7 +8,7 @@ export class UpdateReviewDto {
    */
   @IsString()
   @IsOptional()
-  conten?: string
+  content?: string
 
   /**
    * 별점
