@@ -47,7 +47,7 @@ export class BatchNoticeService {
   async findAll(uid, lessonId, batchId) {
     // 기수가 존재하는지 확인
     await this.findBatchOrThrow(lessonId, batchId)
-
+    // 기수 게시판에 업체 아이디로 조회하게 수정하기
     const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonId, cp_uid: uid } })
 
     const authorizedUser = await this.userLessonRepository.findOne({

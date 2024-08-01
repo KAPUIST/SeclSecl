@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
-export class CreateBatchNoticeDto {
+export class CreateBatchPostDto {
   @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
@@ -15,10 +15,5 @@ export class CreateBatchNoticeDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  lessonNote?: string
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  field?: string
+  community_image?: string
 }
