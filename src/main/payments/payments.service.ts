@@ -25,6 +25,11 @@ import { RefundPaymentParamsDTO } from './dto/refund-payment-params.dto'
 import { GetPaymentDetailParamsDTO } from './dto/get-payment-detail-params.dto'
 import { GetPaymentDetailRO } from './ro/get-payment-detail.ro'
 import { GetPaymentListRO } from './ro/get-payment-List.ro'
+import { AddCartRO } from './ro/add-cart.ro'
+import { GetCartListRO } from './ro/get-cart-list.ro'
+import { DeleteCartRO } from './ro/delete-cart.ro'
+import { CreateOrderRO } from './ro/create-order.ro'
+import { RefundPaymentRO } from './ro/refund-payment.ro'
 
 @Injectable()
 export class PaymentsService {
@@ -117,7 +122,18 @@ export class PaymentsService {
             batchUid: order.batchUid,
           })
         }
-        return data
+        return {
+          orderId,
+          orderName: data.orderName,
+          status: data.status,
+          totalAmount: data.totalAmount,
+          suppliedAmount: data.suppliedAmount,
+          vat: data.vat,
+          method: data.method,
+          currency: data.currency,
+          requestedAt: data.requestedAt,
+          approvedAt: data.approvedAt,
+        }
       })
     } catch (err) {
       // 주문 데이터 상태 처리
@@ -150,7 +166,7 @@ export class PaymentsService {
   }
 
   // 주문 환불 로직
-  async refundPayment(userUid: string, params: RefundPaymentParamsDTO) {
+  async refundPayment(userUid: string, params: RefundPaymentParamsDTO): Promise<RefundPaymentRO> {
     return await this.dataSource.transaction(async (manager) => {
       const apiSecretKey = this.configService.get<string>('API_SECRET_KEY')
       const encryptedApiSecretKey = 'Basic ' + Buffer.from(apiSecretKey + ':').toString('base64')
@@ -186,7 +202,19 @@ export class PaymentsService {
         }
         // 결제 테이블, 상세 테이블 데이터 삭제
         await manager.delete(Payment, { paymentKey })
-        return data
+        const cancelInfo = data.cancels[0]
+        return {
+          paymentUid: params.paymentsUid,
+          orderId: data.orderId,
+          orderName: data.orderName,
+          status: data.status,
+          method: data.method,
+          currency: data.currency,
+          cancelAmount: cancelInfo.cancelAmount,
+          cancelReason: cancelInfo.cancelReason,
+          cancelStatus: cancelInfo.cancelStatus,
+          canceledAt: cancelInfo.canceledAt,
+        }
       } catch (err) {
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.TRANSACTION_ERROR)
       }
@@ -194,46 +222,52 @@ export class PaymentsService {
   }
 
   // 주문 정보 생성 로직(body 타입 추후 지정)
-  async createOrder(userUid: string, body: any) {
-    return this.dataSource.transaction(async (manager) => {
-      const orderId = body.orderId
-      const batchUidList = body.batchUidList
-      const orderList = []
-      const currentDate = new Date()
+  async createOrder(userUid: string, body: any): Promise<CreateOrderRO[]> {
+    try {
+      return this.dataSource.transaction(async (manager) => {
+        const orderId = body.orderId
+        const batchUidList = body.batchUidList
+        const orderList = []
+        const currentDate = new Date()
 
-      for (let i = 0; i < batchUidList.length; i++) {
-        const batchUid = batchUidList[i]
-        // 기수 ID가 유효하지 않을 때 에러 처리
-        const validBatch = await manager.findOne(Batch, { where: { uid: batchUid } })
-        if (_.isNil(validBatch)) {
-          throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.NOT_FOUND)
-        }
-        // 같은 주문 정보에 이미 결제 대기중인 강의가 있을 경우 에러 처리
-        const isExistOrder = await manager.findOne(PaymentOrder, {
-          where: { batchUid, orderId, status: OrderStatus.Pending },
-        })
-        if (isExistOrder) {
-          throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.EXIST_ORDER)
-        }
-        // 이미 보유한 강의 일 때 에러 처리
-        const isPurchasedLesson = await manager.findOne(UserLesson, { where: { userUid, batchUid } })
-        if (isPurchasedLesson) {
-          throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.CONFLICT_LESSON)
-        }
-        // 모집 기간 전일 때 에러 처리
-        if (currentDate < validBatch.recruitmentStart) {
-          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.BEFORE_RECRUITMENT)
-        }
-        // 모집 기간이 지났을 때 에러 처리
-        if (currentDate > validBatch.recruitmentEnd) {
-          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.AFTER_RECRUITMENT)
-        }
+        for (let i = 0; i < batchUidList.length; i++) {
+          const batchUid = batchUidList[i]
+          // 기수 ID가 유효하지 않을 때 에러 처리
+          const validBatch = await manager.findOne(Batch, { where: { uid: batchUid } })
+          if (_.isNil(validBatch)) {
+            throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.NOT_FOUND)
+          }
+          // 같은 주문 정보에 이미 결제 대기중인 강의가 있을 경우 에러 처리
+          const isExistOrder = await manager.findOne(PaymentOrder, {
+            where: { batchUid, orderId, status: OrderStatus.Pending },
+          })
+          if (isExistOrder) {
+            throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.EXIST_ORDER)
+          }
+          // 이미 보유한 강의 일 때 에러 처리
+          const isPurchasedLesson = await manager.findOne(UserLesson, { where: { userUid, batchUid } })
+          if (isPurchasedLesson) {
+            throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.CONFLICT_LESSON)
+          }
+          // 모집 기간 전일 때 에러 처리
+          if (currentDate < validBatch.recruitmentStart) {
+            throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.BEFORE_RECRUITMENT)
+          }
+          // 모집 기간이 지났을 때 에러 처리
+          if (currentDate > validBatch.recruitmentEnd) {
+            throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.AFTER_RECRUITMENT)
+          }
 
-        const order = await manager.save(PaymentOrder, { batchUid: batchUidList[i], orderId })
-        orderList.push(order)
-      }
-      return orderList
-    })
+          const order = await manager.save(PaymentOrder, { batchUid: batchUidList[i], orderId })
+          orderList.push(order)
+        }
+        return orderList.map((order) => ({
+          paymentOrderUid: order.uid,
+        }))
+      })
+    } catch (err) {
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.TRANSACTION_ERROR)
+    }
   }
   // 결제 목록 조회 로직
   async getPaymentList(userUid: string): Promise<GetPaymentListRO[]> {
@@ -276,47 +310,60 @@ export class PaymentsService {
   }
 
   // 장바구니 추가 로직
-  async addCart(userUid: string, params: AddCartParamsDTO) {
-    const batchUid = params.batchUid
-    const currentDate = new Date()
-    const lesson = await this.batchRepository.findOne({ where: { uid: batchUid }, relations: { lesson: true } })
+  async addCart(userUid: string, params: AddCartParamsDTO): Promise<AddCartRO> {
+    try {
+      const batchUid = params.batchUid
+      const currentDate = new Date()
+      const lesson = await this.batchRepository.findOne({ where: { uid: batchUid }, relations: { lesson: true } })
 
-    // 기수 ID가 유효하지 않을 때 에러 처리
-    if (_.isNil(lesson)) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.NOT_FOUND)
-    }
-    // 이미 보유한 강의일 때 에러처리
-    const isPurchasedLesson = await this.userLessonRepository.findOne({ where: { userUid, batchUid } })
-    if (isPurchasedLesson) {
-      throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.CONFLICT_LESSON)
-    }
-    // 모집 기간 전일 때 에러 처리
-    if (currentDate < lesson.recruitmentStart) {
-      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.BEFORE_RECRUITMENT)
-    }
-    // 모집 기간이 지났을 때 에러 처리
-    if (currentDate > lesson.recruitmentEnd) {
-      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.AFTER_RECRUITMENT)
-    }
-    // 이미 장바구니에 추가한 수업일 때 에러처리
-    const isAddedCart = await this.paymentCartRepository.findOne({ where: { userUid, batchUid } })
-    if (isAddedCart) {
-      throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.CONFLICT_CART)
-    }
+      // 기수 ID가 유효하지 않을 때 에러 처리
+      if (_.isNil(lesson)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.NOT_FOUND)
+      }
+      // 이미 보유한 강의일 때 에러처리
+      const isPurchasedLesson = await this.userLessonRepository.findOne({ where: { userUid, batchUid } })
+      if (isPurchasedLesson) {
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.CONFLICT_LESSON)
+      }
+      // 모집 기간 전일 때 에러 처리
+      if (currentDate < lesson.recruitmentStart) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.BEFORE_RECRUITMENT)
+      }
+      // 모집 기간이 지났을 때 에러 처리
+      if (currentDate > lesson.recruitmentEnd) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.AFTER_RECRUITMENT)
+      }
+      // 이미 장바구니에 추가한 수업일 때 에러처리
+      const isAddedCart = await this.paymentCartRepository.findOne({ where: { userUid, batchUid } })
+      if (isAddedCart) {
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.CONFLICT_CART)
+      }
 
-    await this.paymentCartRepository.save({ userUid, batchUid })
-    return lesson
+      await this.paymentCartRepository.save({ userUid, batchUid })
+      return { batchUid }
+    } catch (err) {
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.ADD_CART.TRANSACTION_ERROR)
+    }
   }
   // 장바구니 목록 조회 로직
-  async getCartList(userUid: string) {
+  async getCartList(userUid: string): Promise<GetCartListRO[]> {
     const cartList = await this.paymentCartRepository.find({
       where: { userUid },
       relations: { batch: { lesson: true } },
     })
-    return cartList
+    return cartList.map((cartedItem) => ({
+      userUid,
+      lessonName: cartedItem.batch.lesson.title,
+      lessonUid: cartedItem.batch.lesson.uid,
+      batchNumber: cartedItem.batch.batchNumber,
+      batchUid: cartedItem.batch.uid,
+      price: cartedItem.batch.lesson.price,
+      recruitmentStart: cartedItem.batch.recruitmentStart,
+      recruitmentEnd: cartedItem.batch.recruitmentStart,
+    }))
   }
   // 장바구니 삭제 로직
-  async deleteCart(userUid: string, params: DeleteCartParamsDTO) {
+  async deleteCart(userUid: string, params: DeleteCartParamsDTO): Promise<DeleteCartRO> {
     const uid = params.cartUid
     const cartItem = await this.paymentCartRepository.findOne({ where: { uid, userUid } })
     // 장바구니 ID가 유효하지 않을 때 에러 처리
@@ -324,6 +371,6 @@ export class PaymentsService {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.DELETE_CART.NOT_FOUND)
     }
     await this.paymentCartRepository.delete(uid)
-    return uid
+    return { cartUid: uid }
   }
 }
