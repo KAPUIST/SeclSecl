@@ -11,9 +11,4 @@ export class CreateBatchPostDto {
   @IsString()
   @IsNotEmpty()
   content: string
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  likeCount: number
 }
