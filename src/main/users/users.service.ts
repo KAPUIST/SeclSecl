@@ -10,6 +10,9 @@ import { LessonBookmarks } from '../../common/lessons/entities/lesson-bookmark.e
 import { ToggleLessonBookmarkRO } from './ro/toggle-favorite.ro'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { FavoriteLessonRO } from './ro/favorite-lesson.ro'
+import { findMyLessonDetailParamsDTO } from './dto/find-my-lesson-detail-params.dto'
+import _ from 'lodash'
+import { FindMyLessonDetailRO } from './ro/find-my-lesson-detail.ro'
 
 @Injectable()
 export class UsersService {
@@ -61,7 +64,7 @@ export class UsersService {
 
       // 새 비밀번호와 확인 비밀번호 일치 여부 확인
       if (newPassword !== confirmPassword) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_MATCHED_CHANGE_CAPASSWORD)
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_MATCHED_CHANGE_PASSWORD)
       }
 
       // 새 비밀번호 해싱
@@ -91,13 +94,27 @@ export class UsersService {
   async findMyLessons(uid: string) {
     await this.getUserById(uid)
 
-    const userLesson = await this.userLessonRepository.findOne({ where: { userUid: uid } })
+    const userLesson = await this.userLessonRepository.find({ where: { userUid: uid } })
 
     if (!userLesson) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER_LESSON)
     }
 
     return userLesson
+  }
+
+  // 내 강의 상세 조회
+  async findMyLessonDetail(userUid: string, params: findMyLessonDetailParamsDTO): Promise<FindMyLessonDetailRO> {
+    const myLesson = await this.userLessonRepository.findOne({ where: { userUid, batchUid: params.batchUid } })
+    // 유저가 보유한 강의에 해당 기수 강의가 없을 시 에러 처리
+    if (_.isNil(myLesson)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER_LESSON_DETAIL)
+    }
+    return {
+      userUid,
+      batchUid: myLesson.batchUid,
+      isDone: myLesson.isDone,
+    }
   }
 
   //유저 있나 확인하는 함수
