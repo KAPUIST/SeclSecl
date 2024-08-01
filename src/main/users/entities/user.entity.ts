@@ -62,6 +62,6 @@ export class User {
   @OneToMany(() => LessonBookmarks, (lessonBookmarks) => lessonBookmarks.user)
   lessonBookmarks: LessonBookmarks[]
 
-  @OneToMany(() => LessonReview, (lessonReview)=> lessonReview.user)
-  lessonReviews:LessonReview[]
+  @OneToMany(() => LessonReview, (lessonReview) => lessonReview.user)
+  lessonReviews: LessonReview[]
 }
