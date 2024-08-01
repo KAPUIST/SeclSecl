@@ -23,6 +23,8 @@ import { LessonOpenStatus } from '../../common/lessons/types/lessons-type'
 import { validateDto } from '../../common/utils/validator-dto'
 import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { CP_MESSAGE_CONSTANT } from '../../common/messages/cp.message'
 
 @ApiTags('레슨 관리')
 @Controller({ host: 'cp.localhost', path: 'lessons' })
@@ -152,6 +154,37 @@ export class LessonsController {
     return {
       statusCode: HttpStatus.OK,
       message: '레슨 삭제 성공',
+    }
+  }
+  // @UseGuards(JwtAuthGuard)
+  // @Post('/reviews/:reviewId/comments')
+  // @ApiBearerAuth()
+  // @ApiOperation({ summary: '리뷰 댓글' })
+  // @ApiResponse({ status: 201, description: '리뷰 댓글 작성 성공' })
+  // @ApiResponse({ status: 404, description: '리뷰 댓글을 찾을 수 없습니다' })
+  // @ApiResponse({ status: 401, description: '댓글 작성 실패' })
+  // @ApiResponse({ status: 409, description: '이미 댓글이 존재합니다' })
+  // async createReviewComment(@Request() req, @Param('reviewId') reviewId: string) {
+  //   const cpUid = req.user.uid
+
+  //   return {
+  //     statusCode: HttpStatus.OK,
+  //     message: '리뷰 댓글 작성 성공',
+  //   }
+  // }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:lessonId/reviews')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '리뷰 댓글 조회' })
+  @ApiResponse({ status: 200, description: '리뷰 조회 성공' })
+  async findReview(@Request() req, @Param('lessonId') lessonId: string) {
+    const cpUid = req.user.uid
+    const result = await this.lessonsService.findReviewByLessonId({ lessonId, cpUid })
+    return {
+      statusCode: HttpStatus.OK,
+      message: CP_MESSAGE_CONSTANT.LESSON.REVIEW.FIND_REVIEWS,
+      data: result,
     }
   }
 }

@@ -26,4 +26,9 @@ export const CP_MESSAGE_CONSTANT = {
       },
     },
   },
+  LESSON: {
+    REVIEW: {
+      FIND_REVIEWS: '리뷰 조회 성공',
+    },
+  },
 }
