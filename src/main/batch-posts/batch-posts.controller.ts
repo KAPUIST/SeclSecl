@@ -11,6 +11,8 @@ import { UpdateBatchCommentParamsDTO } from './dto/update-batch-comment-params.d
 import { UpdateBatchCommentDTO } from './dto/update-batch-comment.dto'
 import { GetBatchCommentParamsDTO } from './dto/get-batch-comment-params.dto'
 import { DeleteBatchCommentParamsDTO } from './dto/delete-batch-comment-params.dto'
+import { UnlikeBatchCommentParamsDTO } from './dto/unlike-batch-comment-params.dto'
+import { LikeBatchCommentParamsDTO } from './dto/like-batch-comment-params.dto'
 
 @ApiTags('기수 커뮤니티')
 @ApiBearerAuth()
@@ -130,6 +132,28 @@ export class BatchPostsController {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.DELETE_BATCH_COMMENT.SUCCEED,
       data: deletedBatchCommentUid,
+    }
+  }
+  // 기수별 커뮤니티 댓글 좋아요
+  @Post('/posts/comments/:commentUid/likes')
+  async likeBatchComment(@Request() req, @Param() params: LikeBatchCommentParamsDTO) {
+    const userUid = req.user.uid
+    const likedBatchComment = await this.batchPostsService.likeBatchComment(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.Like_BATCH_COMMENT.SUCCEED,
+      data: likedBatchComment,
+    }
+  }
+  // 기수별 커뮤니티 댓글 좋아요 취소
+  @Delete('/posts/comments/:commentUid/likes')
+  async UnlikeBatchComment(@Request() req, @Param() params: UnlikeBatchCommentParamsDTO) {
+    const userUid = req.user.uid
+    const unLikedBatchComment = await this.batchPostsService.UnlikeBatchComment(userUid, params)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.UNLIKE_BATCH_COMMENT.SUCCEED,
+      data: unLikedBatchComment,
     }
   }
 }
