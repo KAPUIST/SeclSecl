@@ -260,13 +260,15 @@ export const MAIN_MESSAGE_CONSTANT = {
       FIND_ME: '내 정보 조회에 성공했습니다.',
       UPDATE_USER: '내 정보 수정에 성공했습니다.',
       FIND_MY_LESSONS: '내 강의 목록 조회에 성공했습니다.',
+      FIND_MY_LESSON_DETAIL: '내 강의 상세 조회에 성공했습니다.',
     },
     SERVICE: {
       NOT_FOUND_USER: '유저를 찾을 수 없습니다.',
       NOT_MATCHED_CURRENT_PASSWORD: '현재 비밀번호와 일치하지 않습니다.',
-      NOT_MATCHED_CHANGE_CAPASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
+      NOT_MATCHED_CHANGE_PASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
       EXISTED_NICKNAME: '중복되는 닉네임이 존재합니다.',
       NOT_FOUND_USER_LESSON: '수강중인 강의를 찾을 수 없습니다.',
+      NOT_FOUND_USER_LESSON_DETAIL: '해당 강의를 수강중이지 않습니다.',
     },
     FAVORITE: {
       ADD_FAVORITE: '강의를 찜했습니다.',
@@ -274,6 +276,11 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_FOUND_LESSON: '강의를 찾을수 없습니다.',
       FAILED: '강의 찜하기를 실패했습니다.',
       FIND_FAVORITE: '찜한목록 조회에 성공했습니다.',
+    },
+    COMMON: {
+      USER_LESSON_ENTITY: {
+        BATCH_UID: '기수 UID를 입력해 주세요',
+      },
     },
   },
   BATCH: {
