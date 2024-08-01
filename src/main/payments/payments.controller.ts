@@ -94,7 +94,6 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @Get('carts')
   async getCartList(@Request() req) {
-    console.log('22222')
     const userUid = req.user.uid
     const cartList = await this.paymentService.getCartList(userUid)
     return {

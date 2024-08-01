@@ -309,7 +309,6 @@ export class PaymentsService {
   }
   // 장바구니 목록 조회 로직
   async getCartList(userUid: string) {
-    console.log('1111')
     const cartList = await this.paymentCartRepository.find({
       where: { userUid },
       relations: { batch: { lesson: true } },

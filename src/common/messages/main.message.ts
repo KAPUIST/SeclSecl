@@ -246,7 +246,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         PAYMENT_UID: '결제 UID를 입력해 주세요',
       },
       PAYMENT_DETAIL: {
-        UID: '결제 상세 UID를 압력해 주세요',
+        UID: '결제 상세 UID를 입력해 주세요',
       },
       PAYMENT_TOSS: {
         PAYMENT_KEY: '결제키를 입력해 주세요',
