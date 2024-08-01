@@ -1,9 +1,10 @@
-import { Body, Controller, Get, HttpStatus, Patch, Post, Request, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Request, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { UsersService } from './users.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UpdateUserInfoDto } from './dto/update-userInfo.dto'
+import { findMyLessonDetailParamsDTO } from './dto/find-my-lesson-detail-params.dto'
 
 @ApiTags('유저 정보')
 @UseGuards(JwtAuthGuard)
@@ -49,6 +50,18 @@ export class UsersController {
       data,
     }
   }
+  // 내 강의 상세 조회
+  @ApiBearerAuth()
+  @Get('/my-lessons/:batchUid')
+  async findMyLessonDetail(@Request() req, @Param() params: findMyLessonDetailParamsDTO) {
+    const data = await this.userService.findMyLessonDetail(req.user.uid, params)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.USER.CONTROLLER.FIND_MY_LESSON_DETAIL,
+      data,
+    }
+  }
+
   /** 강의 찜하기!
    */
   @UseGuards(JwtAuthGuard)

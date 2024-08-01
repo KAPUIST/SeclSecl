@@ -22,6 +22,14 @@ import { UserLesson } from '../users/entities/user-lessons.entity'
 import { Payment } from './entities/payments.entity'
 import { PaymentDetail } from './entities/payment-details.entity'
 import { RefundPaymentParamsDTO } from './dto/refund-payment-params.dto'
+import { GetPaymentDetailParamsDTO } from './dto/get-payment-detail-params.dto'
+import { GetPaymentDetailRO } from './ro/get-payment-detail.ro'
+import { GetPaymentListRO } from './ro/get-payment-List.ro'
+import { AddCartRO } from './ro/add-cart.ro'
+import { GetCartListRO } from './ro/get-cart-list.ro'
+import { DeleteCartRO } from './ro/delete-cart.ro'
+import { CreateOrderRO } from './ro/create-order.ro'
+import { RefundPaymentRO } from './ro/refund-payment.ro'
 
 @Injectable()
 export class PaymentsService {
@@ -32,6 +40,8 @@ export class PaymentsService {
     private readonly paymentCartRepository: Repository<PaymentCart>,
     @InjectRepository(PaymentOrder)
     private readonly paymentOrderRepository: Repository<PaymentOrder>,
+    @InjectRepository(PaymentDetail)
+    private readonly paymentDetailRepository: Repository<PaymentDetail>,
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
     @InjectRepository(UserLesson)
@@ -112,7 +122,18 @@ export class PaymentsService {
             batchUid: order.batchUid,
           })
         }
-        return data
+        return {
+          orderId,
+          orderName: data.orderName,
+          status: data.status,
+          totalAmount: data.totalAmount,
+          suppliedAmount: data.suppliedAmount,
+          vat: data.vat,
+          method: data.method,
+          currency: data.currency,
+          requestedAt: data.requestedAt,
+          approvedAt: data.approvedAt,
+        }
       })
     } catch (err) {
       // 주문 데이터 상태 처리
@@ -145,7 +166,7 @@ export class PaymentsService {
   }
 
   // 주문 환불 로직
-  async refundPayment(userUid: string, params: RefundPaymentParamsDTO) {
+  async refundPayment(userUid: string, params: RefundPaymentParamsDTO): Promise<RefundPaymentRO> {
     return await this.dataSource.transaction(async (manager) => {
       const apiSecretKey = this.configService.get<string>('API_SECRET_KEY')
       const encryptedApiSecretKey = 'Basic ' + Buffer.from(apiSecretKey + ':').toString('base64')
@@ -181,7 +202,19 @@ export class PaymentsService {
         }
         // 결제 테이블, 상세 테이블 데이터 삭제
         await manager.delete(Payment, { paymentKey })
-        return data
+        const cancelInfo = data.cancels[0]
+        return {
+          paymentUid: params.paymentsUid,
+          orderId: data.orderId,
+          orderName: data.orderName,
+          status: data.status,
+          method: data.method,
+          currency: data.currency,
+          cancelAmount: cancelInfo.cancelAmount,
+          cancelReason: cancelInfo.cancelReason,
+          cancelStatus: cancelInfo.cancelStatus,
+          canceledAt: cancelInfo.canceledAt,
+        }
       } catch (err) {
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.TRANSACTION_ERROR)
       }
@@ -189,7 +222,7 @@ export class PaymentsService {
   }
 
   // 주문 정보 생성 로직(body 타입 추후 지정)
-  async createOrder(userUid: string, body: any) {
+  async createOrder(userUid: string, body: any): Promise<CreateOrderRO[]> {
     return this.dataSource.transaction(async (manager) => {
       const orderId = body.orderId
       const batchUidList = body.batchUidList
@@ -227,12 +260,53 @@ export class PaymentsService {
         const order = await manager.save(PaymentOrder, { batchUid: batchUidList[i], orderId })
         orderList.push(order)
       }
-      return orderList
+      return orderList.map((order) => ({
+        paymentOrderUid: order.uid,
+      }))
     })
+  }
+  // 결제 목록 조회 로직
+  async getPaymentList(userUid: string): Promise<GetPaymentListRO[]> {
+    const paymentList = await this.paymentRepository.find({ where: { userUid } })
+    return paymentList.map((payment) => ({
+      userUid,
+      paymentUid: payment.uid,
+      orderName: payment.orderName,
+      totalAmount: payment.totalAmount,
+      vat: payment.vat,
+      currency: payment.currency,
+      method: payment.method,
+      paymentTime: payment.approvedAt,
+    }))
+  }
+
+  // 결제 상세 조회 로직
+  async getPaymentDetail(userUid: string, params: GetPaymentDetailParamsDTO): Promise<GetPaymentDetailRO> {
+    const paymentDetail = await this.paymentDetailRepository.findOne({
+      where: { uid: params.paymentDetailUid },
+      relations: { payment: true, batch: { lesson: true } },
+    })
+    // 해당 UID의 정보가 유효하지 않을 때
+    if (_.isNil(paymentDetail)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_DETAIL.NOT_FOUND)
+    }
+    // 결제한 유저가 아닐 시 에러 처리
+    if (userUid !== paymentDetail.payment.userUid) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_DETAIL.NOT_MATCHED_USER)
+    }
+    return {
+      lessonName: paymentDetail.batch.lesson.title,
+      lessonUid: paymentDetail.batch.lesson.uid,
+      batchNumber: paymentDetail.batch.batchNumber,
+      batchUid: paymentDetail.batch.uid,
+      amount: paymentDetail.batch.lesson.price,
+      paymentUid: paymentDetail.paymentUid,
+      paymentTime: paymentDetail.payment.approvedAt,
+    }
   }
 
   // 장바구니 추가 로직
-  async addCart(userUid: string, params: AddCartParamsDTO) {
+  async addCart(userUid: string, params: AddCartParamsDTO): Promise<AddCartRO> {
     const batchUid = params.batchUid
     const currentDate = new Date()
     const lesson = await this.batchRepository.findOne({ where: { uid: batchUid }, relations: { lesson: true } })
@@ -261,18 +335,27 @@ export class PaymentsService {
     }
 
     await this.paymentCartRepository.save({ userUid, batchUid })
-    return lesson
+    return { batchUid }
   }
   // 장바구니 목록 조회 로직
-  async getCartList(userUid: string) {
+  async getCartList(userUid: string): Promise<GetCartListRO[]> {
     const cartList = await this.paymentCartRepository.find({
       where: { userUid },
       relations: { batch: { lesson: true } },
     })
-    return cartList
+    return cartList.map((cartedItem) => ({
+      userUid,
+      lessonName: cartedItem.batch.lesson.title,
+      lessonUid: cartedItem.batch.lesson.uid,
+      batchNumber: cartedItem.batch.batchNumber,
+      batchUid: cartedItem.batch.uid,
+      price: cartedItem.batch.lesson.price,
+      recruitmentStart: cartedItem.batch.recruitmentStart,
+      recruitmentEnd: cartedItem.batch.recruitmentStart,
+    }))
   }
   // 장바구니 삭제 로직
-  async deleteCart(userUid: string, params: DeleteCartParamsDTO) {
+  async deleteCart(userUid: string, params: DeleteCartParamsDTO): Promise<DeleteCartRO> {
     const uid = params.cartUid
     const cartItem = await this.paymentCartRepository.findOne({ where: { uid, userUid } })
     // 장바구니 ID가 유효하지 않을 때 에러 처리
@@ -280,6 +363,6 @@ export class PaymentsService {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.DELETE_CART.NOT_FOUND)
     }
     await this.paymentCartRepository.delete(uid)
-    return uid
+    return { cartUid: uid }
   }
 }

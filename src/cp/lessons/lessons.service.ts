@@ -12,6 +12,8 @@ import { UpdateLessonDto } from './dtos/update-lesson.dto'
 import { PaymentDetail } from '../../main/payments/entities/payment-details.entity'
 import { Batch } from '../../main/batches/entities/batch.entity'
 import { SalesResponseDto } from './dtos/sales-response-dto'
+import { LessonReview } from '../../main/review/entities/lesson.review.entity'
+import { FindLessonReviewRO } from './ro/find-lesson-reviews.ro'
 
 @Injectable()
 export class LessonsService {
@@ -26,6 +28,8 @@ export class LessonsService {
     private readonly paymentDetailsRepository: Repository<PaymentDetail>,
     @InjectRepository(Batch)
     private readonly batchesRepository: Repository<Batch>,
+    @InjectRepository(LessonReview)
+    private readonly lessonReviewRepository: Repository<LessonReview>,
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,
   ) {}
@@ -183,6 +187,35 @@ export class LessonsService {
       }
     } finally {
       await queryRunner.release()
+    }
+  }
+  //리뷰당 댓글은 하나만 작성가능 중복 확인용
+  async findReviewByLessonId({ lessonId, cpUid }: { lessonId: string; cpUid: string }): Promise<FindLessonReviewRO[]> {
+    try {
+      const reviews = await this.lessonReviewRepository.find({
+        where: { lesson: { uid: lessonId, cp_uid: cpUid } },
+        relations: ['lesson', 'comment'],
+      })
+
+      return reviews.map(
+        (review): FindLessonReviewRO => ({
+          content: review.content,
+          rate: review.rate,
+          lessonId: review.lesson.uid,
+          reviewUid: review.uid,
+          createdAt: review.createdAt,
+          comment: review.comment
+            ? {
+                commentUid: review.comment.uid,
+                content: review.comment.content,
+                createdAt: review.comment.createdAt,
+              }
+            : null,
+        }),
+      )
+    } catch (error) {
+      console.error(error)
+      throw new InternalServerErrorException(error)
     }
   }
 }

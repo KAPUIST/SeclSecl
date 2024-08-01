@@ -14,11 +14,12 @@ import { HttpModule } from '@nestjs/axios'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { BatchNoticeModule } from './main/batch-notice/batch-notice.module'
+import { BatchPostsModule } from './main/batch-posts/batch-posts.module'
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'), // public 폴더 경로 설정
+      rootPath: join(__dirname, '..', 'chat.front'),
     }),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -34,6 +35,7 @@ import { BatchNoticeModule } from './main/batch-notice/batch-notice.module'
     BatchesModule,
     ChatModule,
     BatchNoticeModule,
+    BatchPostsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

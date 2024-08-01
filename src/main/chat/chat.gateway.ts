@@ -8,10 +8,12 @@ import { ChatService } from './chat.service'
 @WebSocketGateway({
   cors: {
     origin: '*',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Authorization'],
     credentials: true,
   },
+  namespace: 'chatting',
 })
 // @UseGuards(WsAuthGuard)
 export class ChatGateway {
@@ -52,6 +54,8 @@ export class ChatGateway {
       console.log(data)
       let chatRoom
       const loginId = client.data.user.uid
+      console.log('cpId:', data.cpId)
+      console.log('userId:', data.userId)
 
       if (data.cpId) {
         const cpId = data.cpId
