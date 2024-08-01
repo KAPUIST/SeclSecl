@@ -11,6 +11,7 @@ import { LessonOpenStatus } from '../types/lessons-type'
 import { LessonImages } from './lesson-image.entity'
 import { Batch } from '../../../main/batches/entities/batch.entity'
 import { Exclude } from 'class-transformer'
+import { LessonReview } from '../../../main/review/entities/lesson.review.entity'
 import { LessonBookmarks } from './lesson-bookmark.entity'
 
 @Entity({ name: 'lessons' })
@@ -63,6 +64,9 @@ export class Lesson {
 
   @OneToMany(() => Batch, (batch) => batch.lesson)
   batches: Batch[]
+
+  @OneToMany(() => LessonReview, (reviews) => reviews.lesson)
+  reviews: LessonReview[]
 
   @OneToMany(() => LessonBookmarks, (lessonBookmarks) => lessonBookmarks.lesson)
   userBookmarks: LessonBookmarks[]

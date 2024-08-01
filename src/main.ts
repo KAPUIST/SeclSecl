@@ -31,7 +31,13 @@ async function bootstrap() {
     next()
   })
 
-  app.enableCors()
+  app.enableCors({
+    origin: '*', // 특정 도메인을 지정할 수도 있습니다.
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Authorization'], // 여기에 노출할 헤더를 추가합니다.
+    credentials: true,
+  })
 
   const config = new DocumentBuilder()
     .setTitle('seclsecl')
