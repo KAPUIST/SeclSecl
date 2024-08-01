@@ -18,6 +18,6 @@ export class CreateReviewDto {
   rate: Rate
 
   @IsString()
-  @IsNotEmpty({ message: '수강하신 기수를 입력해주세요'})
+  @IsNotEmpty({ message: '수강하신 기수를 입력해주세요' })
   batchUid: string
 }

@@ -12,7 +12,12 @@ export class ReviewController {
   constructor(private readonly lessonReviewService: LessonReviewService) {}
 
   @Post('/:lessonId/reviews')
-  async createReview(@Param('lessonId') id: string, @Req() req, @Body() createReviewDto: CreateReviewDto, batchUid: string) {
+  async createReview(
+    @Param('lessonId') id: string,
+    @Req() req,
+    @Body() createReviewDto: CreateReviewDto,
+    batchUid: string,
+  ) {
     const data = await this.lessonReviewService.createReview(id, req.user.uid, batchUid, createReviewDto)
 
     return {

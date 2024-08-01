@@ -43,7 +43,7 @@ export class LessonReview {
   @JoinColumn({ name: 'userUid' })
   user: User
 
-  @ManyToOne(()=> Batch, (batch)=> batch.reviews)
-  @JoinColumn({ name: 'batchUid'})
+  @ManyToOne(() => Batch, (batch) => batch.reviews)
+  @JoinColumn({ name: 'batchUid' })
   batch: Batch
 }

@@ -19,32 +19,38 @@ export class LessonReviewService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserLesson)
-    private readonly userLessonRepository: Repository<UserLesson>
+    private readonly userLessonRepository: Repository<UserLesson>,
   ) {
     console.log('LessonReviewService created')
   }
 
   //리뷰 등록
-  async createReview(id: string, uid, batchUid:string, createReviewDto: CreateReviewDto): Promise<LessonReviewResponseDto> {
+  async createReview(
+    id: string,
+    uid,
+    batchUid: string,
+    createReviewDto: CreateReviewDto,
+  ): Promise<LessonReviewResponseDto> {
     const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
 
     if (!lesson) {
       throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
     }
 
-    //batch별 리뷰 존재 확인 
-    const batch = await this.userLessonRepository.findOne({ where: {batchUid: batchUid}})
+    //batch별 리뷰 존재 확인
+    const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid } })
 
-    if(!batch) {
-        throw new NotFoundException('수강중인 기수를 찾을 수 없습니다.')
+    if (!batch) {
+      throw new NotFoundException('수강중인 기수를 찾을 수 없습니다.')
     }
 
-    const existedReview = await this.lessonReviewRepository.findOne({ where:{batch:{uid: batchUid}, user:{uid:uid}}})
+    const existedReview = await this.lessonReviewRepository.findOne({
+      where: { batch: { uid: batchUid }, user: { uid: uid } },
+    })
 
     if (existedReview) {
-        throw new Error('이미 리뷰를 작성했습니다.')
+      throw new Error('이미 리뷰를 작성했습니다.')
     }
-
 
     const user = await this.userRepository.findOne({
       where: { uid: uid },
