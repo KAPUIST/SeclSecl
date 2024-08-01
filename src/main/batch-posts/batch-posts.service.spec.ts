@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { BatchPostsService } from './batch-posts.service';
+import { Test, TestingModule } from '@nestjs/testing'
+import { BatchPostsService } from './batch-posts.service'
 
 describe('BatchPostsService', () => {
-  let service: BatchPostsService;
+  let service: BatchPostsService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [BatchPostsService],
-    }).compile();
+    }).compile()
 
-    service = module.get<BatchPostsService>(BatchPostsService);
-  });
+    service = module.get<BatchPostsService>(BatchPostsService)
+  })
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+    expect(service).toBeDefined()
+  })
+})

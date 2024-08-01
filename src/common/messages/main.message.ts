@@ -190,13 +190,46 @@ export const MAIN_MESSAGE_CONSTANT = {
     },
   },
   PAYMENT: {
+    ORDER: {
+      PURCHASE_ITEM: {
+        SUCCESS: '주문 결제에 성공하였습니다.',
+        NOT_FOUND_ORDER: '존재하지 않거나 완료 처리된 주문 정보 입니다.',
+        CONFLICT_PRICE: '주문 금액과 결제 금액이 같지 않습니다.',
+        TRANSACTION_ERROR: '결제 진행중 오류가 생겼습니다.',
+      },
+      REFUND_PAYMENT: {
+        SUCCESS: '주문 환불에 성공하였습니다.',
+        BAD_REQUEST: '잘못된 환불 요청입니다.',
+        TRANSACTION_ERROR: '환불 진행중 오류가 생겼습니다.',
+        NOT_MATCHED_USER: '환불할 결제 기록에 해당하는 유저가 아닙니다.',
+      },
+      CREATE_ORDER: {
+        SUCCESS: '주문 결제에 성공하였습니다.',
+        NOT_FOUND: '해당 수업은 존재하지 않습니다.',
+        EXIST_ORDER: '해당 주문 번호에 이미 결제 대기중인 강의가 있습니다.',
+        CONFLICT_LESSON: '이미 보유한 강의입니다.',
+        BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
+        AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
+        TRANSACTION_ERROR: '주문 생성 중 오류가 생겼습니다.',
+      },
+      GET_PAYMENT_LIST: {
+        SUCCESS: '결제 목록 조회에 성공하였습니다.',
+      },
+      GET_PAYMENT_DETAIL: {
+        SUCCESS: '결제 상세 조회에 성공하였습니다.',
+        NOT_MATCHED_USER: '해당 정보를 결제한 유저가 아닙니다.',
+        NOT_FOUND: '해당 결제 정보는 존재하지 않습니다.',
+      },
+    },
     PAYMENT_CART: {
       ADD_CART: {
         SUCCESS: '장바구니 추가에 성공하였습니다.',
         NOT_FOUND: '해당 수업은 존재하지 않습니다.',
         BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
         AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
-        CONFLICT: '이미 장바구니에 있는 수업입니다.',
+        CONFLICT_CART: '이미 장바구니에 있는 수업입니다.',
+        CONFLICT_LESSON: '이미 보유한 강의입니다.',
+        TRANSACTION_ERROR: '장바구니 추가 중 오류가 생겼습니다.',
       },
       GET_CART_LIST: {
         SUCCESS: '장바구니 목록 조회에 성공하였습니다.',
@@ -211,6 +244,17 @@ export const MAIN_MESSAGE_CONSTANT = {
         BATCH_UID: '기수 UID를 입력해 주세요',
         CART_UID: '장바구니 UID를 입력해 주세요',
       },
+      PAYMENT_ENTITY: {
+        PAYMENT_UID: '결제 UID를 입력해 주세요',
+      },
+      PAYMENT_DETAIL: {
+        UID: '결제 상세 UID를 입력해 주세요',
+      },
+      PAYMENT_TOSS: {
+        PAYMENT_KEY: '결제키를 입력해 주세요',
+        ORDER_ID: '주문 ID를 입력해 주세요',
+        AMOUNT: '총 금액을 입력해 주세요',
+      },
     },
   },
   USER: {
@@ -218,13 +262,27 @@ export const MAIN_MESSAGE_CONSTANT = {
       FIND_ME: '내 정보 조회에 성공했습니다.',
       UPDATE_USER: '내 정보 수정에 성공했습니다.',
       FIND_MY_LESSONS: '내 강의 목록 조회에 성공했습니다.',
+      FIND_MY_LESSON_DETAIL: '내 강의 상세 조회에 성공했습니다.',
     },
     SERVICE: {
       NOT_FOUND_USER: '유저를 찾을 수 없습니다.',
       NOT_MATCHED_CURRENT_PASSWORD: '현재 비밀번호와 일치하지 않습니다.',
-      NOT_MATCHED_CHANGE_CAPASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
+      NOT_MATCHED_CHANGE_PASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
       EXISTED_NICKNAME: '중복되는 닉네임이 존재합니다.',
       NOT_FOUND_USER_LESSON: '수강중인 강의를 찾을 수 없습니다.',
+      NOT_FOUND_USER_LESSON_DETAIL: '해당 강의를 수강중이지 않습니다.',
+    },
+    FAVORITE: {
+      ADD_FAVORITE: '강의를 찜했습니다.',
+      DELETE_FAVORITE: '찜하기가 취소되었습니다.',
+      NOT_FOUND_LESSON: '강의를 찾을수 없습니다.',
+      FAILED: '강의 찜하기를 실패했습니다.',
+      FIND_FAVORITE: '찜한목록 조회에 성공했습니다.',
+    },
+    COMMON: {
+      USER_LESSON_ENTITY: {
+        BATCH_UID: '기수 UID를 입력해 주세요',
+      },
     },
   },
   BATCH: {

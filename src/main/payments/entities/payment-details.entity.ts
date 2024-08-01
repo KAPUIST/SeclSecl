@@ -22,7 +22,7 @@ export class PaymentDetail {
   batchUid: string
 
   @Column()
-  amount: string
+  amount: number
 
   @CreateDateColumn()
   createdAt: Date
@@ -30,7 +30,7 @@ export class PaymentDetail {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToOne(() => Payment, (payment) => payment.paymentDetails)
+  @ManyToOne(() => Payment, (payment) => payment.paymentDetails, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'payment_uid' })
   payment: Payment
 

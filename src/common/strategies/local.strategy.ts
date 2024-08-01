@@ -11,8 +11,8 @@ import { CpAuthService } from '../../cp/auth/auth.service'
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) implements OnModuleInit {
-  private authService: any
-  private cpAuthService: any
+  private authService: AuthService
+  private cpAuthService: CpAuthService
   private adminAuthService: AdminAuthService
 
   constructor(private moduleRef: ModuleRef) {
@@ -34,7 +34,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) implements OnModul
     const domain = req.hostname.split('.')[0] // 도메인 정보를 헤더에서 추출
 
     let user: any
-
     switch (domain) {
       case 'admin':
         user = await this.adminAuthService.validateUser(email, password)

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { User } from './entities/user.entity'
 import { DataSource, EntityManager, Repository } from 'typeorm'
@@ -6,15 +6,25 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UserInfos } from './entities/user-infos.entity'
 import * as bcrypt from 'bcrypt'
 import { UserLesson } from './entities/user-lessons.entity'
+import { LessonBookmarks } from '../../common/lessons/entities/lesson-bookmark.entity'
+import { ToggleLessonBookmarkRO } from './ro/toggle-favorite.ro'
+import { Lesson } from '../../common/lessons/entities/lessons.entity'
+import { FavoriteLessonRO } from './ro/favorite-lesson.ro'
+import { findMyLessonDetailParamsDTO } from './dto/find-my-lesson-detail-params.dto'
+import _ from 'lodash'
+import { FindMyLessonDetailRO } from './ro/find-my-lesson-detail.ro'
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Lesson)
+    private readonly lessonRepository: Repository<Lesson>,
     @InjectRepository(UserLesson)
     private readonly userLessonRepository: Repository<UserLesson>,
-
+    @InjectRepository(LessonBookmarks)
+    private readonly lessonBookmarkRepository: Repository<LessonBookmarks>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) {}
@@ -54,7 +64,7 @@ export class UsersService {
 
       // 새 비밀번호와 확인 비밀번호 일치 여부 확인
       if (newPassword !== confirmPassword) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_MATCHED_CHANGE_CAPASSWORD)
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_MATCHED_CHANGE_PASSWORD)
       }
 
       // 새 비밀번호 해싱
@@ -84,13 +94,27 @@ export class UsersService {
   async findMyLessons(uid: string) {
     await this.getUserById(uid)
 
-    const userLesson = await this.userLessonRepository.findOne({ where: { userUid: uid } })
+    const userLesson = await this.userLessonRepository.find({ where: { userUid: uid } })
 
     if (!userLesson) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER_LESSON)
     }
 
     return userLesson
+  }
+
+  // 내 강의 상세 조회
+  async findMyLessonDetail(userUid: string, params: findMyLessonDetailParamsDTO): Promise<FindMyLessonDetailRO> {
+    const myLesson = await this.userLessonRepository.findOne({ where: { userUid, batchUid: params.batchUid } })
+    // 유저가 보유한 강의에 해당 기수 강의가 없을 시 에러 처리
+    if (_.isNil(myLesson)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER_LESSON_DETAIL)
+    }
+    return {
+      userUid,
+      batchUid: myLesson.batchUid,
+      isDone: myLesson.isDone,
+    }
   }
 
   //유저 있나 확인하는 함수
@@ -102,5 +126,77 @@ export class UsersService {
     }
 
     return findOneUser
+  }
+
+  async toggleFavorite({ userUid, lessonId }: { userUid: string; lessonId: string }): Promise<ToggleLessonBookmarkRO> {
+    try {
+      const existingFavorite = await this.lessonBookmarkRepository.findOne({
+        where: { user: { uid: userUid }, lesson: { uid: lessonId } },
+        relations: ['lesson'],
+      })
+
+      if (existingFavorite) {
+        return this.removeFavorite(existingFavorite)
+      } else {
+        return this.addFavorite({ userUid, lessonId })
+      }
+    } catch (error) {
+      console.log(error)
+      if (error instanceof NotFoundException) {
+        throw error
+      } else {
+        throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.USER.FAVORITE.FAILED)
+      }
+    }
+  }
+
+  private async addFavorite({
+    userUid,
+    lessonId,
+  }: {
+    userUid: string
+    lessonId: string
+  }): Promise<ToggleLessonBookmarkRO> {
+    const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
+    if (!lesson) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.FAVORITE.NOT_FOUND_LESSON)
+    }
+
+    const favorite = this.lessonBookmarkRepository.create({ user: { uid: userUid }, lesson: { uid: lessonId } })
+    await this.lessonBookmarkRepository.save(favorite)
+
+    return {
+      message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.ADD_FAVORITE,
+      lessonId: favorite.lesson.uid,
+      title: lesson.title,
+    }
+  }
+
+  private async removeFavorite(existingFavorite: LessonBookmarks): Promise<ToggleLessonBookmarkRO> {
+    const title = existingFavorite.lesson ? existingFavorite.lesson.title : null
+    await this.lessonBookmarkRepository.remove(existingFavorite)
+
+    return {
+      message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.DELETE_FAVORITE,
+      title,
+      lessonId: existingFavorite.lesson.uid,
+    }
+  }
+
+  async getFavorite(userUid: string): Promise<FavoriteLessonRO[]> {
+    try {
+      const favorites = await this.lessonBookmarkRepository.find({
+        where: { user: { uid: userUid } },
+        relations: ['lesson'],
+      })
+
+      return favorites.map((fav) => ({
+        lessonId: fav.lesson.uid,
+        title: fav.lesson.title,
+      }))
+    } catch (error) {
+      console.error(error)
+      throw new InternalServerErrorException('찜한 강의 목록을 가져오는데 실패했습니다.')
+    }
   }
 }

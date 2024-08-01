@@ -1,6 +1,16 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm'
 import { User } from '../../users/entities/user.entity'
 import { PaymentDetail } from './payment-details.entity'
+import { PaymentStatus } from '../types/payment-status.type'
 
 @Entity('payments')
 export class Payment {
@@ -34,11 +44,11 @@ export class Payment {
   @Column()
   paymentKey: string
 
-  @Column()
-  status: string
+  @Column({ type: 'enum', enum: PaymentStatus })
+  status: PaymentStatus
 
   @Column()
-  createdAt: Date
+  requestedAt: Date
 
   @Column()
   approvedAt: Date
@@ -46,6 +56,12 @@ export class Payment {
   @ManyToOne(() => User, (user) => user.payments)
   @JoinColumn({ name: 'user_uid' })
   user: User
+
+  @CreateDateColumn()
+  createdAt: Date
+
+  @UpdateDateColumn()
+  updatedAt: Date
 
   @OneToMany(() => PaymentDetail, (paymentDetail) => paymentDetail.payment)
   paymentDetails: PaymentDetail[]
