@@ -318,6 +318,12 @@ export const MAIN_MESSAGE_CONSTANT = {
       FINDALL: '기수 커뮤니티 목록 찾기에 성공했습니다.',
       UPDATE: '기수 커뮤니티 업데이트에 성공했습니다.',
       DELETE: '기수 커뮤니티 삭제에 성공했습니다.',
+      LIKE_BATCH_POST: {
+        SUCCEED: '기수 커뮤니티 게시글 좋아요에 성공하였습니다.',
+      },
+      UNLIKE_BATCH_POST: {
+        SUCCEED: '기수 커뮤니티 게시글 좋아요 취소에 성공하였습니다.',
+      },
       CREATE_BATCH_COMMENT: {
         SUCCEED: '기수 커뮤니티 댓글 생성에 성공하였습니다.',
       },
@@ -330,7 +336,7 @@ export const MAIN_MESSAGE_CONSTANT = {
       DELETE_BATCH_COMMENT: {
         SUCCEED: '기수 커뮤니티 댓글 삭제에 성공하였습니다.',
       },
-      Like_BATCH_COMMENT: {
+      LIKE_BATCH_COMMENT: {
         SUCCEED: '기수 커뮤니티 댓글 좋아요에 성공하였습니다.',
       },
       UNLIKE_BATCH_COMMENT: {
@@ -338,6 +344,19 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
     },
     SERVICE: {
+      LIKE_BATCH_POST: {
+        NOT_FOUND_USER: '기수 커뮤니티 멤버가 아닙니다.',
+        NOT_FOUND_COMMENT: '존재하지 않는 게시글입니다.',
+        CONFLICT: '이미 좋아요 누른 게시글입니다.',
+        TRANSACTION_ERROR: '게시글 좋아요 등록중 오류가 생겼습니다.',
+      },
+      UNLIKE_BATCH_POST: {
+        NOT_FOUND_USER: '기수 커뮤니티 멤버가 아닙니다.',
+        NOT_FOUND_COMMENT: '존재하지 않는 게시입니다.',
+        NOT_FOUND_Like: '좋아요 누르지 않은 밴드 게시글입니다.',
+        TRANSACTION_ERROR: '게시글 좋아요 등록중 오류가 생겼습니다.',
+        BAD_REQUEST: '좋아요 수는 0 이하로 내려갈 수 없습니다.',
+      },
       CREATE_BATCH_COMMENT: {
         NOT_FOUND_POST: '존재하지 않는 기수 커뮤니티입니다.',
         NOT_FOUND_USER: '기수 멤버가 아닙니다.',
@@ -354,7 +373,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         NOT_FOUND_COMMENT: '존재하지 않는 댓글입니다.',
         NOT_MATCHED: '댓글 작성자만 수정할 수 있습니다.',
       },
-      Like_BATCH_COMMENT: {
+      LIKE_BATCH_COMMENT: {
         NOT_FOUND_USER: '기수 커뮤니티 멤버가 아닙니다.',
         NOT_FOUND_COMMENT: '존재하지 않는 댓글입니다.',
         CONFLICT: '이미 좋아요 누른 댓글입니다.',
