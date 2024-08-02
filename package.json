@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && npm run sentry:sourcemaps",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org seclsecl --project node-nestjs ./dist && sentry-cli sourcemaps upload --org seclsecl --project node-nestjs ./dist"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.621.0",
@@ -35,6 +36,9 @@
     "@nestjs/swagger": "^7.4.0",
     "@nestjs/typeorm": "^10.0.2",
     "@nestjs/websockets": "^10.3.10",
+    "@sentry/cli": "^2.33.0",
+    "@sentry/nestjs": "^8.22.0",
+    "@sentry/profiling-node": "^8.22.0",
     "@types/bcrypt": "^5.0.2",
     "@types/form-data": "^2.5.0",
     "@types/lodash": "^4.17.7",
