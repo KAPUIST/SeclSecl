@@ -31,7 +31,6 @@ import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
-import { SendBirdService } from '../../common/sendbird/sendbird.service'
 
 @ApiTags('밴드 관련 API')
 @Controller({ host: 'localhost', path: 'bands' })
