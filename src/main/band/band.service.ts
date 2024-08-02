@@ -43,6 +43,14 @@ import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { SendBirdService } from '../../common/sendbird/sendbird.service'
 import { lastValueFrom } from 'rxjs'
+import { CreateBandRO } from './ro/crate-band.ro'
+import { GetBandListRO } from './ro/get-band-list.ro'
+import { GetBandDetailRO } from './ro/get-band-detail.ro'
+import { UpdateBandDetailRO } from './ro/update-band-ro'
+import { DeleteBandRO } from './ro/delete-band-ro'
+import { JoinBandRO } from './ro/join-band.ro'
+import { GetBandMemberRO } from './ro/get-band-memver.ro'
+import { TransferBandRO } from './ro/transfer-band.ro'
 
 @Injectable()
 export class BandService {
@@ -62,7 +70,7 @@ export class BandService {
     private dataSource: DataSource,
   ) {}
   // 밴드 생성 로직
-  async createBand(userUid: string, createBandDto: CreateBandDto) {
+  async createBand(userUid: string, createBandDto: CreateBandDto): Promise<CreateBandRO> {
     return this.dataSource.transaction(async (manager) => {
       // 밴드명 중복시 에러 처리
       const isExistName = await manager.findOne(Band, { where: { name: createBandDto.name } })
@@ -77,38 +85,62 @@ export class BandService {
         })
         // 밴드 멤버 추가
         await manager.save(BandMember, { userUid, bandUid: createdBand.uid })
-        // // SendBird 채널 생성 및 chatUrl 저장
+        // SendBird 채널 생성 및 chatUrl 저장
         // const sendBirdResponse = await lastValueFrom(this.sendBirdService.createChannel(createdBand.name, [userUid]))
 
         // const channelUrl = sendBirdResponse.channel_url
+        // console.log(channelUrl)
 
         // // chatUrl 업데이트
         // createdBand.chatUrl = channelUrl
-        // console.log(createdBand)
         // await manager.save(Band, createdBand)
-        // return createdBand
+        return {
+          uid: createdBand.uid,
+          userUid,
+          name: createdBand.name,
+          content: createdBand.content,
+          chatUrl: createdBand.chatUrl,
+        }
       } catch (err) {
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.CREATE_BAND.TRANSACTION_ERROR)
       }
     })
   }
   // 밴드 목록 조회 로직
-  async getBandList() {
-    const bandList = this.bandRepository.find()
-    return bandList
+  async getBandList(): Promise<GetBandListRO[]> {
+    const bandList = await this.bandRepository.find()
+    return bandList.map((band) => ({
+      uid: band.uid,
+      userUid: band.userUid,
+      name: band.name,
+      content: band.content,
+      chatUrl: band.chatUrl,
+      createdAt: band.createdAt,
+    }))
   }
   // 밴드 상세 조회 로직
-  async getBandDetail(params: GetBandDetailParamsDTO) {
+  async getBandDetail(params: GetBandDetailParamsDTO): Promise<GetBandDetailRO> {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
     // 밴드가 존재하지 않을 시 에러 처리
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_Detail.NOT_FOUND)
     }
-    return band
+    return {
+      uid: band.uid,
+      userUid: band.userUid,
+      name: band.name,
+      content: band.content,
+      chatUrl: band.chatUrl,
+      createdAt: band.createdAt,
+    }
   }
   // 밴드 수정 로직
-  async updateBand(userUid: string, params: UpdateBandParamsDTO, updateBandDto: UpdateBandDto) {
+  async updateBand(
+    userUid: string,
+    params: UpdateBandParamsDTO,
+    updateBandDto: UpdateBandDto,
+  ): Promise<UpdateBandDetailRO> {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid, userUid } })
     // 밴드명, 설명 모두 입력하지 않았을 때
@@ -123,10 +155,17 @@ export class BandService {
     await this.bandRepository.update({ uid: bandUid }, updateBandDto)
     const updatedBand = await this.bandRepository.findOne({ where: { uid: bandUid } })
 
-    return updatedBand
+    return {
+      uid: updatedBand.uid,
+      userUid: updatedBand.userUid,
+      name: updatedBand.name,
+      content: updatedBand.content,
+      chatUrl: updatedBand.chatUrl,
+      updatedAt: updatedBand.updatedAt,
+    }
   }
   // 밴드 삭제 로직
-  async deleteBand(userUid: string, params: DeleteBandParamsDTO) {
+  async deleteBand(userUid: string, params: DeleteBandParamsDTO): Promise<DeleteBandRO> {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid, userUid } })
     // 밴드가 존재하지 않거나, 해당 밴드의 오너가 아닐 시 에러 처리
@@ -134,11 +173,10 @@ export class BandService {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.DELETE_BAND.NOT_FOUND)
     }
     await this.bandRepository.delete({ uid: bandUid })
-
-    return band.uid
+    return { uid: band.uid }
   }
   // 밴드 가입 로직
-  async joinBand(userUid: string, params: JoinBandParamsDTO) {
+  async joinBand(userUid: string, params: JoinBandParamsDTO): Promise<JoinBandRO> {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
     // 밴드가 존재하지 않을 시 에러 처리
@@ -151,22 +189,34 @@ export class BandService {
       throw new ConflictException('이미 가입된 유저입니다.')
     }
     await this.bandMemberRepository.save({ userUid, bandUid })
-    return band
+    return {
+      userUid,
+      bandUid,
+      name: band.name,
+    }
   }
   // 밴드 멤버 조회 로직
-  async getBandMember(params: GetBandMemberParamsDTO) {
+  async getBandMember(params: GetBandMemberParamsDTO): Promise<GetBandMemberRO[]> {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
     // 밴드가 존재하지 않을 시 에러 처리
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_MEMBER.NOT_FOUND)
     }
-    const bandMember = await this.bandMemberRepository.find({ where: { bandUid } })
-    return bandMember
+    const bandMembers = await this.bandMemberRepository.find({ where: { bandUid } })
+    return bandMembers.map((member) => ({
+      uid: member.uid,
+      userUid: member.userUid,
+      bandUid: member.bandUid,
+    }))
   }
 
   // 밴드장 이전 로직
-  async transferBand(userUid: string, params: TransferBandParamsDTO, transferBandDto: TransferBandDTO) {
+  async transferBand(
+    userUid: string,
+    params: TransferBandParamsDTO,
+    transferBandDto: TransferBandDTO,
+  ): Promise<TransferBandRO> {
     const bandUid = params.bandUid
     const newUser = transferBandDto.userUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid, userUid } })
@@ -185,7 +235,9 @@ export class BandService {
     }
 
     await this.bandRepository.update({ uid: bandUid }, { userUid: newUser })
-    return newUser
+    return {
+      userUid: newUser,
+    }
   }
 
   // 밴드 게시글 생성 로직
