@@ -45,15 +45,15 @@ export class UsersService {
       email: user.email,
       name: userInfo.name,
       phoneNumber: userInfo.phoneNumber,
+      gender: userInfo.gender,
+      birthDate: userInfo.birthDate,
+      nickname: userInfo.nickname,
       address: userInfo.address,
       dong: userInfo.dong,
       sido: userInfo.sido,
       sigungu: userInfo.sigungu,
-      gender: userInfo.gender,
-      birthDate: userInfo.birthDate,
-      role: userInfo.role,
-      nickname: userInfo.nickname,
       provider: userInfo.provider,
+      role: userInfo.role,
     }
   }
   //내 정보 수정
