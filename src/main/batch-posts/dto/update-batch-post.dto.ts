@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsString } from 'class-validator'
+import { IsOptional, IsString } from 'class-validator'
 
 export class UpdateBatchPostDto {
   @ApiProperty({ required: true })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   title: string
 
   @ApiProperty({ required: true })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   content: string
 }

@@ -72,7 +72,7 @@ export class BatchPostsService {
         const savedBatchPost = await transactionalEntityManager.save(BatchPost, newBatchPost)
         const imageEntities = []
         for (const file of files) {
-          const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
+          const { location, key } = await this.s3Service.uploadFile(file, 'postImages')
           const imageEntity = this.postImageRepository.create({
             postImage: location, // 파일 위치 URL
             field: file.originalname, // 파일 원본 이름
@@ -118,7 +118,7 @@ export class BatchPostsService {
     })
     return data
   }
-
+  // 커뮤니티 상세조회
   async findOne(uid: string, batchUid: string, postUid: string) {
     //유저 권한 확인
     await this.checkUserPermission(uid)
@@ -148,7 +148,7 @@ export class BatchPostsService {
     uid: string,
     batchUid: string,
     postUid: string,
-    files: Express.Multer.File[],
+    files: Express.Multer.File[] = [],
     updateBatchPostDto: UpdateBatchPostDto,
   ) {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
@@ -156,8 +156,8 @@ export class BatchPostsService {
       const oldFiles: string[] = []
 
       try {
-        //유저 권한 확인
-        await this.checkUserPermission(uid)
+        //글 작성 유저 권한 확인
+        await this.verifyAuthor(uid, postUid)
         //기수가 존재하나 확인
         await this.verifyBatchExistence(batchUid)
 
@@ -181,7 +181,7 @@ export class BatchPostsService {
         // 새로운 이미지 업로드
         const fileEntities = []
         for (const file of files) {
-          const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
+          const { location, key } = await this.s3Service.uploadFile(file, 'postImages')
           const fileEntity = this.postImageRepository.create({
             postImage: location, // 파일 위치 URL
             field: file.originalname, // 파일 원본 이름
@@ -193,17 +193,19 @@ export class BatchPostsService {
 
         Object.assign(existingBatchPost, postInfo)
 
-        const data = await transactionalEntityManager.save(BatchPost, existingBatchPost)
+        const updateBatchPost = await transactionalEntityManager.save(BatchPost, existingBatchPost)
 
-        const lessonNote = await transactionalEntityManager.save(PostImage, fileEntities)
+        const postImages = await transactionalEntityManager.save(PostImage, fileEntities)
 
-        lessonNote.forEach((note) => {
+        updateBatchPost.postImages = postImages
+
+        postImages.forEach((note) => {
           delete note.deletedAt
         })
 
-        delete data.deletedAt
+        delete updateBatchPost.deletedAt
 
-        return data
+        return updateBatchPost
       } catch (error) {
         console.log('error', error)
         // 업로드된 파일 삭제
@@ -218,8 +220,8 @@ export class BatchPostsService {
   async remove(uid: string, batchUid: string, postUid: string) {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       try {
-        //유저 권한 확인
-        await this.checkUserPermission(uid)
+        //글 작성 유저 권한 확인
+        await this.verifyAuthor(uid, postUid)
         //기수가 존재하나 확인
         await this.verifyBatchExistence(batchUid)
 
@@ -510,9 +512,18 @@ export class BatchPostsService {
       }
     })
   }
-
+  //생성, 조회할때 강의에 포함되는 유저인가 확인
   private async checkUserPermission(uid: string) {
     const userAuthorization = await this.userLessonRepository.findOne({ where: { userUid: uid } })
+
+    if (!userAuthorization) {
+      throw new NotFoundException('권한이 있는 유저가 아닙니다.')
+    }
+  }
+
+  // 글을 작성한 유저인가 확인
+  private async verifyAuthor(uid: string, postUid: string) {
+    const userAuthorization = await this.batchPostRepository.findOne({ where: { uid: postUid, userUid: uid } })
 
     if (!userAuthorization) {
       throw new NotFoundException('권한이 있는 유저가 아닙니다.')
