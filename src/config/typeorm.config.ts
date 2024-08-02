@@ -19,7 +19,7 @@ export const typeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
       __dirname + '/../main/**/entities/*.entity{.ts,.js}',
       __dirname + '/../common/lessons/entities/*.entity{.ts,.js}',
     ],
-    logging: false,
+    logging: true,
   }),
 }
 export const cpTypeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
@@ -37,7 +37,7 @@ export const cpTypeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
     synchronize: configService.get('DB_SYNC'),
     //엔티티 자동 추가
     entities: [__dirname + '/../cp/**/entities/*.entity{.ts,.js}'],
-    logging: false,
+    logging: true,
   }),
 }
 export const adminTypeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
@@ -55,6 +55,6 @@ export const adminTypeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
     synchronize: configService.get('DB_SYNC'),
     //엔티티 자동 추가
     entities: [__dirname + '/../admin/**/entities/*.entity{.ts,.js}'],
-    logging: false,
+    logging: true,
   }),
 }
