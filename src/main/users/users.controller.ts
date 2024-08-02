@@ -12,6 +12,8 @@ import { findMyLessonDetailParamsDTO } from './dto/find-my-lesson-detail-params.
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  /**내 정보 조회
+   */
   @ApiBearerAuth()
   @Get('/me')
   async findOne(@Request() req) {

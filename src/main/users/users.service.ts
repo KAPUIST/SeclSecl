@@ -15,6 +15,7 @@ import _ from 'lodash'
 import { FindMyLessonDetailRO } from './ro/find-my-lesson-detail.ro'
 import { UpdateUserInfoDto } from './dto/update-userInfo.dto'
 import { UserInfoRO } from './ro/userinfo-ro'
+import { FindMyLessonRO } from './ro/find-my-lesson.ro'
 
 @Injectable()
 export class UsersService {
@@ -105,8 +106,8 @@ export class UsersService {
 
       // userInfo 테이블 업데이트
       Object.assign(existingUser.userInfo, userInfo)
-      await transactionalEntityManager.save(UserInfos, existingUser.userInfo)
       await transactionalEntityManager.save(User, existingUser)
+      await transactionalEntityManager.save(UserInfos, existingUser.userInfo)
 
       const isUserInfo = existingUser.userInfo
 
@@ -114,35 +115,39 @@ export class UsersService {
         email: existingUser.email,
         name: isUserInfo.name,
         phoneNumber: isUserInfo.phoneNumber,
+        gender: isUserInfo.gender,
+        birthDate: isUserInfo.birthDate,
+        nickname: isUserInfo.nickname,
         address: userInfo.address,
         dong: userInfo.dong,
         sido: userInfo.sido,
         sigungu: userInfo.sigungu,
-        gender: isUserInfo.gender,
-        birthDate: isUserInfo.birthDate,
-        role: isUserInfo.role,
-        nickname: isUserInfo.nickname,
         provider: isUserInfo.provider,
+        role: isUserInfo.role,
       }
     })
   }
   //내 강의 목록 조회
-  async findMyLessons(uid: string) {
+  async findMyLessons(uid: string): Promise<FindMyLessonRO[]> {
     await this.getUserById(uid)
 
-    const userLesson = await this.userLessonRepository.find({ where: { userUid: uid } })
-
-    if (!userLesson) {
+    const userLessons = await this.userLessonRepository.find({ where: { userUid: uid } })
+    if (!userLessons) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER_LESSON)
     }
 
-    return userLesson
+    return userLessons.map((userLesson) => ({
+      userUid: userLesson.userUid,
+      batchUid: userLesson.batchUid,
+      isDone: userLesson.isDone,
+    }))
   }
 
   // 내 강의 상세 조회
   async findMyLessonDetail(userUid: string, params: findMyLessonDetailParamsDTO): Promise<FindMyLessonDetailRO> {
     const myLesson = await this.userLessonRepository.findOne({ where: { userUid, batchUid: params.batchUid } })
     // 유저가 보유한 강의에 해당 기수 강의가 없을 시 에러 처리
+
     if (_.isNil(myLesson)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER_LESSON_DETAIL)
     }

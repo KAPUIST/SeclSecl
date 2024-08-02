@@ -15,6 +15,17 @@ export class UserInfoRO {
   @IsString()
   phoneNumber: string
 
+  @IsString()
+  gender: string
+
+  @ApiProperty({ description: '생일' })
+  @IsDate()
+  birthDate: Date
+
+  @ApiProperty({ description: '별명' })
+  @IsString()
+  nickname: string
+
   @ApiProperty({ description: '주소' })
   @IsString()
   address: string
@@ -31,22 +42,11 @@ export class UserInfoRO {
   @IsString()
   sigungu: string
 
-  @IsString()
-  gender: string
-
-  @ApiProperty({ description: '생일' })
-  @IsDate()
-  birthDate: Date
+  @ApiProperty({ description: '소셜로그인' })
+  @IsEnum(Provider)
+  provider: Provider
 
   @ApiProperty({ description: '계정 역할' })
   @IsString()
   role: string
-
-  @ApiProperty({ description: '별명' })
-  @IsString()
-  nickname: string
-
-  @ApiProperty({ description: '소셜로그인' })
-  @IsEnum(Provider)
-  provider: Provider
 }
