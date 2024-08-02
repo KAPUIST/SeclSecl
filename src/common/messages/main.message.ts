@@ -202,6 +202,9 @@ export const MAIN_MESSAGE_CONSTANT = {
         BAD_REQUEST: '잘못된 환불 요청입니다.',
         TRANSACTION_ERROR: '환불 진행중 오류가 생겼습니다.',
         NOT_MATCHED_USER: '환불할 결제 기록에 해당하는 유저가 아닙니다.',
+        NOT_FOUND: '해당 결제정보와 연결된 주문 정보가 없습니다.',
+        NOT_FOUND_PAYMENT: '해당 결제 정보가 존재하지 않습니다',
+        REFUND_TIME_EXPIRED: '환불은 수업 시작 24시간 전에만 가능합니다',
       },
       CREATE_ORDER: {
         SUCCESS: '주문 결제에 성공하였습니다.',
@@ -266,6 +269,9 @@ export const MAIN_MESSAGE_CONSTANT = {
     },
     SERVICE: {
       NOT_FOUND_USER: '유저를 찾을 수 없습니다.',
+      NOT_FOUND_PASSWORD: '현재 비밀번호를 입력해 주세요.',
+      NOT_FOUND_NEW_PASSWORD: '새 비밀번호를 입력해 주세요.',
+      NOT_FOUND_NEW_PASSWORD_CONFIRM: '새 비밀번호 확인을 입력해 주세요.',
       NOT_MATCHED_CURRENT_PASSWORD: '현재 비밀번호와 일치하지 않습니다.',
       NOT_MATCHED_CHANGE_PASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
       EXISTED_NICKNAME: '중복되는 닉네임이 존재합니다.',

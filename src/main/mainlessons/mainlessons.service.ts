@@ -5,6 +5,8 @@ import { plainToInstance } from 'class-transformer'
 import { MainLessonResponseDto } from './dtos/mainlessons-response.dto'
 import { RecentLessonResponseDto } from './dtos/popularlesson-reponse.dto'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
+import { MainLessonResponseRO } from './ro/main-lesson.ro'
+import { LessonRO } from './ro/lesson.ro'
 
 @Injectable()
 export class MainLessonsService {
@@ -12,13 +14,37 @@ export class MainLessonsService {
     @InjectRepository(Lesson)
     private readonly lessonsRepository: Repository<Lesson>,
   ) {}
-
-  async getAllLessons(): Promise<MainLessonResponseDto[]> {
+  private mapLessonToRO(lesson: Lesson): LessonRO {
+    return {
+      uid: lesson.uid,
+      cp_uid: lesson.cp_uid,
+      title: lesson.title,
+      teacher: lesson.teacher,
+      bio: lesson.bio,
+      description: lesson.description,
+      price: lesson.price,
+      status: lesson.status,
+      location: lesson.location,
+      shuttle: lesson.shuttle,
+      createdAt: lesson.createdAt,
+      updatedAt: lesson.updatedAt,
+    }
+  }
+  async getAllLessons(): Promise<MainLessonResponseRO> {
     try {
-      const lessons = await this.lessonsRepository.find()
-      return lessons.map((lesson) => plainToInstance(MainLessonResponseDto, lesson))
+      const [lessons, count]: [Lesson[], number] = await this.lessonsRepository.findAndCount({
+        where: { is_verified: true },
+        relations: ['images'],
+      })
+
+      const lessonROs: LessonRO[] = lessons.map((lesson) => this.mapLessonToRO(lesson))
+
+      return {
+        lessons: lessonROs,
+        count,
+      }
     } catch (error) {
-      throw new InternalServerErrorException('수업 조회에 실패 하였습니다.')
+      throw new Error('수업 조회에 실패하였습니다.')
     }
   }
 

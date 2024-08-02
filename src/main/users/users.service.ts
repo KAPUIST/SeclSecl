@@ -14,6 +14,7 @@ import { findMyLessonDetailParamsDTO } from './dto/find-my-lesson-detail-params.
 import _ from 'lodash'
 import { FindMyLessonDetailRO } from './ro/find-my-lesson-detail.ro'
 import { UserFindOneRO } from './ro/user-find-ro'
+import { UpdateUserInfoDto } from './dto/update-userInfo.dto'
 
 @Injectable()
 export class UsersService {
@@ -59,7 +60,7 @@ export class UsersService {
     }
   }
   //내 정보 수정
-  async update(uid: string, updateUserInfoDto) {
+  async update(uid: string, updateUserInfoDto: UpdateUserInfoDto) {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       const { password, newPassword, confirmPassword, ...userInfo } = updateUserInfoDto
 
@@ -69,33 +70,49 @@ export class UsersService {
         throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER)
       }
 
-      //deletedAt 제거
+      // deletedAt 제거
       const { deletedAt, ...currentUser } = existingUser
       delete currentUser.userInfo.deletedAt
 
-      // 현재 비밀번호 확인
-      const currentPasswordValid = await bcrypt.compare(password, currentUser.password)
-      if (!currentPasswordValid) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_MATCHED_CURRENT_PASSWORD)
-      }
+      // 추가된 부분 시작
+      // password, newPassword, confirmPassword 중 하나라도 제공되면 모두 제공되어야 함
+      if (password || newPassword || confirmPassword) {
+        if (!password) {
+          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_PASSWORD)
+        }
+        if (!newPassword) {
+          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_NEW_PASSWORD)
+        }
+        if (!confirmPassword) {
+          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_NEW_PASSWORD_CONFIRM)
+        }
 
-      // 새 비밀번호와 확인 비밀번호 일치 여부 확인
-      if (newPassword !== confirmPassword) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_MATCHED_CHANGE_PASSWORD)
-      }
+        // 현재 비밀번호 확인
+        const currentPasswordValid = await bcrypt.compare(password, currentUser.password)
+        if (!currentPasswordValid) {
+          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_MATCHED_CURRENT_PASSWORD)
+        }
 
-      // 새 비밀번호 해싱
-      const hashedPassword = await bcrypt.hash(newPassword, 10)
+        // 새 비밀번호와 확인 비밀번호 일치 여부 확인
+        if (newPassword !== confirmPassword) {
+          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_MATCHED_CHANGE_PASSWORD)
+        }
+
+        // 새 비밀번호 해싱
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+        currentUser.password = hashedPassword
+      }
+      // 추가된 부분 끝
 
       // 닉네임 중복 확인
-      const existingNickname = await transactionalEntityManager.findOne(UserInfos, {
-        where: { nickname: userInfo.nickname },
-      })
-      if (existingNickname) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.EXISTED_NICKNAME)
+      if (userInfo.nickname) {
+        const existingNickname = await transactionalEntityManager.findOne(UserInfos, {
+          where: { nickname: userInfo.nickname },
+        })
+        if (existingNickname) {
+          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.EXISTED_NICKNAME)
+        }
       }
-
-      currentUser.password = hashedPassword
 
       // userInfo 테이블 업데이트
       Object.assign(currentUser.userInfo, userInfo)
