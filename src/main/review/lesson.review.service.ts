@@ -22,24 +22,20 @@ export class LessonReviewService {
     @InjectRepository(UserLesson)
     private readonly userLessonRepository: Repository<UserLesson>,
     @InjectRepository(Batch)
-    private readonly batchRepository: Repository<Batch>
-  ) {  }
+    private readonly batchRepository: Repository<Batch>,
+  ) {}
 
   //리뷰 등록
-  async createReview(
-    id: string,
-    uid,
-    createReviewDto: CreateReviewDto,
-  ): Promise<LessonReviewResponseDto> {
-    const {batchUid} = createReviewDto
+  async createReview(id: string, uid, createReviewDto: CreateReviewDto): Promise<LessonReviewResponseDto> {
+    const { batchUid } = createReviewDto
 
     const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
     if (!lesson) {
       throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
     }
     //입력한 batchId가 받아온 lessonId의 batch인지 확인
-    const confirmBatch = await this.batchRepository.findOne({where:{ uid: batchUid, lessonUid: id } })
-    if(!confirmBatch) {
+    const confirmBatch = await this.batchRepository.findOne({ where: { uid: batchUid, lessonUid: id } })
+    if (!confirmBatch) {
       throw new Error('입력하신 batchId가 lessonId에 포함되지 않습니다.')
     }
 
