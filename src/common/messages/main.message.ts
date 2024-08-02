@@ -30,6 +30,11 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
     },
   },
+  LESSON: {
+    FIND_ALL_LESSONS: '강의 전체 조회를 성공 했습니다.',
+    FIND_POPULAR_LESSONS: '인기강의 조회를 성공 했습니다.',
+    FIND_POPULAR_LESSON_FAILED: '인기 수업 목록 조회에 실패하였습니다.',
+  },
   BAND: {
     BAND_GROUP: {
       CREATE_BAND: {

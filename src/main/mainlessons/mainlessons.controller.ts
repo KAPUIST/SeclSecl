@@ -3,7 +3,8 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { MainLessonsService } from './mainlessons.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MainLessonResponseDto } from './dtos/mainlessons-response.dto'
-import { RecentLessonResponseDto } from './dtos/popularlesson-reponse.dto'
+
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { MainLessonResponseRO } from './ro/main-lesson.ro'
 
 @ApiTags('유저 강의 조회 및 검색 API')
@@ -22,23 +23,24 @@ export class MainLessonsController {
     const data = await this.mainLessonsService.getAllLessons()
     return {
       statusCode: HttpStatus.OK,
-      message: '전체 수업 조회 성공',
+      message: MAIN_MESSAGE_CONSTANT.LESSON.FIND_ALL_LESSONS,
       lessons: data,
     }
   }
 
-  @Get('/recent')
+  @Get('/popular')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '인기 레슨 조회' })
   @ApiResponse({ status: 200, description: '인기 레슨 조회 성공' })
   @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiResponse({ status: 500, description: '서버 오류' })
   @ApiBearerAuth()
-  async getRecentLessons(): Promise<{ statusCode: number; message: string; lessons: RecentLessonResponseDto[] }> {
-    const data = await this.mainLessonsService.getRecentLessons()
+  async getRecentLessons(): Promise<{ statusCode: number; message: string; lessons: MainLessonResponseRO }> {
+    const data = await this.mainLessonsService.getPopularLessons()
     return {
       statusCode: HttpStatus.OK,
-      message: '인기 수업 조회 성공',
+      message: MAIN_MESSAGE_CONSTANT.LESSON.FIND_POPULAR_LESSONS,
       lessons: data,
     }
   }
