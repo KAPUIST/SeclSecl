@@ -37,8 +37,8 @@ export class LessonReviewService {
       throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
     }
 
-    //batch별 리뷰 존재 확인
-    const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid } })
+    //내강의실 batch별 존재 확인
+    const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid, userUid:uid } })
 
     if (!batch) {
       throw new NotFoundException('수강중인 기수를 찾을 수 없습니다.')
