@@ -269,6 +269,9 @@ export const MAIN_MESSAGE_CONSTANT = {
     },
     SERVICE: {
       NOT_FOUND_USER: '유저를 찾을 수 없습니다.',
+      NOT_FOUND_PASSWORD: '현재 비밀번호를 입력해 주세요.',
+      NOT_FOUND_NEW_PASSWORD: '새 비밀번호를 입력해 주세요.',
+      NOT_FOUND_NEW_PASSWORD_CONFIRM: '새 비밀번호 확인을 입력해 주세요.',
       NOT_MATCHED_CURRENT_PASSWORD: '현재 비밀번호와 일치하지 않습니다.',
       NOT_MATCHED_CHANGE_PASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
       EXISTED_NICKNAME: '중복되는 닉네임이 존재합니다.',
