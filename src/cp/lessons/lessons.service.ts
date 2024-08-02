@@ -5,15 +5,15 @@ import { CreateLessonDto } from './dtos/create-lesson.dto'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { S3Service } from '../../common/s3/s3.service'
 import { LessonImages } from '../../common/lessons/entities/lesson-image.entity'
-import { Cp } from '../auth/entities/cp.entity'
 import { plainToInstance } from 'class-transformer'
 import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { UpdateLessonDto } from './dtos/update-lesson.dto'
-import { PaymentDetail } from '../../main/payments/entities/payment-details.entity'
-import { Batch } from '../../main/batches/entities/batch.entity'
-import { SalesResponseDto } from './dtos/sales-response-dto'
+
 import { LessonReview } from '../../main/review/entities/lesson.review.entity'
 import { FindLessonReviewRO } from './ro/find-lesson-reviews.ro'
+import { UserLesson } from '../../main/users/entities/user-lessons.entity'
+import { Batch } from '../../main/batches/entities/batch.entity'
+import { StudentRO } from './ro/student.ro'
 
 @Injectable()
 export class LessonsService {
@@ -22,12 +22,10 @@ export class LessonsService {
     private readonly lessonsRepository: Repository<Lesson>,
     @InjectRepository(LessonImages)
     private readonly lessonImagesRepository: Repository<LessonImages>,
-    @InjectRepository(Cp, 'cp')
-    private readonly cpRepository: Repository<Cp>,
-    @InjectRepository(PaymentDetail)
-    private readonly paymentDetailsRepository: Repository<PaymentDetail>,
+    @InjectRepository(UserLesson)
+    private readonly userLessonRepository: Repository<UserLesson>,
     @InjectRepository(Batch)
-    private readonly batchesRepository: Repository<Batch>,
+    private readonly batchRepository: Repository<Batch>,
     @InjectRepository(LessonReview)
     private readonly lessonReviewRepository: Repository<LessonReview>,
     private readonly s3Service: S3Service,
@@ -216,6 +214,41 @@ export class LessonsService {
     } catch (error) {
       console.error(error)
       throw new InternalServerErrorException(error)
+    }
+  }
+  async findStudentsByBatch({
+    cpUid,
+    lessonId,
+    batchId,
+  }: {
+    cpUid: string
+    lessonId: string
+    batchId: string
+  }): Promise<StudentRO[]> {
+    try {
+      const lesson = await this.lessonsRepository.findOne({ where: { uid: lessonId, cp_uid: cpUid } })
+      if (!lesson) {
+        throw new NotFoundException('레슨을 찾을 수 없습니다.')
+      }
+
+      const batch = await this.batchRepository.findOne({ where: { uid: batchId, lesson: { uid: lesson.uid } } })
+      if (!batch) {
+        throw new NotFoundException('배치를 찾을 수 없습니다.')
+      }
+
+      const students = await this.userLessonRepository.find({
+        where: { batch: { uid: batchId } },
+        relations: ['user', 'user.userInfo'],
+      })
+      return students.map((student) => ({
+        studentUid: student.user.uid,
+        name: student.user.userInfo.name,
+        email: student.user.email,
+        phoneNumber: student.user.userInfo.phoneNumber,
+      }))
+    } catch (error) {
+      console.error(error)
+      throw new InternalServerErrorException('수강생 조회에 실패했습니다.')
     }
   }
 }
