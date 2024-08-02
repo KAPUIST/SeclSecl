@@ -13,8 +13,8 @@ import { FavoriteLessonRO } from './ro/favorite-lesson.ro'
 import { findMyLessonDetailParamsDTO } from './dto/find-my-lesson-detail-params.dto'
 import _ from 'lodash'
 import { FindMyLessonDetailRO } from './ro/find-my-lesson-detail.ro'
-import { UserFindOneRO } from './ro/user-find-ro'
 import { UpdateUserInfoDto } from './dto/update-userInfo.dto'
+import { UserInfoRO } from './ro/userinfo-ro'
 
 @Injectable()
 export class UsersService {
@@ -31,7 +31,7 @@ export class UsersService {
     private readonly dataSource: DataSource,
   ) {}
   // 내 정보 조회
-  async findOne(uid: string): Promise<UserFindOneRO> {
+  async findOne(uid: string): Promise<UserInfoRO> {
     const user = await this.userRepository.findOne({ where: { uid }, relations: ['userInfo'] })
 
     if (!user) {
@@ -39,9 +39,6 @@ export class UsersService {
     }
 
     const userInfo = user.userInfo
-
-    const { deletedAt, ...data } = user
-    delete data.userInfo.deletedAt
 
     return {
       email: user.email,
@@ -56,11 +53,10 @@ export class UsersService {
       role: userInfo.role,
       nickname: userInfo.nickname,
       provider: userInfo.provider,
-      password: user.password,
     }
   }
   //내 정보 수정
-  async update(uid: string, updateUserInfoDto: UpdateUserInfoDto) {
+  async update(uid: string, updateUserInfoDto: UpdateUserInfoDto): Promise<UserInfoRO> {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       const { password, newPassword, confirmPassword, ...userInfo } = updateUserInfoDto
 
@@ -70,12 +66,6 @@ export class UsersService {
         throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER)
       }
 
-      // deletedAt 제거
-      const { deletedAt, ...currentUser } = existingUser
-      delete currentUser.userInfo.deletedAt
-
-      // 추가된 부분 시작
-      // password, newPassword, confirmPassword 중 하나라도 제공되면 모두 제공되어야 함
       if (password || newPassword || confirmPassword) {
         if (!password) {
           throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_PASSWORD)
@@ -88,7 +78,7 @@ export class UsersService {
         }
 
         // 현재 비밀번호 확인
-        const currentPasswordValid = await bcrypt.compare(password, currentUser.password)
+        const currentPasswordValid = await bcrypt.compare(password, existingUser.password)
         if (!currentPasswordValid) {
           throw new BadRequestException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_MATCHED_CURRENT_PASSWORD)
         }
@@ -100,9 +90,8 @@ export class UsersService {
 
         // 새 비밀번호 해싱
         const hashedPassword = await bcrypt.hash(newPassword, 10)
-        currentUser.password = hashedPassword
+        existingUser.password = hashedPassword
       }
-      // 추가된 부분 끝
 
       // 닉네임 중복 확인
       if (userInfo.nickname) {
@@ -115,13 +104,26 @@ export class UsersService {
       }
 
       // userInfo 테이블 업데이트
-      Object.assign(currentUser.userInfo, userInfo)
-      await transactionalEntityManager.save(UserInfos, currentUser.userInfo)
+      Object.assign(existingUser.userInfo, userInfo)
+      await transactionalEntityManager.save(UserInfos, existingUser.userInfo)
+      await transactionalEntityManager.save(User, existingUser)
 
-      // 비밀번호를 제외한 나머지 데이터 저장 후 user 테이블 업데이트
-      const { password: _pw, ...data } = await transactionalEntityManager.save(User, currentUser)
+      const isUserInfo = existingUser.userInfo
 
-      return data
+      return {
+        email: existingUser.email,
+        name: isUserInfo.name,
+        phoneNumber: isUserInfo.phoneNumber,
+        address: userInfo.address,
+        dong: userInfo.dong,
+        sido: userInfo.sido,
+        sigungu: userInfo.sigungu,
+        gender: isUserInfo.gender,
+        birthDate: isUserInfo.birthDate,
+        role: isUserInfo.role,
+        nickname: isUserInfo.nickname,
+        provider: isUserInfo.provider,
+      }
     })
   }
   //내 강의 목록 조회
