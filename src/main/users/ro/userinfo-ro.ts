@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { IsDate, IsEnum, IsOptional, IsString, isEnum } from 'class-validator'
 import { Provider } from '../../auth/types/provider.type'
 
-export class UserFindOneRO {
+export class UserInfoRO {
   @ApiProperty({ description: '이메일' })
   @IsString()
   email: string
@@ -16,7 +16,6 @@ export class UserFindOneRO {
   phoneNumber: string
 
   @ApiProperty({ description: '주소' })
-  //   @IsOptional()
   @IsString()
   address: string
 
@@ -29,7 +28,6 @@ export class UserFindOneRO {
   sido: string
 
   @ApiProperty({ description: '시구도' })
-  @IsOptional()
   @IsString()
   sigungu: string
 
@@ -51,8 +49,4 @@ export class UserFindOneRO {
   @ApiProperty({ description: '소셜로그인' })
   @IsEnum(Provider)
   provider: Provider
-
-  @ApiProperty({ description: '패스워드' })
-  @IsString()
-  password: string
 }
