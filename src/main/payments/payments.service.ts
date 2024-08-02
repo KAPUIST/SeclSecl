@@ -76,20 +76,33 @@ export class PaymentsService {
       }
       throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.CONFLICT_PRICE)
     }
+    // 승인 요청
+    const response = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
+      method: 'POST',
+      headers: {
+        Authorization: encryptedApiSecretKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paymentKey, orderId, amount }),
+    })
+    const data = await response.json()
+    console.log('data', data)
+    // 승인 요청 실패시 에러 처리
+    if (data.code) {
+      const orderList = await this.paymentOrderRepository.find({ where: { orderId } })
+      // 주문 데이터 상태 실패 처리
+      if (orderList.length > 0) {
+        for (const order of orderList) {
+          await this.paymentOrderRepository.update(
+            { orderId, batchUid: order.batchUid },
+            { status: OrderStatus.Failed },
+          )
+        }
+      }
+      throw new BadRequestException(data.message)
+    }
     try {
       return await this.dataSource.transaction(async (manager) => {
-        // 승인 요청
-        const response = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
-          method: 'POST',
-          headers: {
-            Authorization: encryptedApiSecretKey,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ paymentKey, orderId, amount }),
-        })
-        const data = await response.json()
-        console.log('data', data)
-
         // 결제 테이블 생성
         const payment = await manager.save(Payment, {
           userUid,
