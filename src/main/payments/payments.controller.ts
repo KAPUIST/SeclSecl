@@ -7,12 +7,20 @@ import { DeleteCartParamsDTO } from './dto/delete-cart-params.dto'
 import { PurchaseItemDto } from './dto/purchase-item.dto'
 import { RefundPaymentParamsDTO } from './dto/refund-payment-params.dto'
 import { GetPaymentDetailParamsDTO } from './dto/get-payment-detail-params.dto'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 
+@ApiTags('밴드 관련 API')
+@ApiBearerAuth()
 @Controller({ host: 'localhost', path: 'payments' })
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
 
-  // 주문 결제
+  /**
+   * 결제 승인 - 토스 결제, 카드사 승인 시 요청
+   * @param req
+   * @param purchaseItemDto
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Post()
   async purchaseItem(@Request() req, @Body() purchaseItemDto: PurchaseItemDto) {
@@ -25,7 +33,12 @@ export class PaymentsController {
     }
   }
 
-  // 결제 환불
+  /**
+   * 결제 환불
+   * @param req
+   * @param params
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Post('/refunds/:paymentsUid')
   async refundPayment(@Request() req, @Param() params: RefundPaymentParamsDTO) {
@@ -38,7 +51,12 @@ export class PaymentsController {
     }
   }
 
-  // 주문 정보 생성
+  /**
+   * 주문 정보 생성 - 결제요청 전 결제 정보 서버에 저장, 승인 시 비교
+   * @param req
+   * @param body
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Post('/orders')
   async createOrder(@Request() req, @Body() body: any) {
@@ -51,7 +69,11 @@ export class PaymentsController {
     }
   }
 
-  // 결제 목록 조회
+  /**
+   * 결제 목록 조회
+   * @param req
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Get()
   async getPaymentList(@Request() req) {
@@ -64,7 +86,12 @@ export class PaymentsController {
     }
   }
 
-  // 결제 상세 조회
+  /**
+   * 결제 상세 조회
+   * @param req
+   * @param params
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Get('/details/:paymentDetailUid')
   async getPaymentDetail(@Request() req, @Param() params: GetPaymentDetailParamsDTO) {
@@ -77,7 +104,12 @@ export class PaymentsController {
     }
   }
 
-  // 장바구니 추가
+  /**
+   * 장바구니 추가
+   * @param req
+   * @param params
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Post('carts/:batchUid')
   async addCart(@Request() req, @Param() params: AddCartParamsDTO) {
@@ -90,7 +122,11 @@ export class PaymentsController {
     }
   }
 
-  // 장바구니 목록 조회
+  /**
+   * 장바구니 목록 조회
+   * @param req
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Get('carts')
   async getCartList(@Request() req) {
@@ -102,7 +138,12 @@ export class PaymentsController {
       data: cartList,
     }
   }
-  // 장바구니 삭제
+  /**
+   * 장바구니 삭제
+   * @param req
+   * @param params
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Delete('carts/:cartUid')
   async deleteCart(@Request() req, @Param() params: DeleteCartParamsDTO) {

@@ -19,11 +19,11 @@ export class BandLike {
   @CreateDateColumn()
   createdAt: Date
 
-  @ManyToOne(() => BandPost, (bandPost) => bandPost.bandLikes)
+  @ManyToOne(() => BandPost, (bandPost) => bandPost.bandLikes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'band_post_uid' })
   bandPost: BandPost
 
-  @ManyToOne(() => BandPostComment, (bandPostComment) => bandPostComment.bandLikes)
+  @ManyToOne(() => BandPostComment, (bandPostComment) => bandPostComment.bandLikes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'band_post_comment_uid' })
   bandPostComment: BandPostComment
 }

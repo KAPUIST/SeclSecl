@@ -77,15 +77,16 @@ export class BandService {
         })
         // 밴드 멤버 추가
         await manager.save(BandMember, { userUid, bandUid: createdBand.uid })
+        // // SendBird 채널 생성 및 chatUrl 저장
+        // const sendBirdResponse = await lastValueFrom(this.sendBirdService.createChannel(createdBand.name, [userUid]))
 
-        // SendBird 채널 생성 및 chatUrl 저장
-        const sendBirdResponse = await lastValueFrom(this.sendBirdService.createChannel(createdBand.name, [userUid]))
-        const channelUrl = sendBirdResponse.channel_url
+        // const channelUrl = sendBirdResponse.channel_url
 
-        // chatUrl 업데이트
-        createdBand.chatUrl = channelUrl
-        await manager.save(Band, createdBand)
-        return createdBand
+        // // chatUrl 업데이트
+        // createdBand.chatUrl = channelUrl
+        // console.log(createdBand)
+        // await manager.save(Band, createdBand)
+        // return createdBand
       } catch (err) {
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.CREATE_BAND.TRANSACTION_ERROR)
       }
@@ -132,7 +133,8 @@ export class BandService {
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.DELETE_BAND.NOT_FOUND)
     }
-    await this.bandRepository.softDelete({ uid: bandUid })
+    await this.bandRepository.delete({ uid: bandUid })
+
     return band.uid
   }
   // 밴드 가입 로직
@@ -283,7 +285,7 @@ export class BandService {
     if (isMember.uid !== bandPost.bandMemberUid) {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.DELETE_BAND_POST.NOT_MATCHED)
     }
-    await this.bandPostRepository.softDelete({ uid: bandPost.uid })
+    await this.bandPostRepository.delete({ uid: bandPost.uid })
     return bandPost.uid
   }
   // 밴드 게시글 좋아요 로직
@@ -443,7 +445,7 @@ export class BandService {
     if (isMember.uid !== bandComment.bandMemberUid) {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.DELETE_BAND_COMMENT.NOT_MATCHED)
     }
-    await this.bandPostCommentRepository.softDelete({ uid: bandCommentUid })
+    await this.bandPostCommentRepository.delete({ uid: bandCommentUid })
     return bandCommentUid
   }
   // 밴드 댓글 좋아요 로직
