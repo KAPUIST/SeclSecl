@@ -4,6 +4,7 @@ import { MainLessonsService } from './mainlessons.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MainLessonResponseDto } from './dtos/mainlessons-response.dto'
 import { RecentLessonResponseDto } from './dtos/popularlesson-reponse.dto'
+import { MainLessonResponseRO } from './ro/main-lesson.ro'
 
 @ApiTags('유저 강의 조회 및 검색 API')
 @Controller({ host: 'localhost', path: 'lessons' })
@@ -17,7 +18,7 @@ export class MainLessonsController {
   @ApiResponse({ status: 200, description: '전체 레슨 조회 성공' })
   @ApiResponse({ status: 401, description: '인증 실패' })
   @ApiBearerAuth()
-  async getAllLessons(): Promise<{ statusCode: number; message: string; lessons: MainLessonResponseDto[] }> {
+  async getAllLessons(): Promise<{ statusCode: number; message: string; lessons: MainLessonResponseRO }> {
     const data = await this.mainLessonsService.getAllLessons()
     return {
       statusCode: HttpStatus.OK,
