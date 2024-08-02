@@ -7,7 +7,7 @@ import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { LessonReview } from '../review/entities/lesson.review.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Lesson, Batch])],
+  imports: [TypeOrmModule.forFeature([Lesson, Batch, LessonReview])],
   controllers: [BatchesController],
   providers: [BatchesService],
 })

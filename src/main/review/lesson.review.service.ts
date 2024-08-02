@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
+import { Batch } from '../batches/entities/batch.entity'
 import { UserLesson } from '../users/entities/user-lessons.entity'
 import { User } from '../users/entities/user.entity'
 import { CreateReviewDto } from './dtos/create.review.dto'
@@ -20,26 +21,30 @@ export class LessonReviewService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserLesson)
     private readonly userLessonRepository: Repository<UserLesson>,
-  ) {
-    console.log('LessonReviewService created')
-  }
+    @InjectRepository(Batch)
+    private readonly batchRepository: Repository<Batch>
+  ) {  }
 
   //리뷰 등록
   async createReview(
     id: string,
     uid,
-    batchUid: string,
     createReviewDto: CreateReviewDto,
   ): Promise<LessonReviewResponseDto> {
-    const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
+    const {batchUid} = createReviewDto
 
+    const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
     if (!lesson) {
       throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
     }
+    //입력한 batchId가 받아온 lessonId의 batch인지 확인
+    const confirmBatch = await this.batchRepository.findOne({where:{ uid: batchUid, lessonUid: id } })
+    if(!confirmBatch) {
+      throw new Error('입력하신 batchId가 lessonId에 포함되지 않습니다.')
+    }
 
     //내강의실 batch별 존재 확인
-    const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid, userUid:uid } })
-
+    const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid, userUid: uid } })
     if (!batch) {
       throw new NotFoundException('수강중인 기수를 찾을 수 없습니다.')
     }
@@ -60,8 +65,7 @@ export class LessonReviewService {
     if (!user) {
       throw new NotFoundException('해당 사용자를 찾을 수 없습니다.')
     }
-
-    const review = await this.lessonReviewRepository.create({ ...createReviewDto, lesson, user })
+    const review = await this.lessonReviewRepository.create({ ...createReviewDto, lesson, user, batch: confirmBatch })
     const savedReview = await this.lessonReviewRepository.save(review)
 
     const response = new LessonReviewResponseDto()

@@ -15,10 +15,9 @@ export class ReviewController {
   async createReview(
     @Param('lessonId') id: string,
     @Req() req,
-    @Body() createReviewDto: CreateReviewDto,
-    batchUid: string,
+    @Body() createReviewDto: CreateReviewDto
   ) {
-    const data = await this.lessonReviewService.createReview(id, req.user.uid, batchUid, createReviewDto)
+    const data = await this.lessonReviewService.createReview(id, req.user.uid, createReviewDto)
 
     return {
       status: HttpStatus.CREATED,
@@ -27,7 +26,7 @@ export class ReviewController {
     }
   }
 
-  @Get('/:lessons/reviews')
+  @Get('/:lessonId/reviews')
   async readReviews(@Param('lessonId') id: string) {
     const data = await this.lessonReviewService.readReviews(id)
 
