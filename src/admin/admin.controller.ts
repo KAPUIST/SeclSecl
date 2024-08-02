@@ -48,7 +48,8 @@ export class AdminController {
    * @returns
    */
   @Delete('/:cpId/reject')
-  async rejectCp(@Param('id') id: string) {
+  async rejectCp(@Param('cpId') id: string) {
+    console.log('id:', id)
     await this.adminService.rejectCp(id)
 
     return {

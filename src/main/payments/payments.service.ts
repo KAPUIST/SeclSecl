@@ -51,6 +51,7 @@ export class PaymentsService {
   ) {}
   // 주문 결제 로직
   async purchaseItem(userUid: string, purchaseItemDto: PurchaseItemDto) {
+    console.log(1111111111)
     const apiSecretKey = this.configService.get<string>('API_SECRET_KEY')
     const encryptedApiSecretKey = 'Basic ' + Buffer.from(apiSecretKey + ':').toString('base64')
     const { paymentKey, orderId, amount } = purchaseItemDto
