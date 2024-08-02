@@ -22,7 +22,7 @@ export class ChatService {
   async findCreateChatRoom(cpId: string, userId: string): Promise<ChatRoom> {
     let chatRoom = await this.chatRoomRepository.findOne({ where: { cpId, userId } })
 
-    if( cpId === userId) {
+    if (cpId === userId) {
       throw new Error('본인과의 채팅방은 만들 수 없습니다.')
     }
 
@@ -47,41 +47,40 @@ export class ChatService {
       ...savedMessage,
       senderName: senderInfo.name,
     }
-
   }
 
   async getMessages(chatRoomId: string): Promise<any[]> {
     const messages = await this.messageRepository.find({
       where: { chatRoom: { uid: chatRoomId } },
       relations: ['chatRoom'],
-      order: { createdAt: 'ASC'}
+      order: { createdAt: 'ASC' },
     })
 
     const result = []
-    for(const message of messages) {
+    for (const message of messages) {
       const senderInfo = await this.getSenderInfo(message.sender)
       result.push({
         sender: message.sender,
         senderName: senderInfo.name,
         content: message.content,
-        createdAt: message.createdAt
+        createdAt: message.createdAt,
       })
     }
 
     return result
   }
 
-  private async getSenderInfo(senderId: string): Promise<{ name: string}> {
-    const userInfo = await this.userInfoRepository.findOne({ where:{uid: senderId}})
-    if(userInfo) {
-      return {name: userInfo.name}
+  private async getSenderInfo(senderId: string): Promise<{ name: string }> {
+    const userInfo = await this.userInfoRepository.findOne({ where: { uid: senderId } })
+    if (userInfo) {
+      return { name: userInfo.name }
     }
 
-    const cpInfo = await this.cpInfosRepository.findOne({where: {uid: senderId}})
-    if(cpInfo) {
-      return{ name: cpInfo.name}
+    const cpInfo = await this.cpInfosRepository.findOne({ where: { uid: senderId } })
+    if (cpInfo) {
+      return { name: cpInfo.name }
     }
 
-    return { name: 'Unknown'}
+    return { name: 'Unknown' }
   }
 }

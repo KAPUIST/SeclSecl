@@ -57,7 +57,7 @@ export class ChatGateway {
       console.log('cpId:', data.cpId)
       console.log('userId:', data.userId)
 
-      if (!data.cpId && data.userId ) {
+      if (!data.cpId && data.userId) {
         const cpId = loginId
         const userId = data.userId
         this.logger.log('joinRoom 이벤트 수신 - 사용자:', JSON.stringify({ cpId, userId }))

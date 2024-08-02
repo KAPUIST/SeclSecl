@@ -14,7 +14,7 @@ import { Lesson } from '../../common/lessons/entities/lessons.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Cp, CpInfo, RefreshToken ], 'cp'),
+    TypeOrmModule.forFeature([Cp, CpInfo, RefreshToken], 'cp'),
     TypeOrmModule.forFeature([Lesson]),
     ConfigModule,
     TokenModule,
@@ -24,6 +24,6 @@ import { Lesson } from '../../common/lessons/entities/lessons.entity'
   ],
   controllers: [CpAuthController],
   providers: [CpAuthService],
-  exports: [CpAuthService,TypeOrmModule.forFeature([CpInfo], 'cp')],
+  exports: [CpAuthService, TypeOrmModule.forFeature([CpInfo], 'cp')],
 })
 export class CpAuthModule {}

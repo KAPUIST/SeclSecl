@@ -14,6 +14,6 @@ import { LessonReview } from '../review/entities/lesson.review.entity'
   imports: [TypeOrmModule.forFeature([Band, User, UserInfos, UserLesson, LessonBookmarks, Lesson, LessonReview])],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService, TypeOrmModule]
+  exports: [UsersService, TypeOrmModule],
 })
 export class UsersModule {}

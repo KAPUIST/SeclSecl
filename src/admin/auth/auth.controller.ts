@@ -27,11 +27,10 @@ export class AuthController {
     }
   }
 
-
   /**
    * 로그아웃
-   * @param refreshToken 
-   * @returns 
+   * @param refreshToken
+   * @returns
    */
   @ApiBearerAuth()
   @Post('/sign-out')
@@ -58,5 +57,4 @@ export class AuthController {
       data: tokens,
     }
   }
-
 }

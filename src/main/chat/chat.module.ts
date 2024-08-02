@@ -16,12 +16,14 @@ import { CpAuthModule } from '../../cp/auth/auth.module'
 import { CpModule } from '../../cp/cp.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ChatRoom, Message]),
-  TypeOrmModule.forFeature([CpInfo], 'cp'), 
-  ConfigModule,
-  UsersModule,
-  CpModule],
-          
+  imports: [
+    TypeOrmModule.forFeature([ChatRoom, Message]),
+    TypeOrmModule.forFeature([CpInfo], 'cp'),
+    ConfigModule,
+    UsersModule,
+    CpModule,
+  ],
+
   controllers: [ChatController],
   providers: [ChatService, ChatGateway, JwtService, ChatJwtStrategy, WsAuthGuard],
 })
