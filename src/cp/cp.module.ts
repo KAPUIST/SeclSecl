@@ -8,6 +8,6 @@ import { CpReviewsModule } from './reviews/cp-reviews.module'
   imports: [CpAuthModule, CpLessonsModule, CpReviewsModule, CpSalesModule],
   controllers: [],
   providers: [],
-  exports: [],
+  exports: [CpAuthModule],
 })
 export class CpModule {}

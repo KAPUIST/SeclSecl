@@ -4,11 +4,27 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { AdminAuthService } from './auth.service'
 import { AdminSignInDto } from './dto/sign-in.dto'
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
+import { CreateAdminDto } from './dto/create-admin.dto'
 
 @ApiTags('어드민 인증')
 @Controller({ host: 'admin.localhost', path: 'auth' })
 export class AuthController {
   constructor(private readonly adminAuthService: AdminAuthService) {}
+
+  /**
+   * 어드민 계정 생성
+   * @param body
+   * @returns
+   */
+  @Post('create')
+  async createAdmin(@Body() createAdminDto: CreateAdminDto) {
+    const data = await this.adminAuthService.createAdmin(createAdminDto)
+    return {
+      status: HttpStatus.CREATED,
+      message: '어드민 계정이 생성되었습니다.',
+      data,
+    }
+  }
 
   /**
    * 로그인
@@ -28,6 +44,7 @@ export class AuthController {
 
   /**
    * 로그아웃
+   * @param refreshToken
    * @returns
    */
   @ApiBearerAuth()
@@ -55,25 +72,4 @@ export class AuthController {
       data: tokens,
     }
   }
-
-  // /**
-  //  * 리프레시 토큰 재발급
-  //  * @param body
-  //  * @returns
-  //  */
-  // @Post('refreshToken')
-  // async refreshTokens(@Body() body: {refreshToken:string}) {
-  //   console.log('이거야 이거:',body.refreshToken)
-  //   return await this.adminAuthService.refreshTokens(body.refreshToken)
-  // }
-
-  //   /**
-  //    * 로그아웃
-  //    * @param refreshToken
-  //    * @returns
-  //    */
-  //   @Post('logout')
-  //   async logout(@Body('refreshToken') refreshToken: string) {
-  //     return await this.adminAuthService.logout(refreshToken)
-  //   }
 }

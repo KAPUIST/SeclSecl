@@ -10,10 +10,12 @@ import { GuardModule } from '../../common/guards/guard.module'
 import { LessonsModule } from '../../common/lessons/lessons.module'
 import { CpAuthController } from './auth.controller'
 import { CpAuthService } from './auth.service'
+import { Lesson } from '../../common/lessons/entities/lessons.entity'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Cp, CpInfo, RefreshToken], 'cp'),
+    TypeOrmModule.forFeature([Lesson]),
     ConfigModule,
     TokenModule,
     PassportModule,
@@ -22,6 +24,6 @@ import { CpAuthService } from './auth.service'
   ],
   controllers: [CpAuthController],
   providers: [CpAuthService],
-  exports: [CpAuthService],
+  exports: [CpAuthService, TypeOrmModule.forFeature([CpInfo], 'cp')],
 })
 export class CpAuthModule {}

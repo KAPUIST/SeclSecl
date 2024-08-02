@@ -12,20 +12,13 @@ import { BandChatModule } from './bandsChats/bandChat.module'
 @Module({
   imports: [
     AuthModule,
-
     BandModule,
-
     LessonsModule,
-
     ChatModule,
-
     PaymentsModule,
-
     UsersModule,
     ReviewModule,
-
     MainLessonsModule,
-
     BandChatModule,
   ],
   controllers: [],
