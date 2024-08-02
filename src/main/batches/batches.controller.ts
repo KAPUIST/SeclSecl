@@ -5,6 +5,7 @@ import { UpdateBatchDto } from './dto/update-batch.dto'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { CreateBatchParamsDTO } from './dto/create-batch-params.dto'
 
 @ApiTags('기수')
 @Controller({ host: 'localhost', path: 'lessons' })
@@ -20,8 +21,8 @@ export class BatchesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('/:lessonUid/batches')
-  async create(@Request() req, @Body() createBatchDto: CreateBatchDto, @Param('lessonUid') lessonUid: string) {
-    const data = await this.batchesService.create(req.user.uid, createBatchDto, lessonUid)
+  async create(@Request() req, @Body() createBatchDto: CreateBatchDto, @Param() params: CreateBatchParamsDTO) {
+    const data = await this.batchesService.create(req.user.uid, createBatchDto, params)
 
     return {
       statusCode: HttpStatus.OK,

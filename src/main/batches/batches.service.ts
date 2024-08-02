@@ -7,6 +7,8 @@ import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { Batch } from './entities/batch.entity'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { User } from '../users/entities/user.entity'
+import { CreateBatchRo } from './ro/create-batch.ro'
+import { CreateBatchParamsDTO } from './dto/create-batch-params.dto'
 
 @Injectable()
 export class BatchesService {
@@ -20,32 +22,38 @@ export class BatchesService {
   ) {}
 
   // lessonId => 수업 uuid
-  async create(uid: string, createBatchDto: CreateBatchDto, lessonUid: string) {
+  async create(uid: string, createBatchDto: CreateBatchDto, params: CreateBatchParamsDTO): Promise<CreateBatchRo> {
     const { batchNumber, ...batchInfo } = createBatchDto
 
     // 강의가 존재하는는지 확인
-    const existingLesson = await this.lessonRepository.findOne({ where: { uid: lessonUid } })
+    const existingLesson = await this.lessonRepository.findOne({ where: { uid: params.lessonUid } })
     if (!existingLesson) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.FIND)
     }
 
     // 권한이 있는지 확인
-    await this.authorizedCp(uid, lessonUid)
+    await this.authorizedCp(uid, params.lessonUid)
 
     // 이미 있는 기수인지 확인
-    await this.checkBatchDuplicate(lessonUid, batchNumber)
+    await this.checkBatchDuplicate(params.lessonUid, batchNumber)
 
     const newBatch = {
       ...batchInfo,
       batchNumber,
-      lessonUid,
+      lessonUid: params.lessonUid,
     }
 
-    const data = await this.batchRepository.save(newBatch)
+    const createBatch = await this.batchRepository.save(newBatch)
 
-    delete data.deletedAt
-
-    return data
+    return {
+      batchNumber: createBatch.batchNumber,
+      lessonUid: createBatch.lessonUid,
+      recruitmentStart: createBatch.recruitmentStart,
+      recruitmentEnd: createBatch.recruitmentEnd,
+      startDate: createBatch.startDate,
+      endDate: createBatch.endDate,
+      startTime: createBatch.startTime,
+    }
   }
 
   async findAll(uid: string, lessonUid: string) {

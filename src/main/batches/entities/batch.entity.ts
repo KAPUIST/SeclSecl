@@ -27,7 +27,7 @@ export class Batch {
   lessonUid: string
 
   @Column()
-  batchNumber: string
+  batchNumber: number
 
   @Column({ type: 'datetime' })
   recruitmentStart: Date
