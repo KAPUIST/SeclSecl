@@ -14,8 +14,9 @@ import { findMyLessonDetailParamsDTO } from './dto/find-my-lesson-detail-params.
 import _ from 'lodash'
 import { FindMyLessonDetailRO } from './ro/find-my-lesson-detail.ro'
 import { UpdateUserInfoDto } from './dto/update-userInfo.dto'
-import { UserInfoRO } from './ro/userinfo-ro'
+import { FindOneUserInfoRO } from './ro/find-one-userinfo-ro'
 import { FindMyLessonRO } from './ro/find-my-lesson.ro'
+import { UpdateUserInfoRO } from './ro/update-userinfo.ro'
 
 @Injectable()
 export class UsersService {
@@ -32,7 +33,7 @@ export class UsersService {
     private readonly dataSource: DataSource,
   ) {}
   // 내 정보 조회
-  async findOne(uid: string): Promise<UserInfoRO> {
+  async findOne(uid: string): Promise<FindOneUserInfoRO> {
     const user = await this.userRepository.findOne({ where: { uid }, relations: ['userInfo'] })
 
     if (!user) {
@@ -57,7 +58,7 @@ export class UsersService {
     }
   }
   //내 정보 수정
-  async update(uid: string, updateUserInfoDto: UpdateUserInfoDto): Promise<UserInfoRO> {
+  async update(uid: string, updateUserInfoDto: UpdateUserInfoDto): Promise<UpdateUserInfoRO> {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       const { password, newPassword, confirmPassword, ...userInfo } = updateUserInfoDto
 

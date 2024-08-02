@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDate, IsEnum, IsOptional, IsString, isEnum } from 'class-validator'
+import { IsDate, IsEnum, IsString } from 'class-validator'
 import { Provider } from '../../auth/types/provider.type'
 
-export class UserInfoRO {
+export class FindOneUserInfoRO {
   @ApiProperty({ description: '이메일' })
   @IsString()
   email: string
