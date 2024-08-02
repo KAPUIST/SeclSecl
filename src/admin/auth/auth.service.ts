@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { InjectRepository } from '@nestjs/typeorm'
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt'
 
 import { Repository } from 'typeorm'
 import { Admin } from './entities/admin.entity'
@@ -9,7 +9,7 @@ import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
 import { ConfigService } from '@nestjs/config'
 import { TokenService } from '../../common/auth/token/token.service'
 import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interface'
-import { CreateAdminDto } from './dto/create-admin.dto';
+import { CreateAdminDto } from './dto/create-admin.dto'
 
 @Injectable()
 export class AdminAuthService {
@@ -24,25 +24,24 @@ export class AdminAuthService {
   ) {}
 
   //어드민 계정 생성
-  async createAdmin(createAdminDto:CreateAdminDto): Promise<string>{
-    const { email, password} = createAdminDto
+  async createAdmin(createAdminDto: CreateAdminDto): Promise<string> {
+    const { email, password } = createAdminDto
 
-    const existedEamil = await this.adminRepository.findOne({where: {email: email}})
+    const existedEamil = await this.adminRepository.findOne({ where: { email: email } })
 
-    if(existedEamil) {
+    if (existedEamil) {
       throw new Error('이미 존재하는 이메일 입니다.')
     }
-    
-    const saltRounds = 10;
-    try{
+
+    const saltRounds = 10
+    try {
       console.log(password)
       const hashedPassword = await bcrypt.hash(password, saltRounds)
-      const admin = this.adminRepository.create({email, password: hashedPassword})
+      const admin = this.adminRepository.create({ email, password: hashedPassword })
       await this.adminRepository.save(admin)
 
       return email
-
-    } catch(error){
+    } catch (error) {
       throw new Error('어드민 계정 생성에 실패했습니다.')
     }
   }

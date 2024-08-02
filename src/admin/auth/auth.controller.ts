@@ -13,16 +13,16 @@ export class AuthController {
 
   /**
    * 어드민 계정 생성
-   * @param body 
-   * @returns 
+   * @param body
+   * @returns
    */
   @Post('create')
-  async createAdmin(@Body() createAdminDto:CreateAdminDto){
+  async createAdmin(@Body() createAdminDto: CreateAdminDto) {
     const data = await this.adminAuthService.createAdmin(createAdminDto)
     return {
       status: HttpStatus.CREATED,
       message: '어드민 계정이 생성되었습니다.',
-      data
+      data,
     }
   }
 
