@@ -60,7 +60,7 @@ jobs:
           echo "SENDBIRD_APP_ID=${{secrets.SENDBIRD_APP_ID}}" >> .env
           echo "BASE_URL=${{secrets.BASE_URL}}" >> .env
           echo "SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}}" >> .env
-          echt "SENTRY_DSN=${{secrets.SENTRY_DSN}}" >> .env
+          echo "SENTRY_DSN=${{secrets.SENTRY_DSN}}" >> .env
 
       - name: Run build
         run: npm run build
