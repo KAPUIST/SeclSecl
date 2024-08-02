@@ -55,6 +55,7 @@ export class AdminService {
   //cp 반려
   async rejectCp(id: string) {
     const cp = await this.cpRepository.findOne({ where: { uid: id } })
+    console.log('cp:',cp)
     if (!cp) {
       throw new NotFoundException('cp를 찾을 수 없습니다.')
     }
