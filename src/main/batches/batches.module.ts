@@ -4,10 +4,10 @@ import { BatchesController } from './batches.controller'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Batch } from './entities/batch.entity'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
-import { LessonReview } from '../review/entities/lesson.review.entity'
+import { User } from '../users/entities/user.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Lesson, Batch])],
+  imports: [TypeOrmModule.forFeature([Lesson, Batch, User])],
   controllers: [BatchesController],
   providers: [BatchesService],
 })
