@@ -6,14 +6,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AdminModule } from './admin/admin.module'
 import { IoAdapter } from '@nestjs/platform-socket.io'
 import './config/instrument'
-import * as Sentry from '@sentry/node'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
   app.enableCors()
   const configService = app.get(ConfigService)
   const port = configService.get<number>('SERVER_PORT')
-
+  console.log(process.env.NODE_ENV)
   app.useWebSocketAdapter(new IoAdapter(app))
 
   app.setGlobalPrefix('api', { exclude: ['/health-check'] })

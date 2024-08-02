@@ -61,6 +61,9 @@ jobs:
           echo "SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}}" >> .env
           echo "SENTRY_DSN=${{secrets.SENTRY_DSN}}" >> .env
 
+      - name: Install Sentry CLI
+        run: npm install -g @sentry/cli
+
       - name: Build project
         run: npm run build
 
