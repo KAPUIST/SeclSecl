@@ -1,4 +1,14 @@
-import { PartialType } from '@nestjs/swagger'
-import { CreateBatchPostDto } from './create-batch-post.dto'
+import { ApiProperty } from '@nestjs/swagger'
+import { IsNotEmpty, IsString } from 'class-validator'
 
-export class UpdateBatchPostDto extends PartialType(CreateBatchPostDto) {}
+export class UpdateBatchPostDto {
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  title: string
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  content: string
+}

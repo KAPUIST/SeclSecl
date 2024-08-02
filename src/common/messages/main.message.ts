@@ -316,6 +316,7 @@ export const MAIN_MESSAGE_CONSTANT = {
     CONTROLLER: {
       CREATE: '기수 커뮤니티 생성에 성공했습니다.',
       FINDALL: '기수 커뮤니티 목록 찾기에 성공했습니다.',
+      FINDONE: '기수 커뮤니티 상세 조회에 성공했습니다.',
       UPDATE: '기수 커뮤니티 업데이트에 성공했습니다.',
       DELETE: '기수 커뮤니티 삭제에 성공했습니다.',
       LIKE_BATCH_POST: {

@@ -1,10 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, HttpStatus, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Request,
+  HttpStatus,
+  UseGuards,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common'
 import { BatchPostsService } from './batch-posts.service'
 import { CreateBatchPostDto } from './dto/create-batch-post.dto'
 import { UpdateBatchPostDto } from './dto/update-batch-post.dto'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
+import { FilesInterceptor } from '@nestjs/platform-express'
 import { CreateBatchCommentDTO } from './dto/create-batch-comment.dto'
 import { CreateBatchCommentParamsDTO } from './dto/create-batch-comment-params.dto'
 import { UpdateBatchCommentParamsDTO } from './dto/update-batch-comment-params.dto'
@@ -25,13 +39,19 @@ export class BatchPostsController {
 
   /**
    * 기수 게시글 등록
-   * @param batchId
+   * @param batchUid
    * @param createBatchPostDto
    * @returns
    */
   @Post('/:batchUid/posts')
-  async create(@Request() req, @Param() batchId: string, @Body() createBatchPostDto: CreateBatchPostDto) {
-    const data = await this.batchPostsService.create(req.user.uid, batchId, createBatchPostDto)
+  @UseInterceptors(FilesInterceptor('files', 10)) // 파일 필드 'files'에서 최대 10개의 파일 업로드
+  async create(
+    @Request() req,
+    @Param('batchUid') batchUid: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() createBatchPostDto: CreateBatchPostDto,
+  ) {
+    const data = await this.batchPostsService.create(req.user.uid, batchUid, files, createBatchPostDto)
 
     return {
       statusCode: HttpStatus.OK,
@@ -39,25 +59,75 @@ export class BatchPostsController {
       data,
     }
   }
+  /**
+   * 기수 게시글 전체 목록 조회
+   * @param batchUid
+   * @returns
+   */
+  @Get('/:batchUid/posts')
+  async findAll(@Request() req, @Param('batchUid') batchUid: string) {
+    const data = await this.batchPostsService.findAll(req.user.uid, batchUid)
 
-  @Get()
-  findAll() {
-    return this.batchPostsService.findAll()
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.FINDALL,
+      data,
+    }
   }
+  /**
+   * 기수 게시글 상세 목록 조회
+   * @param batchUid
+   * @param postUid
+   * @returns
+   */
+  @Get('/:batchUid/posts/:postUid')
+  async findOne(@Request() req, @Param('batchUid') batchUid: string, @Param('postUid') postUid: string) {
+    const data = await this.batchPostsService.findOne(req.user.uid, batchUid, postUid)
 
-  @Get(':id')
-  findOne(@Param() id: string) {
-    return this.batchPostsService.findOne(+id)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.FINDONE,
+      data,
+    }
   }
+  /**
+   * 기수 게시글 수정
+   * @param batchUid
+   * @param postUid
+   * @returns
+   */
 
-  @Patch(':id')
-  update(@Param() id: string, @Body() updateBatchPostDto: UpdateBatchPostDto) {
-    return this.batchPostsService.update(+id, updateBatchPostDto)
+  @Patch('/:batchUid/posts/:postUid')
+  @UseInterceptors(FilesInterceptor('files', 10)) // 파일 필드 'files'에서 최대 10개의 파일 업로드
+  async update(
+    @Request() req,
+    @Param('batchUid') batchUid: string,
+    @Param('postUid') postUid: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() updateBatchPostDto: UpdateBatchPostDto,
+  ) {
+    const data = await this.batchPostsService.update(req.user.uid, batchUid, postUid, files, updateBatchPostDto)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.UPDATE,
+      data,
+    }
   }
+  /**
+   * 기수 게시글 삭제
+   * @param batchUid
+   * @param postUid
+   * @returns
+   */
+  @Delete('/:batchUid/posts/:postUid')
+  async remove(@Request() req, @Param('batchUid') batchUid: string, @Param('postUid') postUid: string) {
+    const data = await this.batchPostsService.remove(req.user.uid, batchUid, postUid)
 
-  @Delete(':id')
-  remove(@Param() id: string) {
-    return this.batchPostsService.remove(+id)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.DELETE,
+      data,
+    }
   }
 
   /**

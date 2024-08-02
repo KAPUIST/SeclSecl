@@ -12,12 +12,16 @@ import { CreateBatchCommentParamsDTO } from './dto/create-batch-comment-params.d
 import { CreateBatchCommentDTO } from './dto/create-batch-comment.dto'
 import { BatchPost } from './entities/batch-post.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { DataSource, Repository } from 'typeorm'
+import { DataSource, EntityManager, Repository } from 'typeorm'
 import _ from 'lodash'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { UserLesson } from '../users/entities/user-lessons.entity'
 import { BatchPostComment } from './entities/batch-post-comments.entity'
 import { CreateBatchCommentRO } from './ro/create-batch-comment.ro'
+import { GetBandCommentParamsDTO } from '../band/dto/get-band-comment-params.dto'
+import { S3Service } from '../../common/s3/s3.service'
+import { PostImage } from './entities/post-image.entity'
+import { Batch } from '../batches/entities/batch.entity'
 import { GetBatchCommentRO } from './ro/get-batch-comment.ro'
 import { UpdateBatchCommentParamsDTO } from './dto/update-batch-comment-params.dto'
 import { UpdateBatchCommentDTO } from './dto/update-batch-comment.dto'
@@ -44,106 +48,232 @@ export class BatchPostsService {
     private readonly batchPostCommentRepository: Repository<BatchPostComment>,
     @InjectRepository(UserLesson)
     private readonly userLessonRepository: Repository<UserLesson>,
-    private dataSource: DataSource,
+    @InjectRepository(PostImage)
+    private readonly postImageRepository: Repository<PostImage>,
+    @InjectRepository(Batch)
+    private readonly batchRepository: Repository<Batch>,
+
+    private readonly s3Service: S3Service,
+    private readonly dataSource: DataSource,
   ) {}
-
-  create(uid, batchId, createBatchPostDto: CreateBatchPostDto) {
-    const { ...postImfo } = createBatchPostDto
-
-    return postImfo
-  }
-
-  findAll() {
-    return `This action returns all batchPosts`
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} batchPost`
-  }
-
-  update(id: number, updateBatchPostDto: UpdateBatchPostDto) {
-    return `This action updates a #${id} batchPost`
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} batchPost`
-  }
-  // 기수별 커뮤니티 게시글 좋아요 로직
-  async likeBatchPost(userUid: string, params: LikeBatchPostParamsDTO): Promise<LikeBatchPostRO> {
-    return this.dataSource.transaction(async (manager) => {
-      const uid = params.postUid
-      const batchPost = await manager.findOne(BatchPost, { where: { uid } })
-      // 게시글이 존재하지 않을 시 에러처리
-      if (_.isNil(batchPost)) {
-        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_POST.NOT_FOUND_COMMENT)
-      }
-      // 유저가 기수 멤버가 아닐 시 에러 처리
-      const batchUid = batchPost.batchUid
-      const isMember = await manager.findOne(UserLesson, { where: { batchUid, userUid } })
-      if (_.isNil(isMember)) {
-        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_POST.NOT_FOUND_USER)
-      }
-      // 이미 좋아요 누른 게시물일 시 에러 처리
-      const isLike = await manager.findOne(BatchLike, { where: { batchPostUid: uid, userUid } })
-      if (isLike) {
-        throw new ConflictException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.BAD_REQUEST)
-      }
+  // 기수 커뮤니티 생성
+  async create(uid: string, batchUid: string, files: Express.Multer.File[], createBatchPostDto: CreateBatchPostDto) {
+    return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
+      const uploadedFiles: { location: string; key: string }[] = []
       try {
-        await manager.save(BatchLike, { batchPostUid: uid, userUid })
-        const newCount = batchPost.likeCount + 1
-        await manager.update(BatchPost, { uid }, { likeCount: newCount })
-        return {
-          uid,
-          userUid,
+        //유저 권한 확인
+        await this.checkUserPermission(uid)
+
+        const newBatchPost = await transactionalEntityManager.create(BatchPost, {
+          ...createBatchPostDto,
+          batchUid,
+          userUid: uid,
+        })
+
+        const savedBatchPost = await transactionalEntityManager.save(BatchPost, newBatchPost)
+        const imageEntities = []
+        for (const file of files) {
+          const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
+          const imageEntity = this.postImageRepository.create({
+            postImage: location, // 파일 위치 URL
+            field: file.originalname, // 파일 원본 이름
+            postUid: savedBatchPost.uid,
+          })
+          imageEntities.push(imageEntity)
+          uploadedFiles.push({ location, key })
         }
-      } catch (err) {
-        throw new InternalServerErrorException(
-          MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_POST.TRANSACTION_ERROR,
-        )
+
+        const postImages = await transactionalEntityManager.save(PostImage, imageEntities)
+
+        postImages.forEach((image) => {
+          delete image.deletedAt
+        })
+
+        delete savedBatchPost.deletedAt
+
+        return [savedBatchPost, postImages]
+      } catch (error) {
+        // 업로드된 파일 삭제
+        for (const file of uploadedFiles) {
+          await this.s3Service.deleteFile(file.key)
+        }
+        throw new InternalServerErrorException('기수 커뮤니티 생성에 실패했습니다.')
+      }
+    })
+  }
+  //기수 커뮤니티 전체 조회
+  async findAll(uid: string, batchUid: string) {
+    //유저 권한 확인
+    await this.checkUserPermission(uid)
+    //기수가 존재하나 확인
+    await this.verifyBatchExistence(batchUid)
+
+    const data = await this.batchPostRepository.find({ where: { batchUid }, relations: ['postImages'] })
+
+    // deletedAt 필드 삭제
+    data.forEach((post) => {
+      delete post.deletedAt
+      post.postImages.forEach((image) => {
+        delete image.deletedAt
+      })
+    })
+    return data
+  }
+
+  async findOne(uid: string, batchUid: string, postUid: string) {
+    //유저 권한 확인
+    await this.checkUserPermission(uid)
+    //기수가 존재하나 확인
+    await this.verifyBatchExistence(batchUid)
+
+    const existingBatchPost = await this.batchPostRepository.find({
+      where: { uid: postUid },
+      relations: ['postImages'],
+    })
+    if (!(existingBatchPost.length > 0)) {
+      throw new NotFoundException('게시물을 찾을 수 없습니다.')
+    }
+
+    // deletedAt 필드 삭제
+    existingBatchPost.forEach((post) => {
+      delete post.deletedAt
+      post.postImages.forEach((image) => {
+        delete image.deletedAt
+      })
+    })
+
+    return existingBatchPost
+  }
+
+  async update(
+    uid: string,
+    batchUid: string,
+    postUid: string,
+    files: Express.Multer.File[],
+    updateBatchPostDto: UpdateBatchPostDto,
+  ) {
+    return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
+      const uploadedFiles: { location: string; key: string }[] = []
+      const oldFiles: string[] = []
+
+      try {
+        //유저 권한 확인
+        await this.checkUserPermission(uid)
+        //기수가 존재하나 확인
+        await this.verifyBatchExistence(batchUid)
+
+        const existingBatchPost = await transactionalEntityManager.findOne(BatchPost, {
+          where: { uid: postUid },
+          relations: ['postImages'],
+        })
+        if (!existingBatchPost) {
+          throw new NotFoundException('게시물을 찾을 수 없습니다.')
+        }
+
+        const { ...postInfo } = updateBatchPostDto
+
+        if (existingBatchPost.postImages && existingBatchPost.postImages.length > 0) {
+          for (const image of existingBatchPost.postImages) {
+            oldFiles.push(image.postImage)
+            await this.s3Service.deleteFile(image.postImage.split('/').pop()) // 파일 이름 추출하여 삭제
+          }
+          await transactionalEntityManager.delete(PostImage, existingBatchPost.postImages)
+        }
+        // 새로운 이미지 업로드
+        const fileEntities = []
+        for (const file of files) {
+          const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
+          const fileEntity = this.postImageRepository.create({
+            postImage: location, // 파일 위치 URL
+            field: file.originalname, // 파일 원본 이름
+            postUid,
+          })
+          fileEntities.push(fileEntity)
+          uploadedFiles.push({ location, key })
+        }
+
+        Object.assign(existingBatchPost, postInfo)
+
+        const data = await transactionalEntityManager.save(BatchPost, existingBatchPost)
+
+        const lessonNote = await transactionalEntityManager.save(PostImage, fileEntities)
+
+        lessonNote.forEach((note) => {
+          delete note.deletedAt
+        })
+
+        delete data.deletedAt
+
+        return data
+      } catch (error) {
+        console.log('error', error)
+        // 업로드된 파일 삭제
+        for (const file of uploadedFiles) {
+          await this.s3Service.deleteFile(file.key)
+        }
+        throw new InternalServerErrorException('기수 커뮤니티 수정에 실패했습니다.')
       }
     })
   }
 
-  // 기수별 커뮤니티 게시글 좋아요 취소 로직
-  async UnlikeBatchPost(userUid: string, params: UnlikeBatchPostParamsDTO): Promise<UnlikeBatchPostRO> {
-    return this.dataSource.transaction(async (manager) => {
-      const uid = params.postUid
-      const batchPost = await manager.findOne(BatchPost, { where: { uid } })
-      // 게시글이 존재하지 않을 시 에러처리
-      if (_.isNil(batchPost)) {
-        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.NOT_FOUND_COMMENT)
-      }
-      // 유저가 기수 멤버가 아닐 시 에러 처리
-      const batchUid = batchPost.batchUid
-      const isMember = await manager.findOne(UserLesson, { where: { batchUid, userUid } })
-      if (_.isNil(isMember)) {
-        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.NOT_FOUND_USER)
-      }
-      // 좋아요 누르지 않은 게시물일 시 에러 처리
-      const isLike = await manager.findOne(BatchLike, { where: { batchPostUid: uid, userUid } })
-      if (_.isNil(isLike)) {
-        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.NOT_FOUND_Like)
-      }
-      // 좋아요 수가 0일때 에러 처리
-      if (batchPost.likeCount < 1) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.BAD_REQUEST)
-      }
+  async remove(uid: string, batchUid: string, postUid: string) {
+    return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       try {
-        await manager.delete(BatchLike, { batchPostUid: uid, userUid })
-        const newCount = batchPost.likeCount - 1
-        await manager.update(BatchPost, { uid }, { likeCount: newCount })
-        return {
-          uid,
-          userUid,
+        //유저 권한 확인
+        await this.checkUserPermission(uid)
+        //기수가 존재하나 확인
+        await this.verifyBatchExistence(batchUid)
+
+        const existingBatchPost = await transactionalEntityManager.findOne(BatchPost, {
+          where: { uid: postUid },
+          relations: ['postImages'],
+        })
+        if (!existingBatchPost) {
+          throw new NotFoundException('게시물을 찾을 수 없습니다.')
         }
-      } catch (err) {
-        throw new InternalServerErrorException(
-          MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.TRANSACTION_ERROR,
-        )
+        const deleteBatch = await transactionalEntityManager.softRemove(BatchPost, existingBatchPost)
+
+        const postImages = existingBatchPost.postImages
+
+        if (postImages && postImages.length > 0) {
+          await transactionalEntityManager.softRemove(PostImage, postImages)
+        }
+
+        return deleteBatch
+      } catch (error) {
+        if (error instanceof NotFoundException) {
+          throw error
+        } else {
+          throw new InternalServerErrorException('기수 커뮤니티 삭제 중 오류가 발생했습니다.')
+        }
       }
     })
   }
-
+  async getBatchComment(userUid: string, params: GetBatchCommentParamsDTO): Promise<GetBatchCommentRO[]> {
+    const batchPostUid = params.postUid
+    // 게시물이 존재하지 않을 시 에러처리
+    const batchPost = await this.batchPostRepository.findOne({ where: { uid: batchPostUid } })
+    if (_.isNil(batchPost)) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.CREATE_BATCH_COMMENT.NOT_FOUND_POST)
+    }
+    // 유저가 기수 멤버가 아닐 시 에러 처리
+    const batchUid = batchPost.batchUid
+    const isMember = await this.userLessonRepository.findOne({ where: { batchUid, userUid } })
+    if (_.isNil(isMember)) {
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.CREATE_BATCH_COMMENT.NOT_FOUND_USER)
+    }
+    const batchCommentList = await this.batchPostCommentRepository.find({ where: { batchPostUid } })
+    return batchCommentList.map((comment) => ({
+      uid: comment.uid,
+      userUid,
+      batchPostUid,
+      parentCommentUid: comment.parentCommentUid,
+      content: comment.content,
+      likeCount: comment.likeCount,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+    }))
+  }
   // 기수별 커뮤니티 댓글 작성 로직
   async createBatchComment(
     userUid: string,
@@ -173,32 +303,6 @@ export class BatchPostsService {
       content: createBatchCommentDTO.content,
       parentCommentUid: createBatchCommentDTO.parentCommentUid,
     }
-  }
-  // 기수별 커뮤니티 댓글 조회 로직
-  async getBatchComment(userUid: string, params: GetBatchCommentParamsDTO): Promise<GetBatchCommentRO[]> {
-    const batchPostUid = params.postUid
-    // 게시물이 존재하지 않을 시 에러처리
-    const batchPost = await this.batchPostRepository.findOne({ where: { uid: batchPostUid } })
-    if (_.isNil(batchPost)) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.CREATE_BATCH_COMMENT.NOT_FOUND_POST)
-    }
-    // 유저가 기수 멤버가 아닐 시 에러 처리
-    const batchUid = batchPost.batchUid
-    const isMember = await this.userLessonRepository.findOne({ where: { batchUid, userUid } })
-    if (_.isNil(isMember)) {
-      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.CREATE_BATCH_COMMENT.NOT_FOUND_USER)
-    }
-    const batchCommentList = await this.batchPostCommentRepository.find({ where: { batchPostUid } })
-    return batchCommentList.map((comment) => ({
-      uid: comment.uid,
-      userUid,
-      batchPostUid,
-      parentCommentUid: comment.parentCommentUid,
-      content: comment.content,
-      likeCount: comment.likeCount,
-      createdAt: comment.createdAt,
-      updatedAt: comment.updatedAt,
-    }))
   }
   // 기수별 커뮤니티 댓글 수정 로직
   async updateBatchComment(
@@ -332,5 +436,95 @@ export class BatchPostsService {
         )
       }
     })
+  }
+  // 기수별 커뮤니티 게시글 좋아요 로직
+  async likeBatchPost(userUid: string, params: LikeBatchPostParamsDTO): Promise<LikeBatchPostRO> {
+    return this.dataSource.transaction(async (manager) => {
+      const uid = params.postUid
+      const batchPost = await manager.findOne(BatchPost, { where: { uid } })
+      // 게시글이 존재하지 않을 시 에러처리
+      if (_.isNil(batchPost)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_POST.NOT_FOUND_COMMENT)
+      }
+      // 유저가 기수 멤버가 아닐 시 에러 처리
+      const batchUid = batchPost.batchUid
+      const isMember = await manager.findOne(UserLesson, { where: { batchUid, userUid } })
+      if (_.isNil(isMember)) {
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_POST.NOT_FOUND_USER)
+      }
+      // 이미 좋아요 누른 게시물일 시 에러 처리
+      const isLike = await manager.findOne(BatchLike, { where: { batchPostUid: uid, userUid } })
+      if (isLike) {
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.BAD_REQUEST)
+      }
+      try {
+        await manager.save(BatchLike, { batchPostUid: uid, userUid })
+        const newCount = batchPost.likeCount + 1
+        await manager.update(BatchPost, { uid }, { likeCount: newCount })
+        return {
+          uid,
+          userUid,
+        }
+      } catch (err) {
+        throw new InternalServerErrorException(
+          MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.LIKE_BATCH_POST.TRANSACTION_ERROR,
+        )
+      }
+    })
+  }
+  // 기수별 커뮤니티 게시글 좋아요 취소 로직
+  async UnlikeBatchPost(userUid: string, params: UnlikeBatchPostParamsDTO): Promise<UnlikeBatchPostRO> {
+    return this.dataSource.transaction(async (manager) => {
+      const uid = params.postUid
+      const batchPost = await manager.findOne(BatchPost, { where: { uid } })
+      // 게시글이 존재하지 않을 시 에러처리
+      if (_.isNil(batchPost)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.NOT_FOUND_COMMENT)
+      }
+      // 유저가 기수 멤버가 아닐 시 에러 처리
+      const batchUid = batchPost.batchUid
+      const isMember = await manager.findOne(UserLesson, { where: { batchUid, userUid } })
+      if (_.isNil(isMember)) {
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.NOT_FOUND_USER)
+      }
+      // 좋아요 누르지 않은 게시물일 시 에러 처리
+      const isLike = await manager.findOne(BatchLike, { where: { batchPostUid: uid, userUid } })
+      if (_.isNil(isLike)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.NOT_FOUND_Like)
+      }
+      // 좋아요 수가 0일때 에러 처리
+      if (batchPost.likeCount < 1) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.BAD_REQUEST)
+      }
+      try {
+        await manager.delete(BatchLike, { batchPostUid: uid, userUid })
+        const newCount = batchPost.likeCount - 1
+        await manager.update(BatchPost, { uid }, { likeCount: newCount })
+        return {
+          uid,
+          userUid,
+        }
+      } catch (err) {
+        throw new InternalServerErrorException(
+          MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.UNLIKE_BATCH_POST.TRANSACTION_ERROR,
+        )
+      }
+    })
+  }
+
+  private async checkUserPermission(uid: string) {
+    const userAuthorization = await this.userLessonRepository.findOne({ where: { userUid: uid } })
+
+    if (!userAuthorization) {
+      throw new NotFoundException('권한이 있는 유저가 아닙니다.')
+    }
+  }
+
+  private async verifyBatchExistence(batchUid: string) {
+    const existingBatch = await this.batchRepository.findOne({ where: { uid: batchUid } })
+
+    if (!existingBatch) {
+      throw new NotFoundException('기수를 찾을 수 없습니다.')
+    }
   }
 }
