@@ -59,6 +59,10 @@ jobs:
           echo "SENDBIRD_API_TOKEN=${{secrets.SENDBIRD_API_TOKEN}}" >> .env
           echo "SENDBIRD_APP_ID=${{secrets.SENDBIRD_APP_ID}}" >> .env
           echo "BASE_URL=${{secrets.BASE_URL}}" >> .env
+          echo "SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}}" >> .env
+          echo "SENTRY_DSN=${{secrets.SENTRY_DSN}}" >> .env
+      - name: Install Sentry CLI
+        run: npm install -g @sentry/cli
 
       - name: Run build
         run: npm run build
