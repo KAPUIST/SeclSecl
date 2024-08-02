@@ -23,7 +23,7 @@ import { LessonOpenStatus } from '../../common/lessons/types/lessons-type'
 import { validateDto } from '../../common/utils/validator-dto'
 import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { SalesResponseDto } from './dtos/sales-response-dto'
+
 import { CP_MESSAGE_CONSTANT } from '../../common/messages/cp.message'
 
 @ApiTags('레슨 관리')
@@ -154,6 +154,22 @@ export class LessonsController {
     return {
       statusCode: HttpStatus.OK,
       message: '레슨 삭제 성공',
+    }
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('/:lessonId/batch/:batchId/students')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '배치별 수강생 조회' })
+  @ApiResponse({ status: 200, description: '수강생 조회 성공' })
+  @ApiResponse({ status: 404, description: '레슨 또는 배치를 찾을 수 없습니다.' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  async getStudentsByBatch(@Request() req, @Param('lessonId') lessonId: string, @Param('batchId') batchId: string) {
+    const cpUid = req.user.uid
+    const students = await this.lessonsService.findStudentsByBatch({ cpUid, lessonId, batchId })
+    return {
+      statusCode: HttpStatus.OK,
+      message: '수강생 조회 성공',
+      data: students,
     }
   }
 

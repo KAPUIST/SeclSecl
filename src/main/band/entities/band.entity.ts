@@ -1,7 +1,6 @@
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -46,7 +45,7 @@ export class Band {
    * "channel_url": "sendbird_group_channel_201727584_ed188fe7ce7024e8db5623bf13f640aa0f22983c"
    */
   @IsString()
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   chatUrl: string
 
   @CreateDateColumn()
@@ -54,9 +53,6 @@ export class Band {
 
   @UpdateDateColumn()
   updatedAt: Date
-
-  @DeleteDateColumn()
-  deletedAt: Date
 
   @OneToMany(() => BandMember, (bandMember) => bandMember.band)
   bandMembers: BandMember[]

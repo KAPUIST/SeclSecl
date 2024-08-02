@@ -1,7 +1,6 @@
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -58,20 +57,17 @@ export class BandPost {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @DeleteDateColumn()
-  deletedAt: Date
-
   @OneToMany(() => BandPostComment, (bandPostComment) => bandPostComment.bandPost)
   bandPostComments: BandPostComment[]
 
   @OneToMany(() => BandLike, (bandLike) => bandLike.bandPost)
   bandLikes: BandLike[]
 
-  @ManyToOne(() => Band, (band) => band.bandPosts)
+  @ManyToOne(() => Band, (band) => band.bandPosts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'band_uid' })
   band: Band
 
-  @ManyToOne(() => BandMember, (bandMember) => bandMember.bandPosts)
+  @ManyToOne(() => BandMember, (bandMember) => bandMember.bandPosts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'band_member_uid' })
   bandMember: BandMember
 }
