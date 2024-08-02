@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { IsString, IsUUID } from 'class-validator'
 
 export class UpdateBandDetailRO {
-  @ApiProperty({ description: '밴드 Uid' })
+  @ApiProperty({ description: '수정된 밴드 Uid' })
   @IsUUID()
   uid: string
 
