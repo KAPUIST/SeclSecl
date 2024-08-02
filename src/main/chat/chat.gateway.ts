@@ -1,4 +1,4 @@
-import { Logger, UseGuards, Request, UnauthorizedException } from '@nestjs/common'
+import { Logger } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway, WebSocketServer, MessageBody, ConnectedSocket } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 import { WsAuthGuard } from './chat.jwt.guard'
@@ -57,14 +57,14 @@ export class ChatGateway {
       console.log('cpId:', data.cpId)
       console.log('userId:', data.userId)
 
-      if (data.cpId) {
-        const cpId = data.cpId
-        const userId = loginId
-        this.logger.log('joinRoom 이벤트 수신 - 사용자:', JSON.stringify({ cpId, userId }))
-        chatRoom = await this.chatService.findCreateChatRoom(cpId, userId)
-      } else if (data.userId) {
+      if (!data.cpId && data.userId ) {
         const cpId = loginId
         const userId = data.userId
+        this.logger.log('joinRoom 이벤트 수신 - 사용자:', JSON.stringify({ cpId, userId }))
+        chatRoom = await this.chatService.findCreateChatRoom(cpId, userId)
+      } else if (!data.userId && data.cpId) {
+        const cpId = data.cpId
+        const userId = loginId
         this.logger.log('joinRoom 이벤트 수신 - 사용자:', JSON.stringify({ cpId, userId }))
         chatRoom = await this.chatService.findCreateChatRoom(cpId, userId)
       } else {

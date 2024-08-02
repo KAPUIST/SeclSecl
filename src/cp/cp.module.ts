@@ -7,6 +7,6 @@ import { CpLessonsModule } from './lessons/cp-lessons.module'
   imports: [CpAuthModule, CpLessonsModule],
   controllers: [],
   providers: [],
-  exports: [],
+  exports: [CpAuthModule],
 })
 export class CpModule {}

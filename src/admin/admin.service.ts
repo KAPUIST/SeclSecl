@@ -18,7 +18,7 @@ export class AdminService {
     private readonly connection: Connection,
   ) {}
 
-  //가입 신청 리스트 조회
+  //cp 신청 리스트 조회
   async getCpList(): Promise<Partial<Cp>[]> {
     const cps = await this.cpRepository.find({
       where: { isVerified: false },
@@ -95,7 +95,7 @@ export class AdminService {
     })
   }
 
-  //cp 반려
+  //수업 반려
   async rejectLesson(cpId: string, lessonId: string) {
     const lesson = await this.lessonRepository.findOne({ where: { cp_uid: cpId, uid: lessonId } })
     if (!lesson) {

@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { AdminAuthService } from './auth.service'
 import { AdminSignInDto } from './dto/sign-in.dto'
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 
 @ApiTags('어드민 인증')
 @Controller({ host: 'admin.localhost', path: 'auth' })
@@ -26,9 +27,11 @@ export class AuthController {
     }
   }
 
+
   /**
    * 로그아웃
-   * @returns
+   * @param refreshToken 
+   * @returns 
    */
   @ApiBearerAuth()
   @Post('/sign-out')
@@ -56,24 +59,4 @@ export class AuthController {
     }
   }
 
-  // /**
-  //  * 리프레시 토큰 재발급
-  //  * @param body
-  //  * @returns
-  //  */
-  // @Post('refreshToken')
-  // async refreshTokens(@Body() body: {refreshToken:string}) {
-  //   console.log('이거야 이거:',body.refreshToken)
-  //   return await this.adminAuthService.refreshTokens(body.refreshToken)
-  // }
-
-  //   /**
-  //    * 로그아웃
-  //    * @param refreshToken
-  //    * @returns
-  //    */
-  //   @Post('logout')
-  //   async logout(@Body('refreshToken') refreshToken: string) {
-  //     return await this.adminAuthService.logout(refreshToken)
-  //   }
 }

@@ -57,6 +57,7 @@ export class AdminAuthService {
   async signOut(refreshToken: string) {
     try {
       const payload = this.tokenService.verifyToken(refreshToken, 'admin')
+      console.log('확인@@@@@:', payload)
       const storedToken = await this.adminRefreshTokenRepository.findOne({
         where: { admin: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
       })

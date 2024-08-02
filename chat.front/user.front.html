@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Chat</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      #createRoomSection,
+      #chatRoomSection {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+      input[type='text'] {
+        width: calc(100% - 22px);
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #chat {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        height: 300px;
+        overflow-y: scroll;
+        padding: 10px;
+        background-color: #fff;
+      }
+      #chat .message {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 5px 0;
+        max-width: 80%;
+      }
+      #chat .message.me {
+        background-color: #d1e7dd;
+        margin-left: auto;
+        text-align: right;
+      }
+      #chat .message.other {
+        background-color: #f8d7da;
+      }
+      .message .sender {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>User Chat</h1>
+    <div id="createRoomSection">
+      <input id="cpId" type="text" placeholder="Enter CP ID" />
+      <button onclick="createRoom()">Create Room</button>
+    </div>
+    <div id="chatRoomSection" style="display: none">
+      <h2>Chat Room</h2>
+      <div id="chat"></div>
+      <input id="message" type="text" placeholder="Enter message" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+      const token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJiMjkxZmIzNi1lZDcwLTRkZjEtYWE1NC1mYzQ3NWI5YzA3MjYiLCJlbWFpbCI6InllZXdvb29vb25AZ21haWwuY29tIiwidHlwZSI6Im1haW4iLCJpYXQiOjE3MjI1NjAwMTQsImV4cCI6MTcyMjU2NzIxNH0.tXvACT-FCDfVde6JrKUlXL-m9hZH9teB4MZUtI0WjUQ'
+      const decodedToken = jwt_decode(token)
+      const userId = decodedToken.uid
+      const userName = 'User'
+      let chatRoomId
+      const socket = io('ws://localhost:3000/chatting', {
+        query: { token },
+      })
+
+      socket.on('connect', () => {
+        console.log('User WebSocket connection opened')
+      })
+
+      socket.on('error', (error) => {
+        console.error('WebSocket error:', error)
+      })
+
+      socket.on('disconnect', (event) => {
+        console.log('WebSocket connection closed', event)
+      })
+
+      socket.on('joinedRoom', (roomId) => {
+        chatRoomId = roomId
+        console.log('Joined room with ID:', chatRoomId)
+        showChatRoom()
+        loadPreviousMessages()
+      })
+
+      socket.on('receiveMessage', (message) => {
+        addMessageToChat(message)
+      })
+
+      function createRoom() {
+        const cpId = document.getElementById('cpId').value
+        socket.emit('joinRoom', { cpId })
+      }
+
+      function sendMessage() {
+        const message = document.getElementById('message').value
+        socket.emit('sendMessage', { chatRoomId, content: message, senderName: userName })
+        document.getElementById('message').value = ''
+      }
+
+      function showChatRoom() {
+        document.getElementById('createRoomSection').style.display = 'none'
+        document.getElementById('chatRoomSection').style.display = 'block'
+      }
+
+      async function loadPreviousMessages() {
+        console.log('Loading previous messages for chatRoomId', chatRoomId)
+        try {
+          const response = await fetch(`http://localhost:3000/api/chat/${chatRoomId}/messages`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          })
+
+          console.log('Response:', response)
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+
+          const messages = await response.json()
+          console.log('Messages:', messages)
+          messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).forEach(addMessageToChat)
+          scrollToBottom()
+        } catch (error) {
+          console.error('Failed to load previous messages:', error)
+        }
+      }
+
+      function addMessageToChat(message) {
+        const messageElement = document.createElement('div')
+        messageElement.className = 'message ' + (message.sender === userId ? 'me' : 'other')
+
+        const senderElement = document.createElement('div')
+        senderElement.className = 'sender'
+        senderElement.textContent = message.senderName || 'Unknown'
+
+        const contentElement = document.createElement('div')
+        contentElement.textContent = message.content
+
+        messageElement.appendChild(senderElement)
+        messageElement.appendChild(contentElement)
+
+        document.getElementById('chat').appendChild(messageElement)
+        scrollToBottom()
+      }
+
+      function scrollToBottom() {
+        const chat = document.getElementById('chat')
+        chat.scrollTop = chat.scrollHeight
+      }
+    </script>
+  </body>
+</html>
