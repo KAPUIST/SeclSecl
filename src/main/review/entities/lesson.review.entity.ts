@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator'
+import { IsString } from 'class-validator'
 import {
   Column,
   CreateDateColumn,
@@ -6,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
@@ -13,6 +14,7 @@ import { Lesson } from '../../../common/lessons/entities/lessons.entity'
 import { Batch } from '../../batches/entities/batch.entity'
 import { User } from '../../users/entities/user.entity'
 import { Rate } from '../type/lesson.review.rate'
+import { LessonReviewComments } from '../../../common/lessons/entities/lesson-review-comment.entity'
 
 @Entity('lesson_reviews')
 export class LessonReview {
@@ -46,4 +48,10 @@ export class LessonReview {
   @ManyToOne(() => Batch, (batch) => batch.reviews)
   @JoinColumn({ name: 'batchUid' })
   batch: Batch
+
+  @OneToOne(() => LessonReviewComments, (lessonReviewComments) => lessonReviewComments.lessonReview, {
+    cascade: true,
+    nullable: true,
+  })
+  comment: LessonReviewComments
 }

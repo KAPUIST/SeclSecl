@@ -17,6 +17,7 @@ import { Payment } from '../../payments/entities/payments.entity'
 import { PaymentCart } from '../../payments/entities/payment-carts.entity'
 import { LessonBookmarks } from '../../../common/lessons/entities/lesson-bookmark.entity'
 import { LessonReview } from '../../review/entities/lesson.review.entity'
+import { BatchPostComment } from '../../batch-posts/entities/batch-post-comments.entity'
 
 @Entity({ name: 'users' })
 export class User {
@@ -64,4 +65,7 @@ export class User {
 
   @OneToMany(() => LessonReview, (lessonReview) => lessonReview.user)
   lessonReviews: LessonReview[]
+
+  @OneToMany(() => BatchPostComment, (batchPostComment) => batchPostComment.user)
+  batchPostComments: BatchPostComment[]
 }

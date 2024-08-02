@@ -210,6 +210,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         CONFLICT_LESSON: '이미 보유한 강의입니다.',
         BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
         AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
+        TRANSACTION_ERROR: '주문 생성 중 오류가 생겼습니다.',
       },
       GET_PAYMENT_LIST: {
         SUCCESS: '결제 목록 조회에 성공하였습니다.',
@@ -228,6 +229,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
         CONFLICT_CART: '이미 장바구니에 있는 수업입니다.',
         CONFLICT_LESSON: '이미 보유한 강의입니다.',
+        TRANSACTION_ERROR: '장바구니 추가 중 오류가 생겼습니다.',
       },
       GET_CART_LIST: {
         SUCCESS: '장바구니 목록 조회에 성공하였습니다.',
@@ -260,13 +262,15 @@ export const MAIN_MESSAGE_CONSTANT = {
       FIND_ME: '내 정보 조회에 성공했습니다.',
       UPDATE_USER: '내 정보 수정에 성공했습니다.',
       FIND_MY_LESSONS: '내 강의 목록 조회에 성공했습니다.',
+      FIND_MY_LESSON_DETAIL: '내 강의 상세 조회에 성공했습니다.',
     },
     SERVICE: {
       NOT_FOUND_USER: '유저를 찾을 수 없습니다.',
       NOT_MATCHED_CURRENT_PASSWORD: '현재 비밀번호와 일치하지 않습니다.',
-      NOT_MATCHED_CHANGE_CAPASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
+      NOT_MATCHED_CHANGE_PASSWORD: '변경하려는 비밀번호와 비밀번호 확인이 일치하지 않습니다.',
       EXISTED_NICKNAME: '중복되는 닉네임이 존재합니다.',
       NOT_FOUND_USER_LESSON: '수강중인 강의를 찾을 수 없습니다.',
+      NOT_FOUND_USER_LESSON_DETAIL: '해당 강의를 수강중이지 않습니다.',
     },
     FAVORITE: {
       ADD_FAVORITE: '강의를 찜했습니다.',
@@ -274,6 +278,11 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_FOUND_LESSON: '강의를 찾을수 없습니다.',
       FAILED: '강의 찜하기를 실패했습니다.',
       FIND_FAVORITE: '찜한목록 조회에 성공했습니다.',
+    },
+    COMMON: {
+      USER_LESSON_ENTITY: {
+        BATCH_UID: '기수 UID를 입력해 주세요',
+      },
     },
   },
   BATCH: {
@@ -301,6 +310,100 @@ export const MAIN_MESSAGE_CONSTANT = {
     SERVICE: {
       NOT_FIND_NOTICE: '기수 공지를 찾을 수 없습니다.',
       NOT_AUTHORIZED_NOTICE: '공지를 읽을 수 있는 권한이 없습니다.',
+    },
+  },
+  BATCH_POST: {
+    CONTROLLER: {
+      CREATE: '기수 커뮤니티 생성에 성공했습니다.',
+      FINDALL: '기수 커뮤니티 목록 찾기에 성공했습니다.',
+      UPDATE: '기수 커뮤니티 업데이트에 성공했습니다.',
+      DELETE: '기수 커뮤니티 삭제에 성공했습니다.',
+      LIKE_BATCH_POST: {
+        SUCCEED: '기수 커뮤니티 게시글 좋아요에 성공하였습니다.',
+      },
+      UNLIKE_BATCH_POST: {
+        SUCCEED: '기수 커뮤니티 게시글 좋아요 취소에 성공하였습니다.',
+      },
+      CREATE_BATCH_COMMENT: {
+        SUCCEED: '기수 커뮤니티 댓글 생성에 성공하였습니다.',
+      },
+      GET_BATCH_COMMENT: {
+        SUCCEED: '기수 커뮤니티 댓글 조회에 성공하였습니다.',
+      },
+      UPDATE_BATCH_COMMENT: {
+        SUCCEED: '기수 커뮤니티 댓글 수정에 성공하였습니다.',
+      },
+      DELETE_BATCH_COMMENT: {
+        SUCCEED: '기수 커뮤니티 댓글 삭제에 성공하였습니다.',
+      },
+      LIKE_BATCH_COMMENT: {
+        SUCCEED: '기수 커뮤니티 댓글 좋아요에 성공하였습니다.',
+      },
+      UNLIKE_BATCH_COMMENT: {
+        SUCCEED: '기수 커뮤니티 댓글 좋아요 취소에 성공하였습니다.',
+      },
+    },
+    SERVICE: {
+      LIKE_BATCH_POST: {
+        NOT_FOUND_USER: '기수 커뮤니티 멤버가 아닙니다.',
+        NOT_FOUND_COMMENT: '존재하지 않는 게시글입니다.',
+        CONFLICT: '이미 좋아요 누른 게시글입니다.',
+        TRANSACTION_ERROR: '게시글 좋아요 등록중 오류가 생겼습니다.',
+      },
+      UNLIKE_BATCH_POST: {
+        NOT_FOUND_USER: '기수 커뮤니티 멤버가 아닙니다.',
+        NOT_FOUND_COMMENT: '존재하지 않는 게시입니다.',
+        NOT_FOUND_Like: '좋아요 누르지 않은 밴드 게시글입니다.',
+        TRANSACTION_ERROR: '게시글 좋아요 등록중 오류가 생겼습니다.',
+        BAD_REQUEST: '좋아요 수는 0 이하로 내려갈 수 없습니다.',
+      },
+      CREATE_BATCH_COMMENT: {
+        NOT_FOUND_POST: '존재하지 않는 기수 커뮤니티입니다.',
+        NOT_FOUND_USER: '기수 멤버가 아닙니다.',
+      },
+      GET_BATCH_COMMENT: {
+        NOT_FOUND_POST: '존재하지 않는 기수 커뮤니티입니다.',
+        NOT_FOUND_USER: '기수 멤버가 아닙니다.',
+      },
+      UPDATE_BATCH_COMMENT: {
+        NOT_FOUND_COMMENT: '존재하지 않는 댓글 입니다.',
+        NOT_MATCHED: '댓글 작성자만 수정할 수 있습니다.',
+      },
+      DELETE_BATCH_COMMENT: {
+        NOT_FOUND_COMMENT: '존재하지 않는 댓글입니다.',
+        NOT_MATCHED: '댓글 작성자만 수정할 수 있습니다.',
+      },
+      LIKE_BATCH_COMMENT: {
+        NOT_FOUND_USER: '기수 커뮤니티 멤버가 아닙니다.',
+        NOT_FOUND_COMMENT: '존재하지 않는 댓글입니다.',
+        CONFLICT: '이미 좋아요 누른 댓글입니다.',
+        TRANSACTION_ERROR: '댓글 좋아요 등록중 오류가 생겼습니다.',
+      },
+      UNLIKE_BATCH_COMMENT: {
+        NOT_FOUND_USER: '기수 커뮤니티 멤버가 아닙니다.',
+        NOT_FOUND_COMMENT: '존재하지 않는 댓글입니다.',
+        NOT_FOUND_Like: '좋아요 누르지 않은 밴드 댓글입니다.',
+        TRANSACTION_ERROR: '댓글 좋아요 등록중 오류가 생겼습니다.',
+        BAD_REQUEST: '좋아요 수는 0 이하로 내려갈 수 없습니다.',
+      },
+    },
+    COMMON: {
+      BATCH_POST_ENTITY: {
+        UID: {
+          REQUIRED: '기수 커뮤니티 UID를 입력해 주세요',
+        },
+        BATCH_UID: {
+          REQUIRED: '기수 UID를 입력해 주세요',
+        },
+      },
+      BAND_POSTS_COMMENTS_ENTITY: {
+        UID: {
+          REQUIRED: '기수 커뮤니티 댓글 UID를 입력해 주세요',
+        },
+        CONTENT: {
+          REQUIRED: '기수 게시판 댓글 내용을 입력해 주세요',
+        },
+      },
     },
   },
 }

@@ -23,6 +23,8 @@ import { LessonOpenStatus } from '../../common/lessons/types/lessons-type'
 import { validateDto } from '../../common/utils/validator-dto'
 import { LessonResponseDto } from './dtos/lessons-response.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { SalesResponseDto } from './dtos/sales-response-dto'
+import { CP_MESSAGE_CONSTANT } from '../../common/messages/cp.message'
 
 @ApiTags('레슨 관리')
 @Controller({ host: 'cp.localhost', path: 'lessons' })
@@ -152,6 +154,21 @@ export class LessonsController {
     return {
       statusCode: HttpStatus.OK,
       message: '레슨 삭제 성공',
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:lessonId/reviews')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '리뷰 댓글 조회' })
+  @ApiResponse({ status: 200, description: '리뷰 조회 성공' })
+  async findReview(@Request() req, @Param('lessonId') lessonId: string) {
+    const cpUid = req.user.uid
+    const result = await this.lessonsService.findReviewByLessonId({ lessonId, cpUid })
+    return {
+      statusCode: HttpStatus.OK,
+      message: CP_MESSAGE_CONSTANT.LESSON.REVIEW.FIND_REVIEWS,
+      data: result,
     }
   }
 }

@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, ManyToOne } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  JoinColumn,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm'
 import { BatchNotice } from './batch-notice.entity'
 
 @Entity({ name: 'lesson_notes' })
@@ -14,6 +23,15 @@ export class LessonNote {
 
   @Column()
   noticeUid: string
+
+  @CreateDateColumn()
+  createdAt: Date
+
+  @UpdateDateColumn()
+  updatedAt: Date
+
+  @DeleteDateColumn()
+  deletedAt: Date
 
   @ManyToOne(() => BatchNotice, (notice) => notice.lessonNotes)
   @JoinColumn({ name: 'notice_uid' })
