@@ -170,12 +170,33 @@ export class PaymentsService {
     return await this.dataSource.transaction(async (manager) => {
       const apiSecretKey = this.configService.get<string>('API_SECRET_KEY')
       const encryptedApiSecretKey = 'Basic ' + Buffer.from(apiSecretKey + ':').toString('base64')
+      console.log(params.paymentsUid)
       const payment = await manager.findOne(Payment, { where: { uid: params.paymentsUid } })
+      // 결제 정보가 없을 때 에러처리
+      if (_.isNil(payment)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.NOT_FOUND_PAYMENT)
+      }
       const paymentKey = payment.paymentKey
-
       // 유저가 결제 테이블의 유저와 다를 때 에러처리
       if (userUid !== payment.userUid) {
         throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.NOT_MATCHED_USER)
+      }
+      const orderList = await manager.find(PaymentOrder, {
+        where: { orderId: payment.orderId },
+        relations: { batch: true },
+      })
+      // 해당 결제 정보와 관련된 주문 정보가 없을 시 에러 처리
+      if (_.isNil(orderList)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.NOT_FOUND)
+      }
+      // 수업 시작 하루 전까지만 환불 처리 가능
+      for (const order of orderList) {
+        const currentDate = new Date()
+        const refundLimitDate = order.batch.startDate
+        refundLimitDate.setDate(refundLimitDate.getDate() - 1)
+        if (currentDate > refundLimitDate) {
+          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.REFUND_TIME_EXPIRED)
+        }
       }
       // 환불 요청
       const response = await fetch(`https://api.tosspayments.com/v1/payments/${paymentKey}/cancel`, {
