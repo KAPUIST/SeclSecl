@@ -5,9 +5,6 @@ export class LessonRO {
   uid: string
 
   @ApiProperty()
-  cp_uid: string
-
-  @ApiProperty()
   title: string
 
   @ApiProperty()

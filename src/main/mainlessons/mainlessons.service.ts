@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { plainToInstance } from 'class-transformer'
 import { MainLessonResponseDto } from './dtos/mainlessons-response.dto'
-import { RecentLessonResponseDto } from './dtos/popularlesson-reponse.dto'
+
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
-import { MainLessonResponseRO } from './ro/main-lesson.ro'
 import { LessonRO } from './ro/lesson.ro'
+import { MainLessonResponseRO } from './ro/main-lesson.ro'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Injectable()
 export class MainLessonsService {
@@ -17,7 +18,6 @@ export class MainLessonsService {
   private mapLessonToRO(lesson: Lesson): LessonRO {
     return {
       uid: lesson.uid,
-      cp_uid: lesson.cp_uid,
       title: lesson.title,
       teacher: lesson.teacher,
       bio: lesson.bio,
@@ -48,34 +48,44 @@ export class MainLessonsService {
     }
   }
 
-  async getRecentLessons(): Promise<RecentLessonResponseDto[]> {
+  async getPopularLessons(): Promise<MainLessonResponseRO> {
     try {
-      const query = this.lessonsRepository
+      const popularLessons = await this.lessonsRepository
         .createQueryBuilder('lesson')
         .leftJoin('lesson.batches', 'batch')
         .leftJoin('batch.paymentDetails', 'payment_detail')
-        .select('lesson.uid', 'uid')
-        .addSelect('lesson.cp_uid', 'cp_uid')
-        .addSelect('lesson.title', 'title')
-        .addSelect('lesson.teacher', 'teacher')
-        .addSelect('lesson.bio', 'bio')
-        .addSelect('lesson.description', 'description')
-        .addSelect('lesson.price', 'price')
-        .addSelect('lesson.status', 'status')
-        .addSelect('lesson.location', 'location')
-        .addSelect('lesson.shuttle', 'shuttle')
-        .addSelect('lesson.createdAt', 'createdAt')
-        .addSelect('lesson.updatedAt', 'updatedAt')
-        .addSelect('COUNT(payment_detail.uid)', 'salesCount')
+        .select([
+          'lesson.uid as uid',
+          'lesson.title as title',
+          'lesson.teacher as teacher',
+          'lesson.bio as bio',
+          'lesson.description as description',
+          'lesson.price as price',
+          'lesson.status as status',
+          'lesson.location as location',
+          'lesson.shuttle as shuttle',
+          'lesson.createdAt as createdAt',
+          'lesson.updatedAt as updatedAt',
+        ])
+        .addSelect('COUNT(DISTINCT payment_detail.uid)', 'salesCount')
+        .where('lesson.is_verified = :status', { status: true })
         .groupBy('lesson.uid')
         .orderBy('salesCount', 'DESC')
+        .limit(10)
         .getRawMany()
 
-      const lessons = await query
-      return lessons.map((lesson) => plainToInstance(RecentLessonResponseDto, lesson))
+      const lessonROs: LessonRO[] = popularLessons.map((lesson: Lesson & { salesCount?: string }) => ({
+        ...this.mapLessonToRO(lesson),
+        salesCount: lesson['salesCount'] ? parseInt(lesson['salesCount'], 10) : 0,
+      }))
+
+      return {
+        lessons: lessonROs,
+        count: lessonROs.length,
+      }
     } catch (error) {
       console.error(error)
-      throw new InternalServerErrorException('인기 수업 조회에 실패 하였습니다.')
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.LESSON.FIND_POPULAR_LESSON_FAILED)
     }
   }
 

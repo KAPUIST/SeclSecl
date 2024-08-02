@@ -105,7 +105,7 @@ export class BatchNoticeService {
     const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonUid, cp_uid: uid } })
 
     const authorizedUser = await this.userLessonRepository.findOne({
-      where: { uid: lessonUid, userUid: uid, batchUid },
+      where: { userUid: uid, batchUid },
     })
 
     if (!authorizedUser && !authorizedCp) {
@@ -172,18 +172,20 @@ export class BatchNoticeService {
 
       Object.assign(existingBatchNotice, noticeInfo)
 
-      const data = await queryRunner.manager.save(BatchNotice, existingBatchNotice)
+      const updatedBatchNotice = await queryRunner.manager.save(BatchNotice, existingBatchNotice)
 
       const lessonNote = await queryRunner.manager.save(LessonNote, fileEntities)
+
+      updatedBatchNotice.lessonNotes = lessonNote
 
       lessonNote.forEach((note) => {
         delete note.deletedAt
       })
 
-      delete data.deletedAt
+      delete updatedBatchNotice.deletedAt
       await queryRunner.commitTransaction()
 
-      return data
+      return updatedBatchNotice
     } catch (error) {
       await queryRunner.rollbackTransaction()
 

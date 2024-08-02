@@ -30,6 +30,11 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
     },
   },
+  LESSON: {
+    FIND_ALL_LESSONS: '강의 전체 조회를 성공 했습니다.',
+    FIND_POPULAR_LESSONS: '인기강의 조회를 성공 했습니다.',
+    FIND_POPULAR_LESSON_FAILED: '인기 수업 목록 조회에 실패하였습니다.',
+  },
   BAND: {
     BAND_GROUP: {
       CREATE_BAND: {
@@ -302,7 +307,7 @@ export const MAIN_MESSAGE_CONSTANT = {
     SERVICE: {
       FIND: '강의를 찾을 수 없습니다.',
       NOT_EXISTING_BATCH: '존재하는 기수가 없습니다.',
-      NOT_AUTHORIZED_LESSON: '해당 기업은 강의에 대한 권한이 없습니다.',
+      NOT_AUTHORIZED_LESSON: '해당 강의에 대한 권한이 없습니다.',
       EXISTING_BATCH: '이미 있는 기수입니다.',
     },
   },
