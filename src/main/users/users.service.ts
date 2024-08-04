@@ -125,6 +125,8 @@ export class UsersService {
         sigungu: userInfo.sigungu,
         provider: isUserInfo.provider,
         role: isUserInfo.role,
+        createdAt: isUserInfo.createdAt,
+        updateddAt: isUserInfo.updatedAt,
       }
     })
   }

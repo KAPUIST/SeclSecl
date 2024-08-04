@@ -49,4 +49,12 @@ export class UpdateUserInfoRO {
   @ApiProperty({ description: '계정 역할' })
   @IsString()
   role: string
+
+  @ApiProperty({ description: '생성시간' })
+  @IsDate()
+  createdAt: Date
+
+  @ApiProperty({ description: '수정시간' })
+  @IsDate()
+  updateddAt: Date
 }
