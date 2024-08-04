@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsDate, IsNumber, IsString } from 'class-validator'
 
-export class CreateBatchRo {
+export class RemoveBatchRo {
   @ApiProperty({ description: '강의 UID' })
   @IsString()
   lessonUid: string
@@ -30,7 +30,7 @@ export class CreateBatchRo {
   @IsString()
   startTime: string
 
-  @ApiProperty({ description: '생성시간' })
+  @ApiProperty({ description: '삭제시간' })
   @IsDate()
-  createdAt: Date
+  deletedAt: Date
 }

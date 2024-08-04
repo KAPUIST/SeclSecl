@@ -313,6 +313,7 @@ export const MAIN_MESSAGE_CONSTANT = {
     COMMON: {
       BATCH__ENTITY: {
         LESSON_UID: '강의 UID를 입력해 주세요',
+        BATCH_UID: '기수 UID를 입력해 주세요',
       },
     },
   },

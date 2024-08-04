@@ -9,6 +9,14 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { User } from '../users/entities/user.entity'
 import { CreateBatchRo } from './ro/create-batch.ro'
 import { CreateBatchParamsDTO } from './dto/create-batch-params.dto'
+import { FindBatchParamsDTO } from './dto/find-batch-parms.dto'
+import { FindBatchRo } from './ro/find-batch.ro'
+import { FindOneBatchParamsDTO } from './dto/find-one-batch-parms.dto'
+import { FindOneBatchRo } from './ro/find-one-batch.ro'
+import { UpdateBatchParamsDTO } from './dto/update-batch-parms.dto'
+import { RemoveBatchParamsDTO } from './dto/remove-batch-parms.dto'
+import { RemoveBatchRo } from './ro/remove-batch.ro'
+import { UpdateBatchRo } from './ro/update-batch.ro'
 
 @Injectable()
 export class BatchesService {
@@ -53,51 +61,57 @@ export class BatchesService {
       startDate: createBatch.startDate,
       endDate: createBatch.endDate,
       startTime: createBatch.startTime,
+      createdAt: createBatch.createdAt,
     }
   }
 
-  async findAll(uid: string, lessonUid: string) {
+  async findAll(uid: string, params: FindBatchParamsDTO): Promise<FindBatchRo[]> {
     //기수를 조회할 수 있는 권한 확인
-    await this.checkAuthorization(uid, lessonUid)
+    await this.checkAuthorization(uid, params.lessonUid)
 
-    const batches = await this.batchRepository.find({ where: { lessonUid } })
-
+    const batches = await this.batchRepository.find({ where: { lessonUid: params.lessonUid } })
     if (batches.length === 0) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_EXISTING_BATCH)
     }
 
-    // deletedAt 필드 삭제
-    batches.forEach((batch) => {
-      delete batch.deletedAt
-    })
-
-    return batches
+    return batches.map((batch) => ({
+      batchNumber: batch.batchNumber,
+      lessonUid: batch.lessonUid,
+      recruitmentStart: batch.recruitmentStart,
+      recruitmentEnd: batch.recruitmentEnd,
+      startDate: batch.startDate,
+      endDate: batch.endDate,
+      startTime: batch.startTime,
+    }))
   }
 
-  async findOne(uid: string, lessonUid: string, batchUid: string) {
+  async findOne(uid: string, parms: FindOneBatchParamsDTO): Promise<FindOneBatchRo> {
     //기수를 조회할 수 있는 권한 확인
-    await this.checkAuthorization(uid, lessonUid)
+    await this.checkAuthorization(uid, parms.lessonUid)
 
-    const data = await this.findBatchOrThrow(lessonUid, batchUid)
+    const batch = await this.findBatchOrThrow(parms.lessonUid, parms.batchUid)
 
-    delete data.deletedAt
-
-    return data
+    return {
+      batchNumber: batch.batchNumber,
+      lessonUid: batch.lessonUid,
+      recruitmentStart: batch.recruitmentStart,
+      recruitmentEnd: batch.recruitmentEnd,
+      startDate: batch.startDate,
+      endDate: batch.endDate,
+      startTime: batch.startTime,
+    }
   }
 
-  async update(uid: string, lessonUid: string, batchUid: string, updateBatchDto: UpdateBatchDto) {
+  async update(uid: string, parms: UpdateBatchParamsDTO, updateBatchDto: UpdateBatchDto): Promise<UpdateBatchRo> {
     const { batchNumber, ...batchInfo } = updateBatchDto
 
     // 권한이 있는지 확인
-    await this.authorizedCp(uid, lessonUid)
+    await this.authorizedCp(uid, parms.lessonUid)
     // 기수가 존재하는지 확인
-    const existingBatch = await this.findBatchOrThrow(lessonUid, batchUid)
+    const existingBatch = await this.findBatchOrThrow(parms.lessonUid, parms.batchUid)
 
     // 수정하려는 기수 숫자가 이미 있는 기수인지 확인
-    await this.checkBatchDuplicate(lessonUid, batchNumber)
-
-    //deletedAt 제거
-    delete existingBatch.deletedAt
+    await this.checkBatchDuplicate(parms.lessonUid, batchNumber)
 
     // 기존 객체에 새 값을 할당
     Object.assign(existingBatch, batchInfo, { batchNumber })
@@ -105,18 +119,37 @@ export class BatchesService {
     // 변경 사항을 데이터베이스에 저장
     const updatedBatch = await this.batchRepository.save(existingBatch)
 
-    return updatedBatch
+    return {
+      batchNumber: updatedBatch.batchNumber,
+      lessonUid: updatedBatch.lessonUid,
+      recruitmentStart: updatedBatch.recruitmentStart,
+      recruitmentEnd: updatedBatch.recruitmentEnd,
+      startDate: updatedBatch.startDate,
+      endDate: updatedBatch.endDate,
+      startTime: updatedBatch.startTime,
+      createdAt: updatedBatch.createdAt,
+      updatedAt: updatedBatch.updatedAt,
+    }
   }
   // 기수 삭제
-  async remove(uid: string, lessonUid: string, batchUid: string) {
+  async remove(uid: string, parms: RemoveBatchParamsDTO): Promise<RemoveBatchRo> {
     // 권한이 있는지 확인
-    await this.authorizedCp(uid, lessonUid)
+    await this.authorizedCp(uid, parms.lessonUid)
     // 기수가 존재하는지 확인
-    const existingBatch = await this.findBatchOrThrow(lessonUid, batchUid)
+    const existingBatch = await this.findBatchOrThrow(parms.lessonUid, parms.batchUid)
 
     const deleteBatch = await this.batchRepository.softRemove(existingBatch)
 
-    return deleteBatch
+    return {
+      batchNumber: deleteBatch.batchNumber,
+      lessonUid: deleteBatch.lessonUid,
+      recruitmentStart: deleteBatch.recruitmentStart,
+      recruitmentEnd: deleteBatch.recruitmentEnd,
+      startDate: deleteBatch.startDate,
+      endDate: deleteBatch.endDate,
+      startTime: deleteBatch.startTime,
+      deletedAt: deleteBatch.deletedAt,
+    }
   }
 
   //기업이 해당 강의의 권한이 있는지 확인
