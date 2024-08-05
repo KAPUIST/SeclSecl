@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class UpdateBatchDto {
   @ApiProperty({ required: false })
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  batchNumber?: string
+  batchNumber?: number
 
   @ApiProperty({ required: false })
   @Type(() => Date)

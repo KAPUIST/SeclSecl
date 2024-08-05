@@ -5,6 +5,11 @@ import { UpdateBatchDto } from './dto/update-batch.dto'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { CreateBatchParamsDTO } from './dto/create-batch-params.dto'
+import { FindBatchParamsDTO } from './dto/find-batch-parms.dto'
+import { FindOneBatchParamsDTO } from './dto/find-one-batch-parms.dto'
+import { UpdateBatchParamsDTO } from './dto/update-batch-parms.dto'
+import { RemoveBatchParamsDTO } from './dto/remove-batch-parms.dto'
 
 @ApiTags('기수')
 @Controller({ host: 'localhost', path: 'lessons' })
@@ -20,8 +25,8 @@ export class BatchesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('/:lessonUid/batches')
-  async create(@Request() req, @Body() createBatchDto: CreateBatchDto, @Param('lessonUid') lessonUid: string) {
-    const data = await this.batchesService.create(req.user.uid, createBatchDto, lessonUid)
+  async create(@Request() req, @Body() createBatchDto: CreateBatchDto, @Param() params: CreateBatchParamsDTO) {
+    const data = await this.batchesService.create(req.user.uid, createBatchDto, params)
 
     return {
       statusCode: HttpStatus.OK,
@@ -37,8 +42,8 @@ export class BatchesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/:lessonUid/batches')
-  async findAll(@Request() req, @Param('lessonUid') lessonUid: string) {
-    const data = await this.batchesService.findAll(req.user.uid, lessonUid)
+  async findAll(@Request() req, @Param() params: FindBatchParamsDTO) {
+    const data = await this.batchesService.findAll(req.user.uid, params)
 
     return {
       statusCode: HttpStatus.OK,
@@ -56,8 +61,8 @@ export class BatchesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/:lessonUid/batches/:batchUid')
-  async findOne(@Request() req, @Param('lessonUid') lessonUid: string, @Param('batchUid') batchUid: string) {
-    const data = await this.batchesService.findOne(req.user.uid, lessonUid, batchUid)
+  async findOne(@Request() req, @Param() parms: FindOneBatchParamsDTO) {
+    const data = await this.batchesService.findOne(req.user.uid, parms)
 
     return {
       statusCode: HttpStatus.OK,
@@ -76,13 +81,8 @@ export class BatchesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch('/:lessonUid/batches/:batchUid')
-  async update(
-    @Request() req,
-    @Param('lessonUid') lessonUid: string,
-    @Param('batchUid') batchUid: string,
-    @Body() updateBatchDto: UpdateBatchDto,
-  ) {
-    const data = await this.batchesService.update(req.user.uid, lessonUid, batchUid, updateBatchDto)
+  async update(@Request() req, @Param() parms: UpdateBatchParamsDTO, @Body() updateBatchDto: UpdateBatchDto) {
+    const data = await this.batchesService.update(req.user.uid, parms, updateBatchDto)
     return {
       statusCode: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BATCH.CONTROLLER.UPDATE,
@@ -98,8 +98,8 @@ export class BatchesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete('/:lessonUid/batches/:batchUid')
-  async remove(@Request() req, @Param('lessonUid') lessonUid: string, @Param('batchUid') batchUid: string) {
-    const data = await this.batchesService.remove(req.user.uid, lessonUid, batchUid)
+  async remove(@Request() req, @Param() parms: RemoveBatchParamsDTO) {
+    const data = await this.batchesService.remove(req.user.uid, parms)
 
     return {
       statusCode: HttpStatus.OK,

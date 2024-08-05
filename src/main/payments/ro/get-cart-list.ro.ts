@@ -15,8 +15,8 @@ export class GetCartListRO {
   lessonUid: string
 
   @ApiProperty({ description: '기수' })
-  @IsString()
-  batchNumber: string
+  @IsNumber()
+  batchNumber: number
 
   @ApiProperty({ description: '기수 Uid' })
   @IsUUID()

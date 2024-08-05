@@ -310,6 +310,12 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_AUTHORIZED_LESSON: '해당 강의에 대한 권한이 없습니다.',
       EXISTING_BATCH: '이미 있는 기수입니다.',
     },
+    COMMON: {
+      BATCH__ENTITY: {
+        LESSON_UID: '강의 UID를 입력해 주세요',
+        BATCH_UID: '기수 UID를 입력해 주세요',
+      },
+    },
   },
   BATCH_NOTICE: {
     CONTROLLER: {
