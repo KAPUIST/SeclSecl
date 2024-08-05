@@ -5,7 +5,6 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { SignInDto } from './dto/sign-in.dto'
 import { CP_MESSAGE_CONSTANT } from '../../common/messages/cp.message'
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 
 @ApiTags('업체 AUTH')
 @Controller({ host: 'cp.localhost', path: 'auth' })
@@ -47,7 +46,6 @@ export class CpAuthController {
   @ApiResponse({ status: 400, description: '로그아웃 실패' })
   @Post('sign-out')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   async signOut(@Headers('authorization') refreshToken: string) {
     await this.cpService.signOut(refreshToken)
     return {
@@ -56,7 +54,6 @@ export class CpAuthController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '토큰 재발급' })
   @ApiResponse({ status: 200, description: '토큰 재발급에 성공했습니다.' })
   @ApiResponse({ status: 401, description: '유효하지 않은 토큰입니다.' })
