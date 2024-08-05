@@ -1,20 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UploadedFiles,
-  Request,
-  UseGuards,
-  UseInterceptors,
-  UnauthorizedException,
-  Get,
-  Param,
-  Patch,
-  Delete,
-} from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Request, UseGuards, Get, Patch } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { CompaniesService } from './companies.service'

@@ -1,7 +1,6 @@
-import { Controller, HttpCode, HttpStatus, UseGuards, Get, Query, Param } from '@nestjs/common'
+import { Controller, HttpCode, HttpStatus, Get, Query, Param } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { MainLessonsService } from './mainlessons.service'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MainLessonResponseDto } from './dtos/mainlessons-response.dto'
 
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
@@ -13,7 +12,6 @@ export class MainLessonsController {
   constructor(private readonly mainLessonsService: MainLessonsService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 레슨 조회' })
   @ApiResponse({ status: 200, description: '전체 레슨 조회 성공' })
@@ -29,7 +27,6 @@ export class MainLessonsController {
   }
 
   @Get('/popular')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '인기 레슨 조회' })
   @ApiResponse({ status: 200, description: '인기 레슨 조회 성공' })
@@ -46,7 +43,6 @@ export class MainLessonsController {
   }
 
   @Get('/search')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '레슨 검색' })
   @ApiResponse({ status: 200, description: '레슨 검색 성공' })
@@ -69,7 +65,6 @@ export class MainLessonsController {
   }
 
   @Get('/:lessonId')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '레슨 상세 조회' })
   @ApiResponse({ status: 200, description: '레슨 상세 조회 성공' })
