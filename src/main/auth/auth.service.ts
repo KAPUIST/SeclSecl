@@ -1,7 +1,8 @@
 import {
-  BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -24,6 +25,7 @@ import { lastValueFrom } from 'rxjs'
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name)
   constructor(
     private readonly redisService: RedisService,
     private readonly sendBirdService: SendBirdService,
@@ -42,145 +44,161 @@ export class AuthService {
     return Math.floor(100000 + Math.random() * 900000).toString() // 6자리 코드 생성
   }
   private async isPhoneNumberVerified(phoneNumber: string): Promise<boolean> {
-    const verified = await this.redisService.getValue(`verified:${phoneNumber}`)
-    return verified === 'verified'
+    try {
+      return (await this.redisService.getValue(`verified:${phoneNumber}`)) === 'verified'
+    } catch (error) {
+      this.logger.error(`전화번호 인증 확인 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.PHONE_VERIFICATION_FAILED)
+    }
   }
   private async hashPassword(password: string): Promise<string> {
     try {
-      return bcrypt.hash(password, 10)
+      return await bcrypt.hash(password, 10)
     } catch (error) {
-      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.HASH_ERROR)
+      this.logger.error(`비밀번호 해싱 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.PASSWORD_PROCESSING_FAILED)
     }
   }
-  private async verifyPassword(inputPassword: string, password: string): Promise<void> {
-    const isCurrentPasswordValid = bcrypt.compareSync(inputPassword, password)
-    if (!isCurrentPasswordValid) {
-      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.NOT_MATCHED_PASSWORD)
+  private async verifyPassword(inputPassword: string, password: string): Promise<boolean> {
+    try {
+      return bcrypt.compare(inputPassword, password)
+    } catch (error) {
+      this.logger.error(`비밀번호 확인 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.PASSWORD_VERIFICATION_FAILED)
     }
   }
 
-  async validateUser({ email, password }: SignInDto) {
+  async validateUser({ email, password }: SignInDto): Promise<{ uid: string; email: string } | null> {
     try {
       const user = await this.userRepository.findOne({
         where: { email, deletedAt: null },
-        select: { uid: true, password: true, email: true },
+        select: ['uid', 'password', 'email'],
       })
-      if (!user) {
+
+      if (!user || !(await this.verifyPassword(password, user.password))) {
         return null
       }
-      await this.verifyPassword(password, user.password)
+
       return { uid: user.uid, email: user.email }
     } catch (error) {
-      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_IN.FAILED)
+      this.logger.error(`사용자 인증 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.USER_VALIDATION_FAILED)
     }
   }
 
-  async signUp({
-    email,
-    password,
-    confirmPassword,
-    phoneNumber,
-    gender,
-    birthDate,
-    nickname,
-    ...otherUserInfo
-  }: SignUpDto) {
+  async signUp(signUpDto: SignUpDto): Promise<{ email: string }> {
+    const { email, password, confirmPassword, phoneNumber, nickname, ...otherUserInfo } = signUpDto
+
     if (password !== confirmPassword) {
-      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.NOT_MATCHED_PASSWORD)
+      throw new ConflictException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.PASSWORD_MISMATCH)
     }
+
     try {
-      const existUser = await this.userRepository.findOneBy({ email })
+      const [existingUser, existingNickname, isVerified] = await Promise.all([
+        this.userRepository.findOne({ where: { email } }),
+        this.userInfosRepository.findOne({ where: { nickname } }),
+        this.isPhoneNumberVerified(phoneNumber),
+      ])
 
-      if (existUser) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.EXISTED_EMAIL)
-      }
-      const existUserByNickname = await this.userInfosRepository.findOneBy({ nickname })
-      if (existUserByNickname) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.EXISTED_NICKNAME)
+      if (existingUser) {
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.EMAIL_EXISTS)
       }
 
-      // 전화번호가 인증되었는지 확인
-      const isVerified = await this.isPhoneNumberVerified(phoneNumber)
+      if (existingNickname) {
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.NICKNAME_EXISTS)
+      }
+
       if (!isVerified) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.VERIFICATION_PHONE.NOT_VERIFIED)
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.PHONE_NOT_VERIFIED)
       }
 
       const hashedPassword = await this.hashPassword(password)
 
-      const user = this.userRepository.create({
-        email,
-        password: hashedPassword,
-      })
+      const user = await this.userRepository.save(
+        this.userRepository.create({
+          email,
+          password: hashedPassword,
+        }),
+      )
 
-      const savedUser = await this.userRepository.save(user)
+      await this.userInfosRepository.save(
+        this.userInfosRepository.create({
+          ...otherUserInfo,
+          phoneNumber,
+          nickname,
+          user,
+        }),
+      )
 
-      const userInfo = this.userInfosRepository.create({
-        ...otherUserInfo,
-        phoneNumber,
-        gender,
-        birthDate: new Date(birthDate),
-        nickname,
-        user: savedUser,
-      })
-
-      console.log('savedUser.uid:', savedUser.uid)
-      await this.userInfosRepository.save(userInfo)
-
-      // SendBird 사용자 생성
-      await lastValueFrom(this.sendBirdService.createUser(savedUser.uid, nickname, 'https://example.com/profile.jpg'))
-
+      await lastValueFrom(this.sendBirdService.createUser(user.uid, nickname, 'https://example.com/profile.jpg'))
       await this.redisService.deleteValue(`verified:${phoneNumber}`)
 
       return { email: user.email }
     } catch (error) {
-      if (error instanceof BadRequestException) {
+      if (error instanceof ConflictException) {
         throw error
       }
-      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.SIGN_UP.FAILED)
+      this.logger.error(`회원가입 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.SIGNUP_FAILED)
     }
   }
 
   async sendVerificationCode(phoneNumber: string): Promise<void> {
-    const existingUser = await this.userInfosRepository.findOneBy({ phoneNumber })
-    if (existingUser) {
-      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.AUTH.VERIFICATION_PHONE.EXIST_PHONE)
-    }
-    const verificationCode = this.generateVerificationCode()
     try {
+      const existingUser = await this.userInfosRepository.findOne({ where: { phoneNumber } })
+      if (existingUser) {
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.PHONE_EXISTS)
+      }
+
+      const verificationCode = this.generateVerificationCode()
       await this.smsService.sendVerificationCode(phoneNumber, verificationCode)
-      //redis에 코드 등록
       await this.redisService.setValue(`verification:${phoneNumber}`, verificationCode, 300)
-      console.log(`Verification code sent to ${phoneNumber}: ${verificationCode}`)
     } catch (error) {
-      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.VERIFICATION_PHONE.FAILED)
+      if (error instanceof ConflictException) {
+        throw error
+      }
+      this.logger.error(`인증 코드 전송 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.VERIFICATION_CODE_SEND_FAILED)
     }
   }
   async verifyCode(phoneNumber: string, code: string): Promise<boolean> {
-    const storedCode = await this.redisService.getValue(`verification:${phoneNumber}`)
+    try {
+      const storedCode = await this.redisService.getValue(`verification:${phoneNumber}`)
+      if (storedCode !== code) {
+        return false
+      }
 
-    if (storedCode === code) {
-      await this.redisService.setValue(`verified:${phoneNumber}`, 'verified', 86400) // 인증 상태를 1일 동안 유지
-      await this.redisService.deleteValue(`verification:${phoneNumber}`) // 인증 코드는 삭제
+      await Promise.all([
+        this.redisService.setValue(`verified:${phoneNumber}`, 'verified', 86400),
+        this.redisService.deleteValue(`verification:${phoneNumber}`),
+      ])
+
       return true
+    } catch (error) {
+      this.logger.error(`코드 확인 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.CODE_VERIFICATION_FAILED)
     }
-    return false
   }
   async signIn(userUid: string, email: string) {
-    const payload: JwtPayload = { uid: userUid, email, type: 'main' }
-    const tokens = await this.tokenService.generateTokens(payload)
+    try {
+      const payload: JwtPayload = { uid: userUid, email, type: 'main' }
+      const tokens = await this.tokenService.generateTokens(payload)
 
-    // 리프레시 토큰 저장
-    await this.refreshTokenRepository.upsert(
-      {
-        user: { uid: userUid },
-        refreshToken: tokens.refreshToken,
-      },
-      ['user'],
-    )
+      await this.refreshTokenRepository.upsert(
+        {
+          user: { uid: userUid },
+          refreshToken: tokens.refreshToken,
+        },
+        ['user'],
+      )
 
-    return tokens
+      return tokens
+    } catch (error) {
+      this.logger.error(`로그인 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.SIGNIN_FAILED)
+    }
   }
-  async signOut(refreshToken: string) {
+  async signOut(refreshToken: string): Promise<void> {
     try {
       const payload = this.tokenService.verifyToken(refreshToken, 'main')
       const storedToken = await this.refreshTokenRepository.findOne({
@@ -188,12 +206,16 @@ export class AuthService {
       })
 
       if (!storedToken) {
-        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.INVALID_REFRESH_TOKEN)
       }
 
       await this.refreshTokenRepository.update({ user: { uid: payload.uid } }, { refreshToken: null })
     } catch (error) {
-      throw new UnauthorizedException(error.message)
+      if (error instanceof UnauthorizedException) {
+        throw error
+      }
+      this.logger.error(`로그아웃 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.SIGNOUT_FAILED)
     }
   }
   async updateTokens(refreshToken: string) {
@@ -204,22 +226,37 @@ export class AuthService {
       })
 
       if (!storedToken) {
-        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.INVALID_REFRESH_TOKEN)
       }
+
       const tokens = await this.tokenService.generateTokens({ uid: payload.uid, email: payload.email, type: 'main' })
       await this.refreshTokenRepository.update({ user: { uid: payload.uid } }, { refreshToken: tokens.refreshToken })
+
       return tokens
     } catch (error) {
-      throw new UnauthorizedException(error.message)
+      if (error instanceof UnauthorizedException) {
+        throw error
+      }
+      this.logger.error(`토큰 갱신 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.TOKEN_UPDATE_FAILED)
     }
   }
+
   async deleteUser(userUid: string): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { uid: userUid } })
+    try {
+      console.log(userUid, 'id')
+      const user = await this.userRepository.findOne({ where: { uid: userUid } })
 
-    if (!user) {
-      throw new NotFoundException('유저를 찾을 수 없습니다.')
+      if (!user) {
+        throw new NotFoundException('사용자를 찾을 수 없습니다.')
+      }
+      await this.userRepository.softDelete(userUid)
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error
+      }
+      this.logger.error(`사용자 삭제 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.USER_DELETE_FAILED)
     }
-
-    await this.userRepository.softDelete(userUid)
   }
 }

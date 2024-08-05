@@ -25,7 +25,7 @@ export class TokenService {
         expiresIn: this.getAccessTokenExpirationTime(payload.type),
       })
     } catch (error) {
-      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.FAILED)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.TOKEN_UPDATE_FAILED)
     }
   }
 
@@ -36,7 +36,7 @@ export class TokenService {
         expiresIn: this.getRefreshTokenExpirationTime(payload.type),
       })
     } catch (error) {
-      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.FAILED)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.TOKEN_UPDATE_FAILED)
     }
   }
 
