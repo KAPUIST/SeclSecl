@@ -24,6 +24,5 @@ import { Lesson } from '../../common/lessons/entities/lessons.entity'
   ],
   controllers: [CpAuthController],
   providers: [CpAuthService],
-  exports: [CpAuthService, TypeOrmModule.forFeature([CpInfo], 'cp')],
 })
 export class CpAuthModule {}
