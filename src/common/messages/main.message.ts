@@ -41,9 +41,15 @@ export const MAIN_MESSAGE_CONSTANT = {
     },
   },
   LESSON: {
-    FIND_ALL_LESSONS: '강의 전체 조회를 성공 했습니다.',
-    FIND_POPULAR_LESSONS: '인기강의 조회를 성공 했습니다.',
-    FIND_POPULAR_LESSON_FAILED: '인기 수업 목록 조회에 실패하였습니다.',
+    FIND_ALL_LESSONS: '모든 레슨 조회 성공',
+    FIND_ALL_LESSONS_FAILED: '모든 레슨 조회 실패',
+    FIND_POPULAR_LESSONS: '인기 레슨 조회 성공',
+    FIND_POPULAR_LESSON_FAILED: '인기 레슨 조회 실패',
+    SEARCH_LESSON_SUCCESS: '레슨 검색 성공',
+    SEARCH_LESSON_FAILED: '레슨 검색 실패',
+    LESSON_NOT_FOUND: '레슨을 찾을 수 없습니다',
+    FIND_LESSON_SUCCESS: '레슨 상세 조회 성공',
+    FIND_LESSON_FAILED: '레슨 조회 실패',
   },
   BAND: {
     BAND_GROUP: {
