@@ -103,6 +103,7 @@ export class CpAuthService {
     try {
       const payload = this.tokenService.verifyToken(refreshToken, 'cp')
       const token = refreshToken.startsWith('Bearer ') ? refreshToken.slice(7) : refreshToken
+
       const storedToken = await this.refreshTokenRepository.findOne({
         where: { cp: { uid: payload.uid }, refreshtoken: token },
       })
