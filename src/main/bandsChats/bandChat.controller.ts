@@ -28,6 +28,12 @@ export class BandChatController {
     private readonly sendBirdService: SendBirdService,
   ) {}
 
+  // 채팅방 삭제
+  @Delete('channels/:channelUrl')
+  deleteChannel(@Param('channelUrl') channelUrl: string) {
+    return this.sendBirdService.deleteChannel(channelUrl)
+  }
+
   // 메세지 전송
   @Post(':bandsUid/messages')
   @UseGuards(JwtAuthGuard)
@@ -69,11 +75,5 @@ export class BandChatController {
     const userUid = user.uid
     const accessToken = user.accessToken // 사용자 객체에서 accessToken 가져오기
     return this.bandService.sendMessageFileToBand(bandsUid, file, userUid, accessToken)
-  }
-
-  // 채팅방 삭제
-  @Delete(':bandsUid/channels/:channelUrl')
-  deleteChannel(@Param('channelUrl') channelUrl: string) {
-    return this.sendBirdService.deleteChannel(channelUrl)
   }
 }
