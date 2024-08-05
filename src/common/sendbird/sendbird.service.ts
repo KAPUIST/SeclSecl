@@ -128,6 +128,7 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
       user_ids: userIds,
       is_distinct: true,
     }
+    console.log(data)
     return this.httpService
       .post(url, data, {
         headers: {

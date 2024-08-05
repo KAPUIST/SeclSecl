@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { plainToInstance } from 'class-transformer'
@@ -11,10 +11,12 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Injectable()
 export class MainLessonsService {
+  private readonly logger = new Logger(MainLessonsService.name)
   constructor(
     @InjectRepository(Lesson)
     private readonly lessonsRepository: Repository<Lesson>,
   ) {}
+
   private mapLessonToRO(lesson: Lesson): LessonRO {
     return {
       uid: lesson.uid,
@@ -44,7 +46,8 @@ export class MainLessonsService {
         count,
       }
     } catch (error) {
-      throw new Error('수업 조회에 실패하였습니다.')
+      this.logger.error(`모든 레슨 조회 실패: ${error.message}`, error.stack)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.LESSON.FIND_ALL_LESSONS_FAILED)
     }
   }
 
@@ -84,7 +87,7 @@ export class MainLessonsService {
         count: lessonROs.length,
       }
     } catch (error) {
-      console.error(error)
+      this.logger.error(`인기 레슨 조회 실패: ${error.message}`, error.stack)
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.LESSON.FIND_POPULAR_LESSON_FAILED)
     }
   }
@@ -98,55 +101,41 @@ export class MainLessonsService {
     location?: string
   }): Promise<MainLessonResponseDto[]> {
     try {
-      console.log('searchLesson called with filters:', filters) // 함수 진입점 로그
+      this.logger.log(`검색 필터: ${JSON.stringify(filters)}`)
 
       const queryBuilder = this.lessonsRepository.createQueryBuilder('lesson')
 
-      if (filters.title) {
-        queryBuilder.andWhere('lesson.title LIKE :title', { title: `%${filters.title}%` })
-      }
-      if (filters.teacher) {
-        queryBuilder.andWhere('lesson.teacher LIKE :teacher', { teacher: `%${filters.teacher}%` })
-      }
-      if (filters.description) {
-        queryBuilder.andWhere('lesson.description LIKE :description', { description: `%${filters.description}%` })
-      }
-      if (filters.price) {
-        queryBuilder.andWhere('lesson.price = :price', { price: filters.price })
-      }
-      if (filters.status) {
-        queryBuilder.andWhere('lesson.status = :status', { status: filters.status })
-      }
-      if (filters.location) {
-        queryBuilder.andWhere('lesson.location LIKE :location', { location: `%${filters.location}%` })
-      }
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          if (typeof value === 'string') {
+            queryBuilder.andWhere(`lesson.${key} LIKE :${key}`, { [key]: `%${value}%` })
+          } else {
+            queryBuilder.andWhere(`lesson.${key} = :${key}`, { [key]: value })
+          }
+        }
+      })
 
       const lessons = await queryBuilder.getMany()
       if (lessons.length === 0) {
-        throw new NotFoundException('레슨을 찾을 수 없습니다.')
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.LESSON.LESSON_NOT_FOUND)
       }
       return lessons.map((lesson) => plainToInstance(MainLessonResponseDto, lesson))
     } catch (error) {
-      console.error('Error in searchLesson:', error) // 예외 로그 추가
-      throw new InternalServerErrorException('레슨 검색에 실패하였습니다.')
+      this.logger.error(`레슨 검색 실패: ${error.message}`, error.stack)
+      if (error instanceof NotFoundException) {
+        throw error
+      }
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.LESSON.SEARCH_LESSON_FAILED)
     }
   }
 
   async getLessonById(lessonId: string): Promise<MainLessonResponseDto> {
     try {
-      const lesson = await this.lessonsRepository.findOne({
-        where: { uid: lessonId },
-      })
-
-      if (!lesson) {
-        console.error('5')
-        throw new NotFoundException('레슨을 찾을 수 없습니다.')
-      }
-
+      const lesson = await this.lessonsRepository.findOneOrFail({ where: { uid: lessonId } })
       return plainToInstance(MainLessonResponseDto, lesson)
     } catch (error) {
-      console.error(error)
-      throw new InternalServerErrorException('레슨 조회에 실패하였습니다.')
+      this.logger.error(`레슨 ID ${lessonId} 조회 실패: ${error.message}`, error.stack)
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.LESSON.LESSON_NOT_FOUND)
     }
   }
 }

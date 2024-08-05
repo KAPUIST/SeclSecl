@@ -74,6 +74,7 @@ export class AuthService {
         where: { email, deletedAt: null },
         select: ['uid', 'password', 'email'],
       })
+      console.log(user)
 
       if (!user || !(await this.verifyPassword(password, user.password))) {
         return null
@@ -191,8 +192,12 @@ export class AuthService {
         },
         ['user'],
       )
+      const user = await this.userInfosRepository.findOne({
+        where: { uid: userUid },
+        select: ['name', 'nickname'],
+      })
 
-      return tokens
+      return { user, tokens }
     } catch (error) {
       this.logger.error(`로그인 실패: ${error.message}`, error.stack)
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.SIGNIN_FAILED)
