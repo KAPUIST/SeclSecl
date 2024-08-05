@@ -208,7 +208,7 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
       )
   }
 
-  //채팅방 삭제
+  // 채팅방 삭제 서비스 로직
   deleteChannel(channelUrl: string): Observable<any> {
     const url = `${this.BASE_URL}/group_channels/${channelUrl}`
     return this.httpService
@@ -220,6 +220,7 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
       .pipe(
         map((response: AxiosResponse) => response.data),
         catchError((error) => {
+          console.error('SendBird API Error:', error) // 로그 추가
           throw new HttpException(error.response?.data || 'SendBird API Error', HttpStatus.INTERNAL_SERVER_ERROR)
         }),
       )

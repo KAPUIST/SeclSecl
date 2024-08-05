@@ -96,17 +96,23 @@ export class BandService {
           name: createBandDto.name,
           content: createBandDto.content,
         })
+
         // 밴드 멤버 추가
         await manager.save(BandMember, { userUid, bandUid: createdBand.uid })
+
         // SendBird 채널 생성 및 chatUrl 저장
-        // const sendBirdResponse = await lastValueFrom(this.sendBirdService.createChannel(createdBand.name, [userUid]))
+        const sendBirdResponse = await lastValueFrom(this.sendBirdService.createChannel(createdBand.name, [userUid]))
 
-        // const channelUrl = sendBirdResponse.channel_url
-        // console.log(channelUrl)
+        if (!sendBirdResponse || !sendBirdResponse.channel_url) {
+          throw new Error('SendBird channel creation failed')
+        }
 
-        // // chatUrl 업데이트
-        // createdBand.chatUrl = channelUrl
-        // await manager.save(Band, createdBand)
+        const channelUrl = sendBirdResponse.channel_url
+        console.log('Channel URL:', channelUrl)
+
+        // chatUrl 업데이트
+        createdBand.chatUrl = channelUrl
+        await manager.save(Band, createdBand)
         return {
           uid: createdBand.uid,
           userUid,
@@ -115,6 +121,7 @@ export class BandService {
           chatUrl: createdBand.chatUrl,
         }
       } catch (err) {
+        console.error('Transaction Error:', err)
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.CREATE_BAND.TRANSACTION_ERROR)
       }
     })
