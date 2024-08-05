@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDate, IsEnum, IsOptional, IsString, isEnum } from 'class-validator'
+import { IsDate, IsEnum, IsString } from 'class-validator'
 import { Provider } from '../../auth/types/provider.type'
 
-export class UserInfoRO {
+export class FindOneUserInfoRO {
   @ApiProperty({ description: '이메일' })
   @IsString()
   email: string
@@ -14,6 +14,17 @@ export class UserInfoRO {
   @ApiProperty({ description: '핸드폰 번호' })
   @IsString()
   phoneNumber: string
+
+  @IsString()
+  gender: string
+
+  @ApiProperty({ description: '생일' })
+  @IsDate()
+  birthDate: Date
+
+  @ApiProperty({ description: '별명' })
+  @IsString()
+  nickname: string
 
   @ApiProperty({ description: '주소' })
   @IsString()
@@ -31,22 +42,11 @@ export class UserInfoRO {
   @IsString()
   sigungu: string
 
-  @IsString()
-  gender: string
-
-  @ApiProperty({ description: '생일' })
-  @IsDate()
-  birthDate: Date
+  @ApiProperty({ description: '소셜로그인' })
+  @IsEnum(Provider)
+  provider: Provider
 
   @ApiProperty({ description: '계정 역할' })
   @IsString()
   role: string
-
-  @ApiProperty({ description: '별명' })
-  @IsString()
-  nickname: string
-
-  @ApiProperty({ description: '소셜로그인' })
-  @IsEnum(Provider)
-  provider: Provider
 }
