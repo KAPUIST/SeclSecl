@@ -7,6 +7,7 @@ import { Cp } from '../../cp/auth/entities/cp.entity'
 import UserSeeder from './seeders/user.seeder'
 import LessonSeeder from './seeders/lesson.seeder'
 import BatchSeeder from './seeders/batch.seeder'
+import LessonReviewSeeder from './seeders/lesson-review.seeder'
 
 // CP UUID를 저장할 전역 변수
 let globalCpUuids: string[] = []
@@ -32,7 +33,7 @@ export default class MainSeeder implements Seeder {
 
     // 시더 실행
     await runSeeders(dataSource, {
-      seeds: [UserSeeder, LessonSeeder, BatchSeeder],
+      seeds: [UserSeeder, LessonSeeder, BatchSeeder, LessonReviewSeeder],
       factories: [__dirname + '/factories/**/*.ts'],
     })
 
