@@ -57,6 +57,7 @@ export class MainLessonsService {
         .createQueryBuilder('lesson')
         .leftJoin('lesson.batches', 'batch')
         .leftJoin('batch.paymentDetails', 'payment_detail')
+        .leftJoin('lesson.images', 'lesson_images')
         .select([
           'lesson.uid as uid',
           'lesson.title as title',
@@ -69,16 +70,19 @@ export class MainLessonsService {
           'lesson.shuttle as shuttle',
           'lesson.createdAt as createdAt',
           'lesson.updatedAt as updatedAt',
+          'lesson_images.url as imageUrl',
         ])
         .addSelect('COUNT(DISTINCT payment_detail.uid)', 'salesCount')
         .where('lesson.is_verified = :status', { status: true })
         .groupBy('lesson.uid')
+        .addGroupBy('lesson_images.url')
         .orderBy('salesCount', 'DESC')
         .limit(10)
         .getRawMany()
 
       const lessonROs: LessonRO[] = popularLessons.map((lesson: Lesson & { salesCount?: string }) => ({
         ...this.mapLessonToRO(lesson),
+        imageUrl: lesson['imageUrl'],
         salesCount: lesson['salesCount'] ? parseInt(lesson['salesCount'], 10) : 0,
       }))
 

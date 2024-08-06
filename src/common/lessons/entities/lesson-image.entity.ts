@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -30,6 +31,7 @@ export class LessonImages {
   deletedAt: Date
 
   @ManyToOne(() => Lesson, (lesson) => lesson.images)
+  @JoinColumn({ name: 'lesson_uid' })
   @Exclude()
   lesson: Lesson
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsUUID, IsBoolean, IsDate, IsNumber, IsPositive, ValidateNested } from 'class-validator'
+import { IsString, IsUUID, IsBoolean, IsDate, IsNumber, IsPositive, ValidateNested, IsArray } from 'class-validator'
 import { Type } from 'class-transformer'
 
 class BatchInfo {
@@ -54,6 +54,15 @@ class LessonInfo {
   @IsNumber()
   @IsPositive()
   price: number
+
+  @ApiProperty({ description: '강사 이름' })
+  @IsString()
+  location: string
+
+  @ApiProperty({ description: '강의 이미지' })
+  @IsArray()
+  @IsString({ each: true})
+  imageUrls: string[]
 }
 
 export class FindMyLessonDetailRO {
@@ -86,4 +95,5 @@ export class FindMyLessonDetailRO {
   @ValidateNested()
   @Type(() => LessonInfo)
   lesson: LessonInfo
+
 }
