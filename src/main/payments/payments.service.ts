@@ -379,6 +379,7 @@ export class PaymentsService {
       relations: { batch: { lesson: true } },
     })
     return cartList.map((cartedItem) => ({
+      cartUid: cartedItem.uid,
       userUid,
       lessonName: cartedItem.batch.lesson.title,
       lessonUid: cartedItem.batch.lesson.uid,
