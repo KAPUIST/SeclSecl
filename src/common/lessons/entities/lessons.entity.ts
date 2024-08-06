@@ -59,7 +59,7 @@ export class Lesson {
   @Column({ default: false })
   is_verified: boolean
 
-  @OneToMany(() => LessonImages, (LessonImages) => LessonImages.lesson, { cascade: true })
+  @OneToMany(() => LessonImages, (lessonImages) => lessonImages.lesson, { cascade: true })
   images: LessonImages[]
 
   @OneToMany(() => Batch, (batch) => batch.lesson)
