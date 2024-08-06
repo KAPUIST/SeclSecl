@@ -61,7 +61,7 @@ class LessonInfo {
 
   @ApiProperty({ description: '강의 이미지' })
   @IsArray()
-  @IsString({ each: true})
+  @IsString({ each: true })
   imageUrls: string[]
 }
 
@@ -95,5 +95,4 @@ export class FindMyLessonDetailRO {
   @ValidateNested()
   @Type(() => LessonInfo)
   lesson: LessonInfo
-
 }

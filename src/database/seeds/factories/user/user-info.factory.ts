@@ -5,7 +5,7 @@ import { Role } from '../../../../main/auth/types/role.type'
 import { Gender } from '../../../../main/auth/types/gender.type'
 
 // 한국어 로케일 설정
-import { faker } from '@faker-js/faker/locale/ko'
+import { faker } from '@faker-js/faker'
 
 export const UserInfoFactory = setSeederFactory(UserInfos, () => {
   const userInfo = new UserInfos()
