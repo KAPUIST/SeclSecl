@@ -33,4 +33,12 @@ export class GetCartListRO {
   @ApiProperty({ description: '모집 종료일' })
   @IsDate()
   recruitmentEnd: Date
+
+  @ApiProperty({ description: '수업 시작일' })
+  @IsDate()
+  startDate: Date
+
+  @ApiProperty({ description: '수업 종료일' })
+  @IsDate()
+  endDate: Date
 }
