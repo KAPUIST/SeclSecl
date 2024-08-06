@@ -12,7 +12,7 @@ export const UserInfoFactory = setSeederFactory(UserInfos, () => {
   userInfo.name = faker.person.fullName()
   userInfo.phoneNumber = faker.string.numeric('010-####-####')
   userInfo.address = `${faker.location.state()} ${faker.location.city()} ${faker.location.street()}`
-  userInfo.dong = `${faker.location.street()}동`
+  userInfo.dong = `${faker.location.street()}`
   userInfo.gender = faker.helpers.arrayElement([Gender.MALE, Gender.FEMALE])
   userInfo.birthDate = faker.date.birthdate({ min: 18, max: 65, mode: 'age' })
   userInfo.sido = faker.location.state()
