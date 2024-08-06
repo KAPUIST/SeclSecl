@@ -387,6 +387,8 @@ export class PaymentsService {
       price: cartedItem.batch.lesson.price,
       recruitmentStart: cartedItem.batch.recruitmentStart,
       recruitmentEnd: cartedItem.batch.recruitmentStart,
+      startDate: cartedItem.batch.startDate,
+      endDate: cartedItem.batch.endDate,
     }))
   }
   // 장바구니 삭제 로직
