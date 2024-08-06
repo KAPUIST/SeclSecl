@@ -37,6 +37,7 @@ import { LikeBatchPostParamsDTO } from './dto/like-batch-post-params.dto'
 import { LikeBatchPostRO } from './ro/like-batch-post.ro'
 import { UnlikeBatchPostParamsDTO } from './dto/unlike-batch-post-params.dto'
 import { UnlikeBatchPostRO } from './ro/unlike-batch-post.ro'
+import { userInfo } from 'os'
 
 @Injectable()
 export class BatchPostsService {
@@ -250,6 +251,7 @@ export class BatchPostsService {
       }
     })
   }
+  // 댓글 목록 조회 로직
   async getBatchComment(userUid: string, params: GetBatchCommentParamsDTO): Promise<GetBatchCommentRO[]> {
     const batchPostUid = params.postUid
     // 게시물이 존재하지 않을 시 에러처리
@@ -263,10 +265,14 @@ export class BatchPostsService {
     if (_.isNil(isMember)) {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.CREATE_BATCH_COMMENT.NOT_FOUND_USER)
     }
-    const batchCommentList = await this.batchPostCommentRepository.find({ where: { batchPostUid } })
+    const batchCommentList = await this.batchPostCommentRepository.find({
+      where: { batchPostUid },
+      relations: { user: { userInfo: true } },
+    })
     return batchCommentList.map((comment) => ({
       uid: comment.uid,
       userUid,
+      nickName: comment.user.userInfo.nickname,
       batchPostUid,
       parentCommentUid: comment.parentCommentUid,
       content: comment.content,

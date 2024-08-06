@@ -18,6 +18,10 @@ export class GetBandCommentRO {
   @IsUUID()
   parentCommentUid: string
 
+  @ApiProperty({ description: '밴드 멤버 닉네임' })
+  @IsString()
+  bandMemberNickName: string
+
   @ApiProperty({ description: '댓글 내용' })
   @IsString()
   content: string

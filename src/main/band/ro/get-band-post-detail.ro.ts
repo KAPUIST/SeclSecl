@@ -10,6 +10,10 @@ export class GetBandPostDetailRO {
   @IsUUID()
   bandMemberUid: string
 
+  @ApiProperty({ description: '밴드 멤버 닉네임' })
+  @IsString()
+  bandMemberNickName: string
+
   @ApiProperty({ description: '밴드 게시글 제목' })
   @IsString()
   title: string
