@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsUUID } from 'class-validator'
+import { IsString, IsUUID } from 'class-validator'
 
 export class GetBandMemberRO {
   @ApiProperty({ description: '밴드 멤버 Uid' })
@@ -10,7 +10,15 @@ export class GetBandMemberRO {
   @IsUUID()
   userUid: string
 
+  @ApiProperty({ description: '밴드 유저 닉네임' })
+  @IsString()
+  nickName: string
+
   @ApiProperty({ description: '밴드 Uid' })
   @IsUUID()
   bandUid: string
+
+  @ApiProperty({ description: '밴드명' })
+  @IsString()
+  bandName: string
 }

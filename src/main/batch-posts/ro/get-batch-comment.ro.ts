@@ -18,6 +18,10 @@ export class GetBatchCommentRO {
   @IsUUID()
   parentCommentUid: string
 
+  @ApiProperty({ description: '유저 닉네임' })
+  @IsString()
+  nickName: string
+
   @ApiProperty({ description: '댓글 내용' })
   @IsString()
   content: string
