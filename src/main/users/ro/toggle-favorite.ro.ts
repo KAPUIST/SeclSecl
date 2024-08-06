@@ -12,5 +12,5 @@ export class ToggleLessonBookmarkRO {
 
   @ApiProperty({ description: '찜하기 작업 결과' })
   @IsString()
-  message: string
+  message?: string
 }
