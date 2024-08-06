@@ -70,7 +70,7 @@ export class MainLessonsService {
           'lesson.shuttle as shuttle',
           'lesson.createdAt as createdAt',
           'lesson.updatedAt as updatedAt',
-          'lesson_images.url as imageUrl'
+          'lesson_images.url as imageUrl',
         ])
         .addSelect('COUNT(DISTINCT payment_detail.uid)', 'salesCount')
         .where('lesson.is_verified = :status', { status: true })
@@ -82,7 +82,7 @@ export class MainLessonsService {
 
       const lessonROs: LessonRO[] = popularLessons.map((lesson: Lesson & { salesCount?: string }) => ({
         ...this.mapLessonToRO(lesson),
-        imageUrl:lesson['imageUrl'],
+        imageUrl: lesson['imageUrl'],
         salesCount: lesson['salesCount'] ? parseInt(lesson['salesCount'], 10) : 0,
       }))
 
