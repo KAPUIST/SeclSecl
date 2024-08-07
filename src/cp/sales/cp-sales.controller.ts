@@ -9,7 +9,7 @@ import { SalesService } from './cp-sales.service'
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
-  @Get('/sales')
+  @Get('/sales/sales')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '매출액 조회' })
