@@ -74,7 +74,11 @@ export class LessonsService {
 
   async getAllLessons(cpUid: string): Promise<LessonResponseDto[]> {
     try {
-      const lessons = await this.lessonsRepository.find({ where: { cp_uid: cpUid }, relations: ['images'] })
+      const lessons = await this.lessonsRepository.find({
+        where: { cp_uid: cpUid },
+        relations: { images: true },
+        order: { createdAt: 'DESC' },
+      })
 
       return lessons.map((lesson) => plainToInstance(LessonResponseDto, lesson))
     } catch (error) {
@@ -84,7 +88,18 @@ export class LessonsService {
   }
   async getLesson(uid: string, cpUid: string): Promise<LessonResponseDto> {
     try {
-      const lesson = await this.lessonsRepository.findOne({ where: { uid: uid, cp_uid: cpUid }, relations: ['images'] })
+      const lesson = await this.lessonsRepository.findOne({
+        where: { uid: uid, cp_uid: cpUid },
+        relations: {
+          images: true,
+          batches: true,
+        },
+        order: {
+          batches: {
+            batchNumber: 'DESC',
+          },
+        },
+      })
       if (!lesson) {
         throw new NotFoundException('수업이 존재하지 않습니다.')
       }
