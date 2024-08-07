@@ -306,11 +306,6 @@ export class BandService {
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.GET_BAND_POST_LIST.NOT_FOUND)
     }
-    // 유저가 밴드 멤버가 아닐 시 에러 처리
-    const isMember = await this.bandMemberRepository.findOne({ where: { bandUid, userUid } })
-    if (_.isNil(isMember)) {
-      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.GET_BAND_POST_LIST.NOT_FOUND_USER)
-    }
     const bandPostList = await this.bandPostRepository.find({
       where: { bandUid },
       relations: { bandMember: { user: { userInfo: true } } },
