@@ -131,6 +131,8 @@ export class UsersService {
     return {
       lessonId: favorite.lesson.uid,
       title: favorite.lesson.title,
+      teacher: favorite.lesson.teacher,
+      location: favorite.lesson.location
     }
   }
   // 내 정보 조회
