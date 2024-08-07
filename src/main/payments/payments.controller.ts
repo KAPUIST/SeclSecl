@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Request, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Query, Request, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { PaymentsService } from './payments.service'
@@ -8,6 +8,7 @@ import { PurchaseItemDto } from './dto/purchase-item.dto'
 import { RefundPaymentParamsDTO } from './dto/refund-payment-params.dto'
 import { GetPaymentDetailParamsDTO } from './dto/get-payment-detail-params.dto'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { CheckCartQueryDto } from './dto/check-cart-query.dto'
 
 @ApiTags('밴드 관련 API')
 @ApiBearerAuth()
@@ -153,6 +154,19 @@ export class PaymentsController {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.DELETE_CART.SUCCESS,
       data: deletedLesson,
+    }
+  }
+  // 장바구니 결제 유효성 체크
+  @UseGuards(JwtAuthGuard)
+  @Get('carts/check')
+  async checkCart(@Request() req, @Query() checkCartQueryDto: CheckCartQueryDto) {
+    console.log('111111')
+    const userUid = req.user.uid
+    const checkCart = await this.paymentService.checkCart(userUid, checkCartQueryDto)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.CHECK_CART.SUCCESS,
+      data: checkCart,
     }
   }
 }
