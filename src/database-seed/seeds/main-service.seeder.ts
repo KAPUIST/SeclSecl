@@ -7,7 +7,7 @@ import UserSeeder from './seeders/user.seeder'
 import LessonSeeder from './seeders/lesson.seeder'
 import BatchSeeder from './seeders/batch.seeder'
 import LessonReviewSeeder from './seeders/lesson-review.seeder'
-import { Cp } from '../../src/cp/auth/entities/cp.entity'
+import { Cp } from '../../cp/auth/entities/cp.entity'
 
 // CP UUID를 저장할 전역 변수
 let globalCpUuids: string[] = []

@@ -1,6 +1,6 @@
 import { setSeederFactory } from 'typeorm-extension'
 import { faker } from '@faker-js/faker'
-import { CpInfo } from '../../../../src/cp/auth/entities/cp-infos.entity'
+import { CpInfo } from '../../../../cp/auth/entities/cp-infos.entity'
 
 export const CpInfoFactory = setSeederFactory(CpInfo, () => {
   const cpInfo = new CpInfo()
