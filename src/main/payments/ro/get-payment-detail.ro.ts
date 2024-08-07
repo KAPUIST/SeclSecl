@@ -10,6 +10,10 @@ export class GetPaymentDetailRO {
   @IsUUID()
   lessonUid: string
 
+  @ApiProperty({ description: '강의 이미지 url' })
+  @IsString()
+  lessonImg: string
+
   @ApiProperty({ description: '기수' })
   @IsNumber()
   batchNumber: number
