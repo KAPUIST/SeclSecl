@@ -86,7 +86,7 @@ export class LessonsController {
   }
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Get(':lessonId')
+  @Get(':lessonUid')
   @ApiBearerAuth()
   @ApiOperation({ summary: '단일 레슨 조회' })
   @ApiResponse({ status: 200, description: '레슨 조회 성공' })
@@ -94,7 +94,7 @@ export class LessonsController {
   @ApiResponse({ status: 401, description: '인증 실패' })
   async getLesson(
     @Request() req,
-    @Param('lessonId') lessonId: string,
+    @Param('lessonUid') lessonId: string,
   ): Promise<{ statusCode: number; message: string; lessons: LessonResponseDto }> {
     const cpUid = req.user.uid
 
@@ -107,7 +107,7 @@ export class LessonsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':lessonId')
+  @Patch(':lessonUid')
   @ApiOperation({ summary: '레슨 수정' })
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: '레슨 수정 성공' })
@@ -117,7 +117,7 @@ export class LessonsController {
   @UseInterceptors(FileFieldsInterceptor([{ name: 'images', maxCount: 10 }]))
   async updateLesson(
     @Request() req,
-    @Param('lessonId') lessonId: string,
+    @Param('lessonUid') lessonId: string,
     @Body() body: any,
     @UploadedFiles() files: { images?: Express.Multer.File[] },
   ): Promise<{ statusCode: number; message: string; data: LessonResponseDto }> {
@@ -141,13 +141,13 @@ export class LessonsController {
     }
   }
   @UseGuards(JwtAuthGuard)
-  @Delete('/:lessonId')
+  @Delete('/:lessonUid')
   @ApiBearerAuth()
   @ApiOperation({ summary: '레슨 삭제' })
   @ApiResponse({ status: 200, description: '레슨 삭제 성공' })
   @ApiResponse({ status: 404, description: '레슨을 찾을 수 없습니다.' })
   @ApiResponse({ status: 401, description: '인증 실패' })
-  async deleteLesson(@Request() req, @Param('lessonId') lessonId: string) {
+  async deleteLesson(@Request() req, @Param('lessonUid') lessonId: string) {
     const cpUid = req.user.uid
     await this.lessonsService.deleteLesson(cpUid, lessonId)
     return {
@@ -156,13 +156,13 @@ export class LessonsController {
     }
   }
   @UseGuards(JwtAuthGuard)
-  @Get('/:lessonId/batch/:batchId/students')
+  @Get('/:lessonUid/batch/:batchUid/students')
   @ApiBearerAuth()
   @ApiOperation({ summary: '배치별 수강생 조회' })
   @ApiResponse({ status: 200, description: '수강생 조회 성공' })
   @ApiResponse({ status: 404, description: '레슨 또는 배치를 찾을 수 없습니다.' })
   @ApiResponse({ status: 401, description: '인증 실패' })
-  async getStudentsByBatch(@Request() req, @Param('lessonId') lessonId: string, @Param('batchId') batchId: string) {
+  async getStudentsByBatch(@Request() req, @Param('lessonUid') lessonId: string, @Param('batchUid') batchId: string) {
     const cpUid = req.user.uid
     const students = await this.lessonsService.findStudentsByBatch({ cpUid, lessonId, batchId })
     return {
@@ -173,11 +173,11 @@ export class LessonsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/:lessonId/reviews')
+  @Get('/:lessonUid/reviews')
   @ApiBearerAuth()
   @ApiOperation({ summary: '리뷰 댓글 조회' })
   @ApiResponse({ status: 200, description: '리뷰 조회 성공' })
-  async findReview(@Request() req, @Param('lessonId') lessonId: string) {
+  async findReview(@Request() req, @Param('lessonUid') lessonId: string) {
     const cpUid = req.user.uid
     const result = await this.lessonsService.findReviewByLessonId({ lessonId, cpUid })
     return {
