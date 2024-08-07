@@ -244,23 +244,37 @@ export class PaymentsService {
   // 결제 목록 조회 로직
   async getPaymentList(userUid: string): Promise<GetPaymentListRO[]> {
     const paymentList = await this.paymentRepository.find({ where: { userUid } })
-    return paymentList.map((payment) => ({
-      userUid,
-      paymentUid: payment.uid,
-      orderName: payment.orderName,
-      totalAmount: payment.totalAmount,
-      vat: payment.vat,
-      currency: payment.currency,
-      method: payment.method,
-      paymentTime: payment.approvedAt,
-    }))
+    const revisedList = paymentList.map(async (payment) => {
+      let orderName = ''
+      const batchList = payment.orderName.split(', ')
+      const firstBatch = await this.batchRepository.findOne({
+        where: { uid: batchList[0] },
+        relations: { lesson: true },
+      })
+      if (batchList.length === 1) {
+        orderName = firstBatch.lesson.title
+      }
+      orderName = `${firstBatch.lesson.title} 외 ${batchList.length - 1}건`
+      return {
+        userUid,
+        paymentUid: payment.uid,
+        orderName,
+        totalAmount: payment.totalAmount,
+        vat: payment.vat,
+        currency: payment.currency,
+        method: payment.method,
+        paymentTime: payment.approvedAt,
+      }
+    })
+    const paymentListRO = await Promise.all(revisedList)
+    return paymentListRO
   }
 
   // 결제 상세 조회 로직
   async getPaymentDetail(userUid: string, params: GetPaymentDetailParamsDTO): Promise<GetPaymentDetailRO> {
     const paymentDetail = await this.paymentDetailRepository.findOne({
       where: { uid: params.paymentDetailUid },
-      relations: { payment: true, batch: { lesson: true } },
+      relations: { payment: true, batch: { lesson: { images: true } } },
     })
     // 해당 UID의 정보가 유효하지 않을 때
     if (_.isNil(paymentDetail)) {
@@ -273,6 +287,7 @@ export class PaymentsService {
     return {
       lessonName: paymentDetail.batch.lesson.title,
       lessonUid: paymentDetail.batch.lesson.uid,
+      lessonImg: paymentDetail.batch.lesson.images[0].url,
       batchNumber: paymentDetail.batch.batchNumber,
       batchUid: paymentDetail.batch.uid,
       amount: paymentDetail.batch.lesson.price,
@@ -317,13 +332,14 @@ export class PaymentsService {
   async getCartList(userUid: string): Promise<GetCartListRO[]> {
     const cartList = await this.paymentCartRepository.find({
       where: { userUid },
-      relations: { batch: { lesson: true } },
+      relations: { batch: { lesson: { images: true } } },
     })
     return cartList.map((cartedItem) => ({
       cartUid: cartedItem.uid,
       userUid,
       lessonName: cartedItem.batch.lesson.title,
       lessonUid: cartedItem.batch.lesson.uid,
+      lessonImg: cartedItem.batch.lesson.images[0].url,
       batchNumber: cartedItem.batch.batchNumber,
       batchUid: cartedItem.batch.uid,
       price: cartedItem.batch.lesson.price,

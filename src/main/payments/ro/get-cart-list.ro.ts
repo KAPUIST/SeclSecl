@@ -14,6 +14,10 @@ export class GetCartListRO {
   @IsString()
   lessonName: string
 
+  @ApiProperty({ description: '강의 이미지 url' })
+  @IsString()
+  lessonImg: string
+
   @ApiProperty({ description: '강의 Uid' })
   @IsUUID()
   lessonUid: string
