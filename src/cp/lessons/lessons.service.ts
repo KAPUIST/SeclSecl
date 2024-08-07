@@ -44,8 +44,8 @@ export class LessonsService {
       const imageEntities = []
 
       for (const file of files) {
-        const { location, key } = await this.s3Service.uploadFile(file, 'lessons')
-        const imageEntity = this.lessonImagesRepository.create({ url: location, lesson: savedLesson })
+        const { location, key, cdnUrl } = await this.s3Service.uploadFile(file, 'lessons')
+        const imageEntity = this.lessonImagesRepository.create({ url: cdnUrl, lesson: savedLesson })
         imageEntities.push(imageEntity)
         uploadedFiles.push({ location, key }) // 업로드된 파일 정보를 저장
       }
@@ -74,7 +74,11 @@ export class LessonsService {
 
   async getAllLessons(cpUid: string): Promise<LessonResponseDto[]> {
     try {
-      const lessons = await this.lessonsRepository.find({ where: { cp_uid: cpUid }, relations: ['images'] })
+      const lessons = await this.lessonsRepository.find({
+        where: { cp_uid: cpUid },
+        relations: { images: true },
+        order: { createdAt: 'DESC' },
+      })
 
       return lessons.map((lesson) => plainToInstance(LessonResponseDto, lesson))
     } catch (error) {
@@ -84,7 +88,18 @@ export class LessonsService {
   }
   async getLesson(uid: string, cpUid: string): Promise<LessonResponseDto> {
     try {
-      const lesson = await this.lessonsRepository.findOne({ where: { uid: uid, cp_uid: cpUid }, relations: ['images'] })
+      const lesson = await this.lessonsRepository.findOne({
+        where: { uid: uid, cp_uid: cpUid },
+        relations: {
+          images: true,
+          batches: true,
+        },
+        order: {
+          batches: {
+            batchNumber: 'DESC',
+          },
+        },
+      })
       if (!lesson) {
         throw new NotFoundException('수업이 존재하지 않습니다.')
       }
