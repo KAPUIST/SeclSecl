@@ -271,20 +271,23 @@ export class PaymentsService {
   }
 
   // 결제 상세 조회 로직
-  async getPaymentDetail(userUid: string, params: GetPaymentDetailParamsDTO): Promise<GetPaymentDetailRO> {
-    const paymentDetail = await this.paymentDetailRepository.findOne({
-      where: { uid: params.paymentDetailUid },
+  async getPaymentDetail(userUid: string, params: GetPaymentDetailParamsDTO): Promise<GetPaymentDetailRO[]> {
+    const paymentDetailList = await this.paymentDetailRepository.find({
+      where: { paymentUid: params.paymentUid },
       relations: { payment: true, batch: { lesson: { images: true } } },
     })
-    // 해당 UID의 정보가 유효하지 않을 때
-    if (_.isNil(paymentDetail)) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_DETAIL.NOT_FOUND)
+    for (const paymentDetail of paymentDetailList) {
+      // 해당 UID의 정보가 유효하지 않을 때
+      if (_.isNil(paymentDetail)) {
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_DETAIL.NOT_FOUND)
+      }
+      // 결제한 유저가 아닐 시 에러 처리
+      if (userUid !== paymentDetail.payment.userUid) {
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_DETAIL.NOT_MATCHED_USER)
+      }
     }
-    // 결제한 유저가 아닐 시 에러 처리
-    if (userUid !== paymentDetail.payment.userUid) {
-      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.GET_PAYMENT_DETAIL.NOT_MATCHED_USER)
-    }
-    return {
+
+    return paymentDetailList.map((paymentDetail) => ({
       lessonName: paymentDetail.batch.lesson.title,
       lessonUid: paymentDetail.batch.lesson.uid,
       lessonImg: paymentDetail.batch.lesson.images[0].url,
@@ -293,7 +296,7 @@ export class PaymentsService {
       amount: paymentDetail.batch.lesson.price,
       paymentUid: paymentDetail.paymentUid,
       paymentTime: paymentDetail.payment.approvedAt,
-    }
+    }))
   }
 
   // 장바구니 추가 로직

@@ -94,7 +94,7 @@ export class PaymentsController {
    * @returns
    */
   @UseGuards(JwtAuthGuard)
-  @Get('/details/:paymentDetailUid')
+  @Get('/details/:paymentUid')
   async getPaymentDetail(@Request() req, @Param() params: GetPaymentDetailParamsDTO) {
     const userUid = req.user.uid
     const payment = await this.paymentService.getPaymentDetail(userUid, params)
