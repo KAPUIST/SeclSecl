@@ -9,8 +9,11 @@ export class S3Service {
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: process.env.AWS_REGION,
   })
-
-  async uploadFile(file: Express.Multer.File, folder: string): Promise<{ location: string; key: string }> {
+  private cdnDomain = 'cdn.dfgdwssegf.shop'
+  async uploadFile(
+    file: Express.Multer.File,
+    folder: string,
+  ): Promise<{ location: string; key: string; cdnUrl: string }> {
     const key = `${folder}/${uuidv4()}-${file.originalname}`
     const params = {
       Bucket: process.env.AWS_S3_BUCKET,
@@ -21,7 +24,8 @@ export class S3Service {
 
     try {
       const data = await this.s3.upload(params).promise()
-      return { location: data.Location, key: key }
+      const cdnUrl = `https://${this.cdnDomain}/${key}`
+      return { location: data.Location, key: key, cdnUrl: cdnUrl }
     } catch (error) {
       throw new InternalServerErrorException('파일 업로드 중 오류가 발생했습니다.')
     }
