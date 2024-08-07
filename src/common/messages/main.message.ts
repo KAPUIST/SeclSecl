@@ -223,7 +223,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         BAD_REQUEST: '잘못된 환불 요청입니다.',
         TRANSACTION_ERROR: '환불 진행중 오류가 생겼습니다.',
         NOT_MATCHED_USER: '환불할 결제 기록에 해당하는 유저가 아닙니다.',
-        NOT_FOUND: '해당 결제정보와 연결된 주문 정보가 없습니다.',
+        NOT_FOUND: '해당 결제정보와 상세 결제 정보가 없습니다.',
         NOT_FOUND_PAYMENT: '해당 결제 정보가 존재하지 않습니다',
         REFUND_TIME_EXPIRED: '환불은 수업 시작 24시간 전에만 가능합니다',
       },
@@ -262,11 +262,15 @@ export const MAIN_MESSAGE_CONSTANT = {
         SUCCESS: '장바구니 삭제에 성공하였습니다.',
         NOT_FOUND: '비울 수 없는 물품입니다.',
       },
+      CHECK_CART: {
+        SUCCESS: '장바구니 체크에 성공하였습니다.',
+      },
     },
     COMMON: {
       PAYMENT_CART_ENTITY: {
         BATCH_UID: '기수 UID를 입력해 주세요',
         CART_UID: '장바구니 UID를 입력해 주세요',
+        USER_UID: '유저 UID를 입력해 주세요',
       },
       PAYMENT_ENTITY: {
         PAYMENT_UID: '결제 UID를 입력해 주세요',
@@ -277,7 +281,16 @@ export const MAIN_MESSAGE_CONSTANT = {
       PAYMENT_TOSS: {
         PAYMENT_KEY: '결제키를 입력해 주세요',
         ORDER_ID: '주문 ID를 입력해 주세요',
+        ORDER_NAME: '주문명을 입력해 주세요',
+        CURRENCY: '결제 화폐를 입력해 주세요',
+        METHOD: '결제 방법을 입력해 주세요',
         AMOUNT: '총 금액을 입력해 주세요',
+        TRANSACTION_KEY: '트랜잭션 키를 입력해 주세요',
+        STATUS: '결제 상태를 입력해 주세요',
+        VAT: '부가 가치세를 입력해 주세요',
+        REQUESTED_AT: '요청 시각 입력해 주세요',
+        APPROVED_AT: '승인 시각 입력해 주세요',
+        BATCH_LIST: '장바구니 목록을 입력해 주세요',
       },
     },
   },

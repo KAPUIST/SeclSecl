@@ -89,7 +89,7 @@ export class UsersService {
       status: userLesson.status,
       startDate: userLesson.startDate,
       endDate: userLesson.endDate,
-      imageUrl: userLesson.imageUrl
+      imageUrl: userLesson.imageUrl,
     }
   }
 
@@ -98,7 +98,7 @@ export class UsersService {
       throw new Error('기수 또는 강의 정보가 없습니다.')
     }
 
-    const imageUrls = userLesson.batch.lesson.images ? userLesson.batch.lesson.images.map(image => image.url) : [];
+    const imageUrls = userLesson.batch.lesson.images ? userLesson.batch.lesson.images.map((image) => image.url) : []
 
     return {
       userUid: userLesson.userUid,
@@ -221,24 +221,24 @@ export class UsersService {
     this.logger.log(`사용자 강의 목록 조회 시도: ${uid}`)
     try {
       const userLessons = await this.userLessonRepository
-      .createQueryBuilder('userLesson')
-      .leftJoin('userLesson.batch', 'batch')
-      .leftJoin('batch.lesson', 'lesson')
-      .leftJoin('lesson.images', 'lessonImages')
-      .where('userLesson.userUid = :uid', {uid})
-      .select([
-        'userLesson.uid AS uid',
-        'userLesson.userUid AS userUid',
-        'userLesson.batchUid AS batchUid',
-        'lesson.title AS title',
-        'lesson.teacher AS teacher',
-        'lesson.status AS status',
-        'batch.startDate AS startDate',
-        'batch.endDate AS endDate',
-        'userLesson.isDone AS isDone',
-        'lessonImages.url AS imageUrl'
-      ])
-      .getRawMany()
+        .createQueryBuilder('userLesson')
+        .leftJoin('userLesson.batch', 'batch')
+        .leftJoin('batch.lesson', 'lesson')
+        .leftJoin('lesson.images', 'lessonImages')
+        .where('userLesson.userUid = :uid', { uid })
+        .select([
+          'userLesson.uid AS uid',
+          'userLesson.userUid AS userUid',
+          'userLesson.batchUid AS batchUid',
+          'lesson.title AS title',
+          'lesson.teacher AS teacher',
+          'lesson.status AS status',
+          'batch.startDate AS startDate',
+          'batch.endDate AS endDate',
+          'userLesson.isDone AS isDone',
+          'lessonImages.url AS imageUrl',
+        ])
+        .getRawMany()
       if (!userLessons.length) {
         throw new NotFoundException(MAIN_MESSAGE_CONSTANT.USER.SERVICE.NOT_FOUND_USER_LESSON)
       }
@@ -281,7 +281,7 @@ export class UsersService {
           'lesson.teacher',
           'lesson.price',
           'lesson.location',
-          'lessonImages.url'
+          'lessonImages.url',
         ])
         .where('userLesson.userUid = :userUid', { userUid })
         .andWhere('userLesson.batchUid = :batchUid', { batchUid: params.batchUid })
