@@ -1,8 +1,8 @@
 import { DataSource, EntityManager } from 'typeorm'
 import { Seeder, SeederFactoryManager } from 'typeorm-extension'
-import { User } from '../../../src/main/users/entities/user.entity'
-import { UserInfos } from '../../../src/main/users/entities/user-infos.entity'
-import { RefreshToken } from '../../../src/main/auth/entities/refresh-token.entity'
+import { User } from '../../../main/users/entities/user.entity'
+import { UserInfos } from '../../../main/users/entities/user-infos.entity'
+import { RefreshToken } from '../../../main/auth/entities/refresh-token.entity'
 
 export default class UserSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<any> {

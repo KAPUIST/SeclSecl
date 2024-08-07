@@ -3,8 +3,8 @@ import { DataSource, EntityManager } from 'typeorm'
 import { Seeder, SeederFactoryManager } from 'typeorm-extension'
 
 import { getCpUuids } from '../main-service.seeder'
-import { Lesson } from '../../../src/common/lessons/entities/lessons.entity'
-import { LessonImages } from '../../../src/common/lessons/entities/lesson-image.entity'
+import { Lesson } from '../../../common/lessons/entities/lessons.entity'
+import { LessonImages } from '../../../common/lessons/entities/lesson-image.entity'
 
 export default class LessonSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<any> {

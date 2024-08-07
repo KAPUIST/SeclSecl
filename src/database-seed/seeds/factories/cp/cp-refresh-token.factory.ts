@@ -1,5 +1,5 @@
 import { setSeederFactory } from 'typeorm-extension'
-import { RefreshToken } from '../../../../src/main/auth/entities/refresh-token.entity'
+import { RefreshToken } from '../../../../main/auth/entities/refresh-token.entity'
 
 export const RefreshTokenFactory = setSeederFactory(RefreshToken, () => {
   const refreshToken = new RefreshToken()

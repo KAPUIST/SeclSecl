@@ -2,10 +2,10 @@ import { setSeederFactory } from 'typeorm-extension'
 
 // 한국어 로케일 설정
 import { faker } from '@faker-js/faker'
-import { UserInfos } from '../../../../src/main/users/entities/user-infos.entity'
-import { Gender } from '../../../../src/main/auth/types/gender.type'
-import { Role } from '../../../../src/main/auth/types/role.type'
-import { Provider } from '../../../../src/main/auth/types/provider.type'
+import { UserInfos } from '../../../../main/users/entities/user-infos.entity'
+import { Gender } from '../../../../main/auth/types/gender.type'
+import { Role } from '../../../../main/auth/types/role.type'
+import { Provider } from '../../../../main/auth/types/provider.type'
 
 export const UserInfoFactory = setSeederFactory(UserInfos, () => {
   const userInfo = new UserInfos()
