@@ -1,8 +1,8 @@
 // src/database/seeds/seeders/batch.seeder.ts
 import { DataSource, EntityManager } from 'typeorm'
 import { Seeder } from 'typeorm-extension'
-import { Batch } from '../../../main/batches/entities/batch.entity'
-import { Lesson } from '../../../common/lessons/entities/lessons.entity'
+import { Lesson } from '../../../src/common/lessons/entities/lessons.entity'
+import { Batch } from '../../../src/main/batches/entities/batch.entity'
 
 export default class BatchSeeder implements Seeder {
   public async run(dataSource: DataSource): Promise<any> {

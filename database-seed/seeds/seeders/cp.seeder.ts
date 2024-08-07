@@ -1,9 +1,9 @@
 // src/database/seeds/cp.seeder.ts
 import { DataSource, EntityManager } from 'typeorm'
 import { Seeder, SeederFactoryManager } from 'typeorm-extension'
-import { Cp } from '../../../cp/auth/entities/cp.entity'
-import { CpInfo } from '../../../cp/auth/entities/cp-infos.entity'
-import { RefreshToken } from '../../../cp/auth/entities/refresh-token.entity'
+import { Cp } from '../../../src/cp/auth/entities/cp.entity'
+import { CpInfo } from '../../../src/cp/auth/entities/cp-infos.entity'
+import { RefreshToken } from '../../../src/cp/auth/entities/refresh-token.entity'
 
 export default class CpSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<any> {

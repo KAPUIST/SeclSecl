@@ -20,7 +20,7 @@ export const cpDataSource = new DataSource({
   database: 'seclsecl_cp', // CP 데이터베이스 이름
   synchronize: configService.get('DB_SYNC'),
   logging: true,
-  entities: [__dirname + '/../cp/**/entities/*.entity{.ts,.js}'],
+  entities: [__dirname + '/../src/cp/**/entities/*.entity{.ts,.js}'],
   namingStrategy: new SnakeNamingStrategy(),
 } as DataSourceOptions & SeederOptions)
 
@@ -34,8 +34,8 @@ export const mainDataSource = new DataSource({
   synchronize: configService.get('DB_SYNC'),
   logging: true,
   entities: [
-    __dirname + '/../main/**/entities/*.entity{.ts,.js}',
-    __dirname + '/../common/lessons/entities/*.entity{.ts,.js}',
+    __dirname + '/../src/main/**/entities/*.entity{.ts,.js}',
+    __dirname + '/../src/common/lessons/entities/*.entity{.ts,.js}',
   ],
   namingStrategy: new SnakeNamingStrategy(),
 } as DataSourceOptions & SeederOptions)

@@ -1,12 +1,12 @@
 import { DataSource, EntityManager } from 'typeorm'
 import { Seeder, SeederFactoryManager } from 'typeorm-extension'
-import { User } from '../../../main/users/entities/user.entity'
-import { Lesson } from '../../../common/lessons/entities/lessons.entity'
-import { Batch } from '../../../main/batches/entities/batch.entity'
-import { LessonReview } from '../../../main/review/entities/lesson.review.entity'
-import { LessonReviewComments } from '../../../common/lessons/entities/lesson-review-comment.entity'
 
 import { getCpUuids } from '../main-service.seeder'
+import { User } from '../../../src/main/users/entities/user.entity'
+import { Lesson } from '../../../src/common/lessons/entities/lessons.entity'
+import { Batch } from '../../../src/main/batches/entities/batch.entity'
+import { LessonReview } from '../../../src/main/review/entities/lesson.review.entity'
+import { LessonReviewComments } from '../../../src/common/lessons/entities/lesson-review-comment.entity'
 
 export default class LessonReviewSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<any> {
