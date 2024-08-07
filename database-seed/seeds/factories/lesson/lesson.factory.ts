@@ -1,8 +1,8 @@
 import { setSeederFactory } from 'typeorm-extension'
 
 import { faker } from '@faker-js/faker'
-import { LessonOpenStatus } from '../../../../common/lessons/types/lessons-type'
-import { Lesson } from '../../../../common/lessons/entities/lessons.entity'
+import { Lesson } from '../../../../src/common/lessons/entities/lessons.entity'
+import { LessonOpenStatus } from '../../../../src/common/lessons/types/lessons-type'
 
 export const LessonFactory = setSeederFactory(Lesson, () => {
   const lesson = new Lesson()

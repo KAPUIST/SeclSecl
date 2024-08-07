@@ -1,7 +1,7 @@
 import { setSeederFactory } from 'typeorm-extension'
 import { faker } from '@faker-js/faker'
 import * as bcrypt from 'bcrypt'
-import { Cp } from '../../../../cp/auth/entities/cp.entity'
+import { Cp } from '../../../../src/cp/auth/entities/cp.entity'
 
 export const CpFactory = setSeederFactory(Cp, async () => {
   const cp = new Cp()

@@ -1,7 +1,7 @@
 import { setSeederFactory } from 'typeorm-extension'
 
 import { faker } from '@faker-js/faker'
-import { LessonReview } from '../../../../main/review/entities/lesson.review.entity'
+import { LessonReview } from '../../../../src/main/review/entities/lesson.review.entity'
 
 export const LessonReviewFactory = setSeederFactory(LessonReview, () => {
   const review = new LessonReview()

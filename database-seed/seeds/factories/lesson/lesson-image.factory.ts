@@ -1,7 +1,7 @@
 import { setSeederFactory } from 'typeorm-extension'
 
 import { faker } from '@faker-js/faker'
-import { LessonImages } from '../../../../common/lessons/entities/lesson-image.entity'
+import { LessonImages } from '../../../../src/common/lessons/entities/lesson-image.entity'
 
 export const LessonImageFactory = setSeederFactory(LessonImages, () => {
   const image = new LessonImages()
