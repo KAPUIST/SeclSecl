@@ -63,9 +63,9 @@ export class BatchNoticeService {
 
       const fileEntities = []
       for (const file of files) {
-        const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
+        const { location, key, cdnUrl } = await this.s3Service.uploadFile(file, 'lessonNotes')
         const fileEntity = this.lessonNoteRepository.create({
-          lessonNote: location, // 파일 위치 URL
+          lessonNote: cdnUrl, // 파일 위치 URL
           field: file.originalname, // 파일 원본 이름
           noticeUid: savedBatchNotice.uid,
         })
@@ -160,10 +160,10 @@ export class BatchNoticeService {
       // 새로운 이미지 업로드
       const fileEntities = []
       for (const file of files) {
-        const { location, key } = await this.s3Service.uploadFile(file, 'lessonNotes')
+        const { location, key, cdnUrl } = await this.s3Service.uploadFile(file, 'lessonNotes')
         const fileEntity = this.lessonNoteRepository.create({
           noticeUid: notificationUid,
-          lessonNote: location, // 파일 위치 URL
+          lessonNote: cdnUrl, // 파일 위치 URL
           field: file.originalname, // 파일 원본 이름
         })
         fileEntities.push(fileEntity)

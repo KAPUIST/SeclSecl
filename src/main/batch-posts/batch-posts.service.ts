@@ -37,7 +37,6 @@ import { LikeBatchPostParamsDTO } from './dto/like-batch-post-params.dto'
 import { LikeBatchPostRO } from './ro/like-batch-post.ro'
 import { UnlikeBatchPostParamsDTO } from './dto/unlike-batch-post-params.dto'
 import { UnlikeBatchPostRO } from './ro/unlike-batch-post.ro'
-import { userInfo } from 'os'
 
 @Injectable()
 export class BatchPostsService {
@@ -73,9 +72,9 @@ export class BatchPostsService {
         const savedBatchPost = await transactionalEntityManager.save(BatchPost, newBatchPost)
         const imageEntities = []
         for (const file of files) {
-          const { location, key } = await this.s3Service.uploadFile(file, 'postImages')
+          const { location, key, cdnUrl } = await this.s3Service.uploadFile(file, 'postImages')
           const imageEntity = this.postImageRepository.create({
-            postImage: location, // 파일 위치 URL
+            postImage: cdnUrl, // 파일 위치 URL
             field: file.originalname, // 파일 원본 이름
             postUid: savedBatchPost.uid,
           })
@@ -182,9 +181,9 @@ export class BatchPostsService {
         // 새로운 이미지 업로드
         const fileEntities = []
         for (const file of files) {
-          const { location, key } = await this.s3Service.uploadFile(file, 'postImages')
+          const { location, key, cdnUrl } = await this.s3Service.uploadFile(file, 'postImages')
           const fileEntity = this.postImageRepository.create({
-            postImage: location, // 파일 위치 URL
+            postImage: cdnUrl, // 파일 위치 URL
             field: file.originalname, // 파일 원본 이름
             postUid,
           })
