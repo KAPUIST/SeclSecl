@@ -31,6 +31,7 @@ export class MainLessonsService {
       createdAt: lesson.createdAt,
       updatedAt: lesson.updatedAt,
       isVerified: lesson.isVerified,
+      lessonImg: lesson.images[0].url,
     }
   }
   async getAllLessons(): Promise<MainLessonResponseRO> {

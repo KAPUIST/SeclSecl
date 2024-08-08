@@ -36,4 +36,7 @@ export class LessonRO {
 
   @ApiProperty()
   isVerified: boolean
+
+  @ApiProperty()
+  lessonImg: string
 }
