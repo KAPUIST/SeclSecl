@@ -31,7 +31,6 @@ export class MainLessonsService {
       createdAt: lesson.createdAt,
       updatedAt: lesson.updatedAt,
       isVerified: lesson.isVerified,
-      lessonImg: lesson.images[0].url,
     }
   }
   async getAllLessons(): Promise<MainLessonResponseRO> {
@@ -41,7 +40,10 @@ export class MainLessonsService {
         relations: ['images'],
       })
 
-      const lessonROs: LessonRO[] = lessons.map((lesson) => this.mapLessonToRO(lesson))
+      const lessonROs: LessonRO[] = lessons.map((lesson) => ({
+        ...this.mapLessonToRO(lesson),
+        lesson: lesson.images[0].url,
+      }))
 
       return {
         lessons: lessonROs,
@@ -84,7 +86,7 @@ export class MainLessonsService {
 
       const lessonROs: LessonRO[] = popularLessons.map((lesson: Lesson & { salesCount?: string }) => ({
         ...this.mapLessonToRO(lesson),
-        imageUrl: lesson['imageUrl'],
+        lesson: lesson['imageUrl'],
         salesCount: lesson['salesCount'] ? parseInt(lesson['salesCount'], 10) : 0,
       }))
 
