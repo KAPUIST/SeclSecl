@@ -243,7 +243,12 @@ export class PaymentsService {
   }
   // 결제 목록 조회 로직
   async getPaymentList(userUid: string): Promise<GetPaymentListRO[]> {
-    const paymentList = await this.paymentRepository.find({ where: { userUid } })
+    const paymentList = await this.paymentRepository.find({
+      where: { userUid },
+      order: {
+        createdAt: 'DESC',
+      },
+    })
     const revisedList = paymentList.map(async (payment) => {
       let orderName = ''
       const batchList = payment.orderName.split(', ')
