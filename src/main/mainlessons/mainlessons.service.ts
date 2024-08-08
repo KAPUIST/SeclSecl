@@ -30,6 +30,7 @@ export class MainLessonsService {
       shuttle: lesson.shuttle,
       createdAt: lesson.createdAt,
       updatedAt: lesson.updatedAt,
+      isVerified: lesson.is_verified,
     }
   }
   async getAllLessons(): Promise<MainLessonResponseRO> {

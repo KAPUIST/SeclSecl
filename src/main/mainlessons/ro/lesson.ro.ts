@@ -33,4 +33,7 @@ export class LessonRO {
 
   @ApiProperty()
   updatedAt: Date
+
+  @ApiProperty()
+  isVerified: boolean
 }
