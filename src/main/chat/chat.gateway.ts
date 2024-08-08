@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway, WebSocketServer, MessageBody, ConnectedSocket } from '@nestjs/websockets'
+import { CharsetToEncoding } from 'mysql2'
 import { Server, Socket } from 'socket.io'
 import { WsAuthGuard } from './chat.jwt.guard'
 import { ChatJwtStrategy } from './chat.jwt.strategy'
@@ -13,7 +14,7 @@ import { ChatService } from './chat.service'
     exposedHeaders: ['Authorization'],
     credentials: true,
   },
-  namespace: 'chatting',
+  path: '/socket.io', 
 })
 // @UseGuards(WsAuthGuard)
 export class ChatGateway {
