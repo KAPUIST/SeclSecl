@@ -1,73 +1,103 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# 시클시클 (Senior Class)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 소개
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+시클시클은 은퇴자들을 위한 커뮤니티 서비스와 오프라인 강의 플랫폼을 제공하는 프로젝트입니다. 급속도로 고령화되고 있는 사회에서 은퇴자분들에게 의미 있는 소셜 연결과 지속적인 학습 기회를 제공하기 위해 개발되었습니다.
 
-## Description
+## 주요 기능
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **강의 등록 및 수강**: Content Provider가 오프라인 수업을 등록하고, 수강생이 관심 있는 강의를 클릭하여 정보 확인 후 등록할 수 있습니다.
+- **밴드 생성 및 커뮤니티 형성**: 사용자가 새로운 밴드를 생성하고, 유저들이 밴드에 가입하여 자신들만의 커뮤니티를 만들 수 있습니다.
+- **단체 채팅**: 밴드 내에서 실시간으로 소통할 수 있는 채팅 기능을 제공합니다.
+- **강의별 게시판**: 강의에 대한 피드백과 질문을 주고받을 수 있는 게시판을 제공합니다.
 
-## Installation
+## 기술 스택
 
-```bash
-$ npm install
-```
+- **프론트엔드**:
+  - **Bubble**: 시각적 프로그래밍 도구로서, 빠른 프로토타이핑과 UI 개발을 가능하게 합니다.
+- **백엔드**:
+  - **Node.js**: 이벤트 기반의 서버 사이드 자바스크립트 환경.
+  - **NestJS**: Node.js용 프레임워크로, 확장성과 유지 보수성이 뛰어난 구조를 제공합니다.
+- **데이터베이스**:
+  - **AWS RDS MySQL**: 관리형 관계형 데이터베이스 서비스.
+- **실시간 채팅**:
+  - **Sendbird**: 안정적이고 사용하기 쉬운 단체 채팅 솔루션.
+  - **Socket.io**: 실시간 양방향 통신을 위한 라이브러리로, 1대1 채팅에 사용.
+- **핸드폰 문자 인증**:
+  - **Redis**: 인증 코드 관리에 사용되는 인메모리 데이터 저장소.
+  - **Solapi**: 비용 효율적이고 안정적인 SMS API 서비스.
+- **오류 추적**:
+  - **Sentry**: 실시간 오류 추적 및 모니터링 도구.
+- **결제 시스템**:
+  - **Toss**: 국내 사용자에게 최적화된 결제 솔루션.
+- **CI/CD**:
+  - **GitHub Actions**: 지속적 통합 및 배포 자동화.
+  - **S3 IAM CodeDeploy**: AWS 기반 배포 자동화 도구.
 
-## Running the app
+## 아키텍처
 
-```bash
-# development
-$ npm run start
+![아키텍처 다이어그램]()
 
-# watch mode
-$ npm run start:dev
+- **API 분리 및 호스트 기반 요청 처리**
+  - `localhost`: 강의 조회, 결제, 밴드 기능 (일반 유저)
+  - `cp.localhost`: 강의 생성, 리뷰 답글 (Contents Provider)
+  - `admin.localhost`: CP 승인, 유저 차단 (관리자)
+- **보안 강화**: 유저 접근 제한 및 데이터베이스 분리
 
-# production mode
-$ npm run start:prod
-```
+## 설치 방법
 
-## Test
+1. **클론**:
 
-```bash
-# unit tests
-$ npm run test
+   ```bash
+   git clone https://github.com/KAPUIST/SeclSecl.git
+   ```
 
-# e2e tests
-$ npm run test:e2e
+2. **패키지 설치**:
 
-# test coverage
-$ npm run test:cov
-```
+   ```bash
+   npm install
+   ```
 
-## Support
+3. **환경 변수 설정**:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+   - `.env` 파일을 생성하고 필요한 환경 변수를 설정합니다.
 
-## Stay in touch
+4. **데이터베이스 설정**:
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+   - AWS RDS MySQL 데이터베이스를 설정하고, `.env` 파일에 DB 정보를 추가합니다.
 
-## License
+5. **서버 실행**:
+   ```bash
+   npm run start
+   ```
 
-Nest is [MIT licensed](LICENSE).
+## 사용 방법
+
+- **강의 등록**: Content Provider는 강의를 등록하고 수강생은 강의를 조회하고 등록할 수 있습니다.
+- **밴드 생성**: 사용자가 밴드를 생성하여 커뮤니티를 형성할 수 있습니다.
+- **단체 채팅**: 밴드 내에서 실시간 채팅 기능을 사용할 수 있습니다.
+- **강의 게시판**: 각 강의에 대한 피드백과 질문을 게시판을 통해 주고받을 수 있습니다.
+
+## 기여 방법
+
+1. **포크**:
+
+   - 이 저장소를 포크합니다.
+
+2. **브랜치 생성**:
+
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+
+3. **변경 사항 커밋**:
+
+   ```bash
+   git commit -m 'Add some feature'
+   ```
+
+4. **푸시**:
+
+   ```bash​⬤# 시클시클 (Senior Class)
+
+   ```

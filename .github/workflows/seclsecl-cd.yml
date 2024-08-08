@@ -50,7 +50,6 @@ jobs:
           echo "REDIS_USER=${{secrets.REDIS_USER}}" >> .env
           echo "REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}}" >> .env
           echo "REDIS_TLS=${{secrets.REDIS_TLS}}" >> .env
-          echo "JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}}" >> .env
           echo "AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}}" >> .env
           echo "AWS_SECRET_ACCESS_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}}" >> .env
           echo "AWS_REGION=${{secrets.AWS_REGION}}" >> .env
