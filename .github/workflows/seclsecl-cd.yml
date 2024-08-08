@@ -64,7 +64,8 @@ jobs:
           echo "SOLAPI_API_SECRET=${{secrets.SOLAPI_API_SECRET}}" >> .env
           echo "SOLAPI_BASE_URL=${{secrets.SOLAPI_BASE_URL}}" >> .env
           echo "SOLAPI_PHONE_NUMBER=${{secrets.SOLAPI_PHONE_NUMBER}}" >> .env
-
+          echo "API_SECRET_KEY=${{secrets.API_SECRET_KEY}}" >> .env
+          echo "API_CLIENT_KEY=${{secrets.API_CLIENT_KEY}}" >> .env
       - name: Install Sentry CLI
         run: npm install -g @sentry/cli
 
