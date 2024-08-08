@@ -347,7 +347,7 @@ export class PaymentsService {
       batchUid: cartedItem.batch.uid,
       price: cartedItem.batch.lesson.price,
       recruitmentStart: cartedItem.batch.recruitmentStart,
-      recruitmentEnd: cartedItem.batch.recruitmentStart,
+      recruitmentEnd: cartedItem.batch.recruitmentEnd,
       startDate: cartedItem.batch.startDate,
       endDate: cartedItem.batch.endDate,
     }))
