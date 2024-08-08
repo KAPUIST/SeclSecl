@@ -72,9 +72,9 @@ export class BatchPostsService {
         const savedBatchPost = await transactionalEntityManager.save(BatchPost, newBatchPost)
         const imageEntities = []
         for (const file of files) {
-          const { location, key } = await this.s3Service.uploadFile(file, 'postImages')
+          const { location, key, cdnUrl } = await this.s3Service.uploadFile(file, 'postImages')
           const imageEntity = this.postImageRepository.create({
-            postImage: location, // 파일 위치 URL
+            postImage: cdnUrl, // 파일 위치 URL
             field: file.originalname, // 파일 원본 이름
             postUid: savedBatchPost.uid,
           })
@@ -181,9 +181,9 @@ export class BatchPostsService {
         // 새로운 이미지 업로드
         const fileEntities = []
         for (const file of files) {
-          const { location, key } = await this.s3Service.uploadFile(file, 'postImages')
+          const { location, key, cdnUrl } = await this.s3Service.uploadFile(file, 'postImages')
           const fileEntity = this.postImageRepository.create({
-            postImage: location, // 파일 위치 URL
+            postImage: cdnUrl, // 파일 위치 URL
             field: file.originalname, // 파일 원본 이름
             postUid,
           })
@@ -250,6 +250,7 @@ export class BatchPostsService {
       }
     })
   }
+  // 댓글 목록 조회 로직
   async getBatchComment(userUid: string, params: GetBatchCommentParamsDTO): Promise<GetBatchCommentRO[]> {
     const batchPostUid = params.postUid
     // 게시물이 존재하지 않을 시 에러처리
@@ -263,10 +264,14 @@ export class BatchPostsService {
     if (_.isNil(isMember)) {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BATCH_POST.SERVICE.CREATE_BATCH_COMMENT.NOT_FOUND_USER)
     }
-    const batchCommentList = await this.batchPostCommentRepository.find({ where: { batchPostUid } })
+    const batchCommentList = await this.batchPostCommentRepository.find({
+      where: { batchPostUid },
+      relations: { user: { userInfo: true } },
+    })
     return batchCommentList.map((comment) => ({
       uid: comment.uid,
       userUid,
+      nickName: comment.user.userInfo.nickname,
       batchPostUid,
       parentCommentUid: comment.parentCommentUid,
       content: comment.content,

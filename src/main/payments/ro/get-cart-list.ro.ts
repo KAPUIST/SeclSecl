@@ -2,6 +2,10 @@ import { ApiProperty } from '@nestjs/swagger'
 import { IsDate, IsNumber, IsString, IsUUID } from 'class-validator'
 
 export class GetCartListRO {
+  @ApiProperty({ description: '장바구니 Uid' })
+  @IsUUID()
+  cartUid: string
+
   @ApiProperty({ description: '유저 Uid' })
   @IsUUID()
   userUid: string
@@ -9,6 +13,10 @@ export class GetCartListRO {
   @ApiProperty({ description: '강의명' })
   @IsString()
   lessonName: string
+
+  @ApiProperty({ description: '강의 이미지 url' })
+  @IsString()
+  lessonImg: string
 
   @ApiProperty({ description: '강의 Uid' })
   @IsUUID()

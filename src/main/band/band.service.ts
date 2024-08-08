@@ -141,7 +141,7 @@ export class BandService {
   // 밴드 상세 조회 로직
   async getBandDetail(params: GetBandDetailParamsDTO): Promise<GetBandDetailRO> {
     const bandUid = params.bandUid
-    const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
+    const band = await this.bandRepository.findOne({ where: { uid: bandUid }, relations: { user: { userInfo: true } } })
     // 밴드가 존재하지 않을 시 에러 처리
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_Detail.NOT_FOUND)
@@ -149,6 +149,7 @@ export class BandService {
     return {
       uid: band.uid,
       userUid: band.userUid,
+      nickName: band.user.userInfo.nickname,
       name: band.name,
       content: band.content,
       chatUrl: band.chatUrl,
@@ -223,11 +224,16 @@ export class BandService {
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_MEMBER.NOT_FOUND)
     }
-    const bandMembers = await this.bandMemberRepository.find({ where: { bandUid } })
+    const bandMembers = await this.bandMemberRepository.find({
+      where: { bandUid },
+      relations: { user: { userInfo: true }, band: true },
+    })
     return bandMembers.map((member) => ({
       uid: member.uid,
       userUid: member.userUid,
+      nickName: member.user.userInfo.nickname,
       bandUid: member.bandUid,
+      bandName: member.band.name,
     }))
   }
 
@@ -249,7 +255,10 @@ export class BandService {
       throw new ConflictException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.TRANSFER_Band.CONFLICT)
     }
     // 이전할 유저가 밴드 멤버가 아닐 시 에러 처리
-    const isMember = await this.bandMemberRepository.findOne({ where: { bandUid, userUid: newUser } })
+    const isMember = await this.bandMemberRepository.findOne({
+      where: { bandUid, userUid: newUser },
+      relations: { user: { userInfo: true } },
+    })
     if (_.isNil(isMember)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.TRANSFER_Band.NOT_FOUND_USER)
     }
@@ -257,6 +266,7 @@ export class BandService {
     await this.bandRepository.update({ uid: bandUid }, { userUid: newUser })
     return {
       userUid: newUser,
+      nickName: isMember.user.userInfo.nickname,
     }
   }
 
@@ -296,15 +306,14 @@ export class BandService {
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.GET_BAND_POST_LIST.NOT_FOUND)
     }
-    // 유저가 밴드 멤버가 아닐 시 에러 처리
-    const isMember = await this.bandMemberRepository.findOne({ where: { bandUid, userUid } })
-    if (_.isNil(isMember)) {
-      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.GET_BAND_POST_LIST.NOT_FOUND_USER)
-    }
-    const bandPostList = await this.bandPostRepository.find({ where: { bandUid } })
+    const bandPostList = await this.bandPostRepository.find({
+      where: { bandUid },
+      relations: { bandMember: { user: { userInfo: true } } },
+    })
     return bandPostList.map((bandPost) => ({
       uid: bandPost.uid,
       bandMemberUid: bandPost.bandMemberUid,
+      bandMemberNickName: bandPost.bandMember.user.userInfo.nickname,
       title: bandPost.title,
       content: bandPost.content,
       communityImage: bandPost.communityImage,
@@ -317,7 +326,10 @@ export class BandService {
   async getBandPostDetail(userUid: string, params: GetBandPostDetailParamsDTO): Promise<GetBandPostDetailRO> {
     const postUid = params.postUid
     // 게시물이 존재하지 않을 시 에러처리
-    const bandPost = await this.bandPostRepository.findOne({ where: { uid: postUid } })
+    const bandPost = await this.bandPostRepository.findOne({
+      where: { uid: postUid },
+      relations: { bandMember: { user: { userInfo: true } } },
+    })
     if (_.isNil(bandPost)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.GET_BAND_POST_DETAIL.NOT_FOUND_POST)
     }
@@ -330,6 +342,7 @@ export class BandService {
     return {
       uid: bandPost.uid,
       bandMemberUid: bandPost.bandMemberUid,
+      bandMemberNickName: bandPost.bandMember.user.userInfo.nickname,
       title: bandPost.title,
       content: bandPost.content,
       communityImage: bandPost.communityImage,
@@ -509,10 +522,14 @@ export class BandService {
     if (_.isNil(isMember)) {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_COMMENT.GET_BAND_COMMENT.NOT_FOUND_USER)
     }
-    const getBandCommentList = await this.bandPostCommentRepository.find({ where: { bandPostUid } })
+    const getBandCommentList = await this.bandPostCommentRepository.find({
+      where: { bandPostUid },
+      relations: { bandMember: { user: { userInfo: true } } },
+    })
     return getBandCommentList.map((bandComment) => ({
       uid: bandComment.uid,
       bandMemberUid: bandComment.uid,
+      bandMemberNickName: bandComment.bandMember.user.userInfo.nickname,
       bandPostUid: bandComment.bandPostUid,
       parentCommentUid: bandComment.parentCommentUid,
       content: bandComment.content,
