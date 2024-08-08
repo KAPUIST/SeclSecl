@@ -117,6 +117,7 @@ export class UsersService {
       },
       lesson: {
         uid: userLesson.batch.lesson.uid,
+        cpId: userLesson.batch.lesson.cp_uid,
         title: userLesson.batch.lesson.title,
         description: userLesson.batch.lesson.description,
         teacher: userLesson.batch.lesson.teacher,
@@ -132,7 +133,7 @@ export class UsersService {
       lessonId: favorite.lesson.uid,
       title: favorite.lesson.title,
       teacher: favorite.lesson.teacher,
-      location: favorite.lesson.location
+      location: favorite.lesson.location,
     }
   }
   // 내 정보 조회
@@ -278,6 +279,7 @@ export class UsersService {
           'batch.endDate',
           'batch.startTime',
           'lesson.uid',
+          'lesson.cp_uid',
           'lesson.title',
           'lesson.description',
           'lesson.teacher',
