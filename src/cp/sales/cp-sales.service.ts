@@ -21,13 +21,13 @@ export class SalesService {
         .leftJoin('batch.paymentDetails', 'payment_detail')
         .select([
           'lesson.uid AS lesson_uid',
-          'lesson.cp_uid AS cp_uid',
+          'lesson.cpUid AS cp_uid',
           'lesson.title AS lesson_title',
           'batch.uid AS batch_uid',
           'batch.batchNumber AS batch_number',
           'SUM(payment_detail.amount) AS batch_sales',
         ])
-        .where('lesson.cp_uid = :cpUid', { cpUid })
+        .where('lesson.cpUid = :cpUid', { cpUid })
         .groupBy('lesson.uid')
         .addGroupBy('batch.uid')
         .getRawMany()
@@ -44,7 +44,7 @@ export class SalesService {
         .filter((lesson) => lesson.batch_sales !== null) // batch_sales가 null인 항목 제거
         .map((lesson) => ({
           lesson_uid: lesson.lesson_uid,
-          cp_uid: lesson.cp_uid,
+          cpUid: lesson.cpUid,
           lesson_title: lesson.lesson_title,
           batch_uid: lesson.batch_uid,
           batch_number: lesson.batch_number,

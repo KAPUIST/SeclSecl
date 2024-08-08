@@ -161,7 +161,7 @@ export class BatchesService {
 
   //기업이 해당 강의의 권한이 있는지 확인
   private async authorizedCp(uid, lessonUid) {
-    const authorizedLesson = await this.lessonRepository.find({ where: { uid: lessonUid, cp_uid: uid } })
+    const authorizedLesson = await this.lessonRepository.find({ where: { uid: lessonUid, cpUid: uid } })
     if (authorizedLesson.length === 0) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_AUTHORIZED_LESSON)
     }
@@ -192,7 +192,7 @@ export class BatchesService {
   }
   //기수를 조회할 수 있는 권한 확인
   private async checkAuthorization(uid, lessonUid) {
-    const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonUid, cp_uid: uid } })
+    const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonUid, cpUid: uid } })
 
     const authorizedUser = await this.userRepository.findOne({
       where: { uid },

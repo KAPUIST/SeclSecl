@@ -74,7 +74,7 @@ export class AdminService {
       throw new NotFoundException()
     }
     const lessons = await this.lessonRepository.find({
-      where: { cp_uid: cpId, is_verified: false },
+      where: { cpUid: cpId, isVerified: false },
     })
     return lessons
   }
@@ -82,15 +82,15 @@ export class AdminService {
   //수업 승인
   async approveLesson(cpId: string, lessonId: string): Promise<Lesson> {
     return await this.connection.transaction(async (manager) => {
-      const lesson = await manager.findOne(Lesson, { where: { cp_uid: cpId, uid: lessonId } })
+      const lesson = await manager.findOne(Lesson, { where: { cpUid: cpId, uid: lessonId } })
       if (!lesson) {
         throw new NotFoundException('수업을 찾을 수 없습니다.')
       }
-      if (lesson.is_verified) {
+      if (lesson.isVerified) {
         throw new BadRequestException('이미 승인된 수업입니다.')
       }
 
-      lesson.is_verified = true
+      lesson.isVerified = true
       lesson.status = 'OPEN'
       return manager.save(lesson)
     })
@@ -98,12 +98,12 @@ export class AdminService {
 
   //수업 반려
   async rejectLesson(cpId: string, lessonId: string) {
-    const lesson = await this.lessonRepository.findOne({ where: { cp_uid: cpId, uid: lessonId } })
+    const lesson = await this.lessonRepository.findOne({ where: { cpUid: cpId, uid: lessonId } })
     if (!lesson) {
       throw new NotFoundException('수업을 찾을 수 없습니다.')
     }
 
-    if (lesson.is_verified) {
+    if (lesson.isVerified) {
       throw new BadRequestException('이미 승인된 수업입니다.')
     }
 

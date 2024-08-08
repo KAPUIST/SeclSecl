@@ -30,13 +30,13 @@ export class MainLessonsService {
       shuttle: lesson.shuttle,
       createdAt: lesson.createdAt,
       updatedAt: lesson.updatedAt,
-      isVerified: lesson.is_verified,
+      isVerified: lesson.isVerified,
     }
   }
   async getAllLessons(): Promise<MainLessonResponseRO> {
     try {
       const [lessons, count]: [Lesson[], number] = await this.lessonsRepository.findAndCount({
-        where: { is_verified: true },
+        where: { isVerified: true },
         relations: ['images'],
       })
 
@@ -74,7 +74,7 @@ export class MainLessonsService {
           'lesson_images.url as imageUrl',
         ])
         .addSelect('COUNT(DISTINCT payment_detail.uid)', 'salesCount')
-        .where('lesson.is_verified = :status', { status: true })
+        .where('lesson.isVerified = :status', { status: true })
         .groupBy('lesson.uid')
         .addGroupBy('lesson_images.url')
         .orderBy('salesCount', 'DESC')
@@ -136,8 +136,26 @@ export class MainLessonsService {
 
   async getLessonById(lessonId: string): Promise<MainLessonResponseDto> {
     try {
-      const lesson = await this.lessonsRepository.findOneOrFail({ where: { uid: lessonId } })
-      return plainToInstance(MainLessonResponseDto, lesson)
+      const lesson = await this.lessonsRepository.findOneOrFail({
+        where: { uid: lessonId },
+        relations: { images: true },
+      })
+      const lessonImg = lesson.images[0].url
+      return {
+        lessonUid: lesson.uid,
+        cpUid: lesson.cpUid,
+        title: lesson.title,
+        teacher: lesson.teacher,
+        bio: lesson.bio,
+        description: lesson.description,
+        price: lesson.price,
+        status: lesson.status,
+        location: lesson.location,
+        shuttle: lesson.shuttle,
+        createdAt: lesson.createdAt,
+        updatedAt: lesson.updatedAt,
+        lessonImg,
+      }
     } catch (error) {
       this.logger.error(`레슨 ID ${lessonId} 조회 실패: ${error.message}`, error.stack)
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.LESSON.LESSON_NOT_FOUND)

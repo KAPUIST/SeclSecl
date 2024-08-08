@@ -20,7 +20,7 @@ export default class LessonSeeder implements Seeder {
           .fill({})
           .map(async () => {
             const lesson = await factoryManager.get(Lesson).make({
-              cp_uid: cpUuids[Math.floor(Math.random() * cpUuids.length)],
+              cpUid: cpUuids[Math.floor(Math.random() * cpUuids.length)],
             })
 
             // 레슨 저장

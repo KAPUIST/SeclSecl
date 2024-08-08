@@ -30,7 +30,7 @@ export class CpReviewService {
       const { content } = createCommentDto
       // 리뷰 답글은 하나만 작성할수 있음 이미 작성 된 리뷰가 존재하는지 확인
       const existReview = await this.lessonReviewRepository.findOne({
-        where: { uid: reviewUid, lesson: { cp_uid: cpUid } },
+        where: { uid: reviewUid, lesson: { cpUid: cpUid } },
         relations: ['comment'],
       })
       if (!existReview) {
@@ -71,7 +71,7 @@ export class CpReviewService {
       const { content } = updateCommentDto
       // 리뷰 답글은 하나만 작성할수 있음 이미 작성 된 리뷰가 존재하는지 확인
       const existReview = await this.lessonReviewRepository.findOne({
-        where: { uid: reviewUid, lesson: { cp_uid: cpUid } },
+        where: { uid: reviewUid, lesson: { cpUid: cpUid } },
         relations: ['comment'],
       })
       if (!existReview) {
@@ -103,7 +103,7 @@ export class CpReviewService {
     try {
       // 리뷰가 존재하는지 확인하고 댓글 정보 로드
       const existReview = await this.lessonReviewRepository.findOne({
-        where: { uid: reviewUid, lesson: { cp_uid: cpUid } },
+        where: { uid: reviewUid, lesson: { cpUid: cpUid } },
         relations: ['comment'],
       })
       if (!existReview) {
