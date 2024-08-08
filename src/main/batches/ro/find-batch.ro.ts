@@ -6,7 +6,11 @@ export class FindBatchRo {
   @IsString()
   lessonUid: string
 
-  @ApiProperty({ description: '기수 ' })
+  @ApiProperty({ description: '기수 UID' })
+  @IsString()
+  batchUid: string
+
+  @ApiProperty({ description: '기수' })
   @IsNumber()
   batchNumber: number
 

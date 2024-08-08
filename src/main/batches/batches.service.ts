@@ -75,6 +75,7 @@ export class BatchesService {
     }
 
     return batches.map((batch) => ({
+      batchUid: batch.uid,
       batchNumber: batch.batchNumber,
       lessonUid: batch.lessonUid,
       recruitmentStart: batch.recruitmentStart,
@@ -85,13 +86,14 @@ export class BatchesService {
     }))
   }
 
-  async findOne(uid: string, parms: FindOneBatchParamsDTO): Promise<FindOneBatchRo> {
+  async findOne(uid: string, params: FindOneBatchParamsDTO): Promise<FindOneBatchRo> {
     //기수를 조회할 수 있는 권한 확인
-    await this.checkAuthorization(uid, parms.lessonUid)
+    await this.checkAuthorization(uid, params.lessonUid)
 
-    const batch = await this.findBatchOrThrow(parms.lessonUid, parms.batchUid)
+    const batch = await this.findBatchOrThrow(params.lessonUid, params.batchUid)
 
     return {
+      batchUid: batch.uid,
       batchNumber: batch.batchNumber,
       lessonUid: batch.lessonUid,
       recruitmentStart: batch.recruitmentStart,
@@ -99,19 +101,24 @@ export class BatchesService {
       startDate: batch.startDate,
       endDate: batch.endDate,
       startTime: batch.startTime,
+      location: batch.lesson.location,
+      teacher: batch.lesson.teacher,
+      price: batch.lesson.price,
+      title: batch.lesson.title,
+      description: batch.lesson.description,
     }
   }
 
-  async update(uid: string, parms: UpdateBatchParamsDTO, updateBatchDto: UpdateBatchDto): Promise<UpdateBatchRo> {
+  async update(uid: string, params: UpdateBatchParamsDTO, updateBatchDto: UpdateBatchDto): Promise<UpdateBatchRo> {
     const { batchNumber, ...batchInfo } = updateBatchDto
 
     // 권한이 있는지 확인
-    await this.authorizedCp(uid, parms.lessonUid)
+    await this.authorizedCp(uid, params.lessonUid)
     // 기수가 존재하는지 확인
-    const existingBatch = await this.findBatchOrThrow(parms.lessonUid, parms.batchUid)
+    const existingBatch = await this.findBatchOrThrow(params.lessonUid, params.batchUid)
 
     // 수정하려는 기수 숫자가 이미 있는 기수인지 확인
-    await this.checkBatchDuplicate(parms.lessonUid, batchNumber)
+    await this.checkBatchDuplicate(params.lessonUid, batchNumber)
 
     // 기존 객체에 새 값을 할당
     Object.assign(existingBatch, batchInfo, { batchNumber })
@@ -132,11 +139,11 @@ export class BatchesService {
     }
   }
   // 기수 삭제
-  async remove(uid: string, parms: RemoveBatchParamsDTO): Promise<RemoveBatchRo> {
+  async remove(uid: string, params: RemoveBatchParamsDTO): Promise<RemoveBatchRo> {
     // 권한이 있는지 확인
-    await this.authorizedCp(uid, parms.lessonUid)
+    await this.authorizedCp(uid, params.lessonUid)
     // 기수가 존재하는지 확인
-    const existingBatch = await this.findBatchOrThrow(parms.lessonUid, parms.batchUid)
+    const existingBatch = await this.findBatchOrThrow(params.lessonUid, params.batchUid)
 
     const deleteBatch = await this.batchRepository.softRemove(existingBatch)
 
@@ -163,7 +170,10 @@ export class BatchesService {
 
   // 기수가 존재하는지 확인
   private async findBatchOrThrow(lessonUid: string, batchUid: string) {
-    const batch = await this.batchRepository.findOne({ where: { uid: batchUid, lessonUid } })
+    const batch = await this.batchRepository.findOne({
+      where: { uid: batchUid, lessonUid },
+      relations: { lesson: true },
+    })
 
     if (!batch) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_EXISTING_BATCH)

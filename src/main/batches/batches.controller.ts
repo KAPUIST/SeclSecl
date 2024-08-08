@@ -61,8 +61,8 @@ export class BatchesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/:lessonUid/batches/:batchUid')
-  async findOne(@Request() req, @Param() parms: FindOneBatchParamsDTO) {
-    const data = await this.batchesService.findOne(req.user.uid, parms)
+  async findOne(@Request() req, @Param() params: FindOneBatchParamsDTO) {
+    const data = await this.batchesService.findOne(req.user.uid, params)
 
     return {
       statusCode: HttpStatus.OK,
