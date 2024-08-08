@@ -36,7 +36,8 @@
 
 ## 아키텍처
 
-![아키텍처 다이어그램]()
+<img width="1149" alt="스크린샷 2024-08-08 오후 12 54 48" src="https://github.com/user-attachments/assets/f847a60d-93ad-4f7e-9852-ad6c52e95cfb">
+
 
 - **API 분리 및 호스트 기반 요청 처리**
   - `localhost`: 강의 조회, 결제, 밴드 기능 (일반 유저)
@@ -94,10 +95,4 @@
 
    ```bash
    git commit -m 'Add some feature'
-   ```
-
-4. **푸시**:
-
-   ```bash​⬤# 시클시클 (Senior Class)
-
    ```
