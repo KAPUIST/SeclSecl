@@ -38,6 +38,9 @@ export class MainLessonsService {
       const [lessons, count]: [Lesson[], number] = await this.lessonsRepository.findAndCount({
         where: { isVerified: true },
         relations: ['images'],
+        order: {
+          createdAt: 'DESC',
+        },
       })
 
       const lessonROs: LessonRO[] = lessons.map((lesson) => ({
