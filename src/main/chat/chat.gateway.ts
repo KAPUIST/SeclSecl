@@ -13,8 +13,6 @@ import { ChatService } from './chat.service'
     exposedHeaders: ['Authorization'],
     credentials: true,
   },
-  namespace: 'chatting',
-  path: '/socket.io'
 })
 // @UseGuards(WsAuthGuard)
 export class ChatGateway {
