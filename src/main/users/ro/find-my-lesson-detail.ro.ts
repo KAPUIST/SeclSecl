@@ -38,6 +38,10 @@ class LessonInfo {
   @IsUUID()
   uid: string
 
+  @ApiProperty({ description: 'CP Uid' })
+  @IsUUID()
+  cpId: string
+
   @ApiProperty({ description: '강의 제목' })
   @IsString()
   title: string
