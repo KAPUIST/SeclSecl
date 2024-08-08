@@ -7,7 +7,7 @@ export class SalesResponseDto {
 
   @IsString()
   @IsNotEmpty()
-  cp_uid: string
+  cpUid: string
 
   @IsString()
   @IsNotEmpty()

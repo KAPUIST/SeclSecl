@@ -16,7 +16,7 @@ export class RefreshToken {
   uid: string
 
   @OneToOne(() => Cp, (cp) => cp.refreshToken)
-  @JoinColumn({ name: 'cp_uid', referencedColumnName: 'uid' }) // name 수정
+  @JoinColumn({ name: 'cpUid', referencedColumnName: 'uid' }) // name 수정
   cp: Cp
 
   @Column({ type: 'varchar', nullable: true })

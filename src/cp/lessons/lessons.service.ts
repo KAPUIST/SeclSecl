@@ -38,7 +38,7 @@ export class LessonsService {
     await queryRunner.startTransaction()
     const uploadedFiles: { location: string; key: string }[] = []
     try {
-      const lesson = this.lessonsRepository.create({ ...createLessonDto, cp_uid: cpUid })
+      const lesson = this.lessonsRepository.create({ ...createLessonDto, cpUid: cpUid })
 
       const savedLesson = await queryRunner.manager.save(Lesson, lesson)
       const imageEntities = []
@@ -75,7 +75,7 @@ export class LessonsService {
   async getAllLessons(cpUid: string): Promise<LessonResponseDto[]> {
     try {
       const lessons = await this.lessonsRepository.find({
-        where: { cp_uid: cpUid },
+        where: { cpUid: cpUid },
         relations: { images: true },
         order: { createdAt: 'DESC' },
       })
@@ -89,7 +89,7 @@ export class LessonsService {
   async getLesson(uid: string, cpUid: string): Promise<LessonResponseDto> {
     try {
       const lesson = await this.lessonsRepository.findOne({
-        where: { uid: uid, cp_uid: cpUid },
+        where: { uid: uid, cpUid: cpUid },
         relations: {
           images: true,
           batches: true,
@@ -124,7 +124,7 @@ export class LessonsService {
     const uploadedFiles: { location: string; key: string }[] = []
     const oldFiles: string[] = []
     try {
-      const lesson = await this.lessonsRepository.findOne({ where: { uid, cp_uid: cpUid }, relations: ['images'] })
+      const lesson = await this.lessonsRepository.findOne({ where: { uid, cpUid: cpUid }, relations: ['images'] })
       if (!lesson) {
         throw new NotFoundException('수업이 존재하지 않습니다.')
       }
@@ -176,7 +176,7 @@ export class LessonsService {
     await queryRunner.connect()
     await queryRunner.startTransaction()
     try {
-      const lesson = await this.lessonsRepository.findOne({ where: { uid, cp_uid: cpUid }, relations: ['images'] })
+      const lesson = await this.lessonsRepository.findOne({ where: { uid, cpUid: cpUid }, relations: ['images'] })
       if (!lesson) {
         throw new NotFoundException('수업이 존재하지 않습니다.')
       }
@@ -206,7 +206,7 @@ export class LessonsService {
   async findReviewByLessonId({ lessonId, cpUid }: { lessonId: string; cpUid: string }): Promise<FindLessonReviewRO[]> {
     try {
       const reviews = await this.lessonReviewRepository.find({
-        where: { lesson: { uid: lessonId, cp_uid: cpUid } },
+        where: { lesson: { uid: lessonId, cpUid: cpUid } },
         relations: ['lesson', 'comment'],
       })
 
@@ -241,7 +241,7 @@ export class LessonsService {
     batchId: string
   }): Promise<StudentRO[]> {
     try {
-      const lesson = await this.lessonsRepository.findOne({ where: { uid: lessonId, cp_uid: cpUid } })
+      const lesson = await this.lessonsRepository.findOne({ where: { uid: lessonId, cpUid: cpUid } })
       if (!lesson) {
         throw new NotFoundException('레슨을 찾을 수 없습니다.')
       }

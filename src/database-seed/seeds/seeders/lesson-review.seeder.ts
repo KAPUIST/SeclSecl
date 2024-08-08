@@ -29,9 +29,9 @@ export default class LessonReviewSeeder implements Seeder {
           const user = users[Math.floor(Math.random() * users.length)]
           const lesson = lessons[Math.floor(Math.random() * lessons.length)]
           const batch = batches[Math.floor(Math.random() * batches.length)]
-          const cpUuid = cps.find((uuid) => uuid === lesson.cp_uid)
+          const cpUuid = cps.find((uuid) => uuid === lesson.cpUid)
           if (!cpUuid) {
-            console.warn(`No matching CP UUID found for lesson with cp_uid: ${lesson.cp_uid}`)
+            console.warn(`No matching CP UUID found for lesson with cpUid: ${lesson.cpUid}`)
             return null // 매칭되는 CP UUID가 없을 경우 건너뜀
           }
 

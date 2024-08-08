@@ -11,7 +11,7 @@ export class LessonResponseDto {
 
   @IsString()
   @IsNotEmpty()
-  cp_uid: string
+  cpUid: string
 
   @IsString()
   @IsNotEmpty()
@@ -47,7 +47,7 @@ export class LessonResponseDto {
 
   @IsBoolean()
   @IsNotEmpty()
-  is_verified: boolean
+  isVerified: boolean
 
   createdAt: Date
 

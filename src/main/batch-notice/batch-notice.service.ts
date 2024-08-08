@@ -102,7 +102,7 @@ export class BatchNoticeService {
     // 기수가 존재하는지 확인
     await this.findBatchOrThrow(lessonUid, batchUid)
 
-    const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonUid, cp_uid: uid } })
+    const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonUid, cpUid: uid } })
 
     const authorizedUser = await this.userLessonRepository.findOne({
       where: { userUid: uid, batchUid },
@@ -255,7 +255,7 @@ export class BatchNoticeService {
   }
   //해당 강의의 권한이 있는지 확인
   private async authorizedCp(uid, lessonId) {
-    const authorizedLesson = await this.lessonRepository.find({ where: { uid: lessonId, cp_uid: uid } })
+    const authorizedLesson = await this.lessonRepository.find({ where: { uid: lessonId, cpUid: uid } })
     if (authorizedLesson.length === 0) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_AUTHORIZED_LESSON)
     }

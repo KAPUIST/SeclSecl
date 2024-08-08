@@ -117,7 +117,7 @@ export class UsersService {
       },
       lesson: {
         uid: userLesson.batch.lesson.uid,
-        cpId: userLesson.batch.lesson.cp_uid,
+        cpId: userLesson.batch.lesson.cpUid,
         title: userLesson.batch.lesson.title,
         description: userLesson.batch.lesson.description,
         teacher: userLesson.batch.lesson.teacher,
@@ -279,7 +279,7 @@ export class UsersService {
           'batch.endDate',
           'batch.startTime',
           'lesson.uid',
-          'lesson.cp_uid',
+          'lesson.cpUid',
           'lesson.title',
           'lesson.description',
           'lesson.teacher',

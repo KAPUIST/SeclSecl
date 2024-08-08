@@ -14,7 +14,7 @@ export const LessonFactory = setSeederFactory(Lesson, () => {
   lesson.status = faker.helpers.arrayElement(Object.values(LessonOpenStatus))
   lesson.location = faker.location.city()
   lesson.shuttle = faker.datatype.boolean()
-  lesson.is_verified = faker.datatype.boolean()
+  lesson.isVerified = faker.datatype.boolean()
   // cp_uid는 나중에 설정
   return lesson
 })

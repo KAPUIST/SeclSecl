@@ -20,7 +20,7 @@ export class Lesson {
   uid: string
 
   @Column()
-  cp_uid: string
+  cpUid: string
 
   @Column()
   title: string
@@ -57,7 +57,7 @@ export class Lesson {
   deletedAt: Date
 
   @Column({ default: false })
-  is_verified: boolean
+  isVerified: boolean
 
   @OneToMany(() => LessonImages, (lessonImages) => lessonImages.lesson, { cascade: true })
   images: LessonImages[]

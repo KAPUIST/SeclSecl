@@ -3,11 +3,11 @@ import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator'
 export class MainLessonResponseDto {
   @IsString()
   @IsNotEmpty()
-  uid: string
+  lessonUid: string
 
   @IsString()
   @IsNotEmpty()
-  cp_uid: string
+  cpUid: string
 
   @IsString()
   @IsNotEmpty()
@@ -40,6 +40,10 @@ export class MainLessonResponseDto {
   @IsBoolean()
   @IsNotEmpty()
   shuttle: boolean
+
+  @IsString()
+  @IsNotEmpty()
+  lessonImg: string
 
   createdAt: Date
 
