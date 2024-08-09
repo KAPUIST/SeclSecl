@@ -10,15 +10,15 @@ import { UpdateBatchNoticeDto } from './dto/update-batch-notice.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { DataSource, Repository } from 'typeorm'
-import { Batch } from '../batches/entities/batch.entity'
+import { Batch } from '../../common/batches/entities/batch.entity'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
-import { BatchNotice } from './entities/batch-notice.entity'
-import { UserLesson } from '../users/entities/user-lessons.entity'
+import { BatchNotice } from '../../common/batch-notice/entities/batch-notice.entity'
+import { UserLesson } from '../../main/users/entities/user-lessons.entity'
 import { S3Service } from '../../common/s3/s3.service'
-import { LessonNote } from './entities/lesson-notes.entity'
+import { LessonNote } from '../../common/batch-notice/entities/lesson-notes.entity'
 
 @Injectable()
-export class BatchNoticeService {
+export class CpBatchNoticeService {
   constructor(
     @InjectRepository(Lesson)
     private readonly lessonRepository: Repository<Lesson>,
@@ -85,6 +85,7 @@ export class BatchNoticeService {
 
       return [batchNotice, lessonNote]
     } catch (error) {
+      console.log(error)
       await queryRunner.rollbackTransaction()
 
       // 업로드된 파일 삭제

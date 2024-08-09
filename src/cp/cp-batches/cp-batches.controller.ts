@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Request, UseGuards } from '@nestjs/common'
-import { BatchesService } from './batches.service'
+import { CpBatchesService } from './cp-batches.service'
 import { CreateBatchDto } from './dto/create-batch.dto'
 import { UpdateBatchDto } from './dto/update-batch.dto'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
@@ -12,9 +12,9 @@ import { UpdateBatchParamsDTO } from './dto/update-batch-parms.dto'
 import { RemoveBatchParamsDTO } from './dto/remove-batch-parms.dto'
 
 @ApiTags('기수')
-@Controller({ host: 'localhost', path: 'lessons' })
-export class BatchesController {
-  constructor(private readonly batchesService: BatchesService) {}
+@Controller({ host: 'cp.localhost', path: 'lessons' })
+export class CpbatchesController {
+  constructor(private readonly batchesService: CpBatchesService) {}
 
   /**
    * 기수 등록

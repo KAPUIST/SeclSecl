@@ -12,7 +12,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common'
-import { BatchNoticeService } from './batch-notice.service'
+import { CpBatchNoticeService } from './cp-batch-notice.service'
 import { CreateBatchNoticeDto } from './dto/create-batch-notice.dto'
 import { UpdateBatchNoticeDto } from './dto/update-batch-notice.dto'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
@@ -23,9 +23,9 @@ import { FilesInterceptor } from '@nestjs/platform-express'
 @ApiTags('기수 공지')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller('/lessons/:lessonUid/batches/:batchUid/notification')
-export class BatchNoticeController {
-  constructor(private readonly batchNoticeService: BatchNoticeService) {}
+@Controller({ host: 'cp.localhost', path: '/lessons/:lessonUid/batches/:batchUid/notification' })
+export class CpBatchNoticeController {
+  constructor(private readonly batchNoticeService: CpBatchNoticeService) {}
 
   /**
    * 기수 공지 등록

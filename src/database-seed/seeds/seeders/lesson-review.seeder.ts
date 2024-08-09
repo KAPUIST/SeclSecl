@@ -4,7 +4,7 @@ import { Seeder, SeederFactoryManager } from 'typeorm-extension'
 import { getCpUuids } from '../main-service.seeder'
 import { User } from '../../../main/users/entities/user.entity'
 import { Lesson } from '../../../common/lessons/entities/lessons.entity'
-import { Batch } from '../../../main/batches/entities/batch.entity'
+import { Batch } from '../../../common/batches/entities/batch.entity'
 import { LessonReview } from '../../../main/review/entities/lesson.review.entity'
 import { LessonReviewComments } from '../../../common/lessons/entities/lesson-review-comment.entity'
 

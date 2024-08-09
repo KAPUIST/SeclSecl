@@ -6,7 +6,7 @@ import { S3Module } from '../../common/s3/s3.module'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { LessonImages } from '../../common/lessons/entities/lesson-image.entity'
 import { PaymentDetail } from '../../main/payments/entities/payment-details.entity'
-import { Batch } from '../../main/batches/entities/batch.entity'
+import { Batch } from '../../common/batches/entities/batch.entity'
 import { SalesService } from './cp-sales.service'
 import { SalesController } from './cp-sales.controller'
 

@@ -8,6 +8,8 @@ import { UsersModule } from './users/users.module'
 import { ReviewModule } from './review/lesson.review.module'
 import { MainLessonsModule } from './mainlessons/mainlessons.module'
 import { BandChatModule } from './bandsChats/bandChat.module'
+import { MainBatchesModule } from './main-batches/main-batches.module'
+import { MainBatchNoticeModule } from './main-batch-notices/main-batch-notices.module'
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { BandChatModule } from './bandsChats/bandChat.module'
     ReviewModule,
     MainLessonsModule,
     BandChatModule,
+    MainBatchesModule,
+    MainBatchNoticeModule,
   ],
   controllers: [],
   providers: [],

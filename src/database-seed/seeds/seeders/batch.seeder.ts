@@ -2,7 +2,7 @@
 import { DataSource, EntityManager } from 'typeorm'
 import { Seeder } from 'typeorm-extension'
 import { Lesson } from '../../../common/lessons/entities/lessons.entity'
-import { Batch } from '../../../main/batches/entities/batch.entity'
+import { Batch } from '../../../common/batches/entities/batch.entity'
 
 export default class BatchSeeder implements Seeder {
   public async run(dataSource: DataSource): Promise<any> {

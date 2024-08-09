@@ -9,7 +9,7 @@ import {
   ManyToOne,
 } from 'typeorm'
 import { User } from './user.entity'
-import { Batch } from '../../batches/entities/batch.entity'
+import { Batch } from '../../../common/batches/entities/batch.entity'
 
 @Entity({ name: 'user_lessons' })
 export class UserLesson {

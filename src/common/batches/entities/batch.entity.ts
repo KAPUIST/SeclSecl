@@ -9,14 +9,14 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
-import { PaymentCart } from '../../payments/entities/payment-carts.entity'
-import { PaymentDetail } from '../../payments/entities/payment-details.entity'
-import { Lesson } from '../../../common/lessons/entities/lessons.entity'
-import { UserLesson } from '../../users/entities/user-lessons.entity'
-import { PaymentOrder } from '../../payments/entities/payment-orders.entity'
+import { PaymentCart } from '../../../main/payments/entities/payment-carts.entity'
+import { PaymentDetail } from '../../../main/payments/entities/payment-details.entity'
+import { Lesson } from '../../lessons/entities/lessons.entity'
+import { UserLesson } from '../../../main/users/entities/user-lessons.entity'
+import { PaymentOrder } from '../../../main/payments/entities/payment-orders.entity'
 import { BatchNotice } from '../../batch-notice/entities/batch-notice.entity'
-import { BatchPost } from '../../batch-posts/entities/batch-post.entity'
-import { LessonReview } from '../../review/entities/lesson.review.entity'
+import { BatchPost } from '../../../main/batch-posts/entities/batch-post.entity'
+import { LessonReview } from '../../../main/review/entities/lesson.review.entity'
 
 @Entity({ name: 'batches' })
 export class Batch {
