@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 import { Lesson } from '../../../common/lessons/entities/lessons.entity'
-import { Batch } from '../../batches/entities/batch.entity'
+import { Batch } from '../../../common/batches/entities/batch.entity'
 import { User } from '../../users/entities/user.entity'
 import { Rate } from '../type/lesson.review.rate'
 import { LessonReviewComments } from '../../../common/lessons/entities/lesson-review-comment.entity'

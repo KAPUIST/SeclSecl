@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { BatchesController } from './batches.controller'
-import { BatchesService } from './batches.service'
+import { BatchesController } from './cp-batches.controller'
+import { BatchesService } from './cp-batches.service'
 
 describe('BatchesController', () => {
   let controller: BatchesController

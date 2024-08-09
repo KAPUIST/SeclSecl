@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 
-import { Batch } from '../../batches/entities/batch.entity'
+import { Batch } from '../../../common/batches/entities/batch.entity'
 import { OrderStatus } from '../types/order-status.type'
 
 @Entity('payment_orders')

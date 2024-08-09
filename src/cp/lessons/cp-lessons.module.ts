@@ -7,7 +7,7 @@ import { LessonsService } from './lessons.service'
 import { LessonsModule } from '../../common/lessons/lessons.module'
 import { S3Module } from '../../common/s3/s3.module'
 
-import { Batch } from '../../main/batches/entities/batch.entity'
+import { Batch } from '../../common/batches/entities/batch.entity'
 import { UserLesson } from '../../main/users/entities/user-lessons.entity'
 
 @Module({

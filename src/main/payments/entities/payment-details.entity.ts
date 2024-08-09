@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 import { Payment } from './payments.entity'
-import { Batch } from '../../batches/entities/batch.entity'
+import { Batch } from '../../../common/batches/entities/batch.entity'
 
 @Entity('payment_details')
 export class PaymentDetail {

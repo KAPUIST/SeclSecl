@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { BatchesService } from './batches.service'
+import { BatchNoticeService } from './cp-batch-notice.service'
 
-describe('BatchesService', () => {
-  let service: BatchesService
+describe('BatchNoticeService', () => {
+  let service: BatchNoticeService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [BatchesService],
+      providers: [BatchNoticeService],
     }).compile()
 
-    service = module.get<BatchesService>(BatchesService)
+    service = module.get<BatchNoticeService>(BatchNoticeService)
   })
 
   it('should be defined', () => {

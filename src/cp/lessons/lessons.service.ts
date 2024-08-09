@@ -12,7 +12,7 @@ import { UpdateLessonDto } from './dtos/update-lesson.dto'
 import { LessonReview } from '../../main/review/entities/lesson.review.entity'
 import { FindLessonReviewRO } from './ro/find-lesson-reviews.ro'
 import { UserLesson } from '../../main/users/entities/user-lessons.entity'
-import { Batch } from '../../main/batches/entities/batch.entity'
+import { Batch } from '../../common/batches/entities/batch.entity'
 import { StudentRO } from './ro/student.ro'
 
 @Injectable()

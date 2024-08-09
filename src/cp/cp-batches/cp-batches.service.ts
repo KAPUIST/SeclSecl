@@ -4,9 +4,9 @@ import { UpdateBatchDto } from './dto/update-batch.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
-import { Batch } from './entities/batch.entity'
+import { Batch } from '../../common/batches/entities/batch.entity'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
-import { User } from '../users/entities/user.entity'
+import { User } from '../../main/users/entities/user.entity'
 import { CreateBatchRo } from './ro/create-batch.ro'
 import { CreateBatchParamsDTO } from './dto/create-batch-params.dto'
 import { FindBatchParamsDTO } from './dto/find-batch-parms.dto'
@@ -19,7 +19,7 @@ import { RemoveBatchRo } from './ro/remove-batch.ro'
 import { UpdateBatchRo } from './ro/update-batch.ro'
 
 @Injectable()
-export class BatchesService {
+export class CpBatchesService {
   constructor(
     @InjectRepository(Lesson)
     private readonly lessonRepository: Repository<Lesson>,
