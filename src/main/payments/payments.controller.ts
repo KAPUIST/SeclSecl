@@ -114,6 +114,7 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @Post('carts/:batchUid')
   async addCart(@Request() req, @Param() params: AddCartParamsDTO) {
+    console.log('111111')
     const userUid = req.user.uid
     const addedLesson = await this.paymentService.addCart(userUid, params)
     return {

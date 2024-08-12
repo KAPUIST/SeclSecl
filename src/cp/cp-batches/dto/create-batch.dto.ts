@@ -33,6 +33,11 @@ export class CreateBatchDto {
   endDate: Date
 
   @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  maxEnrollment: number
+
+  @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
   startTime: string
