@@ -42,7 +42,6 @@ import { LikeBandCommentParamsDTO } from './dto/like-band-comment-params.dto'
 import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { SendBirdService } from '../../common/sendbird/sendbird.service'
-import { lastValueFrom } from 'rxjs'
 import { CreateBandRO } from './ro/crate-band.ro'
 import { GetBandListRO } from './ro/get-band-list.ro'
 import { GetBandDetailRO } from './ro/get-band-detail.ro'
@@ -101,7 +100,7 @@ export class BandService {
         await manager.save(BandMember, { userUid, bandUid: createdBand.uid })
 
         // SendBird 채널 생성 및 chatUrl 저장
-        const sendBirdResponse = await lastValueFrom(this.sendBirdService.createChannel(createdBand.name, [userUid]))
+        const sendBirdResponse = await this.sendBirdService.createChannel(createdBand.name, [userUid])
 
         if (!sendBirdResponse || !sendBirdResponse.channel_url) {
           throw new Error('SendBird channel creation failed')
@@ -204,7 +203,7 @@ export class BandService {
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.JOIN_BAND.NOT_FOUND)
     }
-
+    this.sendBirdService.addUserToChannel(userUid, band.chatUrl)
     //가입되지 않은 경우 가입 처리
     const isJoined = await this.bandMemberRepository.findOne({ where: { bandUid, userUid } })
     if (!isJoined) {

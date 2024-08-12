@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
-import { AxiosResponse } from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
 import { Observable, catchError } from 'rxjs'
 import { map } from 'rxjs/operators'
@@ -121,28 +121,53 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
   }
 
   //채팅방 생성
-  createChannel(name: string, userIds: string[]): Observable<any> {
+  async createChannel(name: string, userIds: string[]): Promise<any> {
     const url = `${this.BASE_URL}/group_channels`
     const data = {
       name: name,
       user_ids: userIds,
-      is_distinct: true,
+      is_distinct: false, //동일한 채팅방 id로 생성되는것을 방지함.
     }
-    console.log(data)
-    return this.httpService
-      .post(url, data, {
+
+    try {
+      const response = await axios.post(url, data, {
         headers: {
           'Api-Token': this.API_TOKEN,
+          'Content-Type': 'application/json',
         },
       })
-      .pipe(
-        map((response) => response.data),
-        catchError((error) => {
-          throw new HttpException(error.response?.data || 'SendBird API Error', HttpStatus.INTERNAL_SERVER_ERROR)
-        }),
+
+      return response.data
+    } catch (error) {
+      console.error('Failed to create channel:', error.response?.data || error.message)
+      throw new HttpException(
+        error.response?.data || 'SendBird API Error',
+        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       )
+    }
   }
 
+  async addUserToChannel(userId, channelId) {
+    const API_TOKEN = this.API_TOKEN
+    const BASE_URL = `${this.BASE_URL}/group_channels/${channelId}/invite`
+
+    try {
+      const response = await axios.post(
+        BASE_URL,
+        {
+          user_ids: [userId],
+        },
+        {
+          headers: {
+            'Api-Token': API_TOKEN,
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+    } catch (error) {
+      console.error('Failed to add user to channel:', error.response ? error.response.data : error.message)
+    }
+  }
   //채팅방 종류 조회
   getChannelTypes(): Observable<BandChatChannelsResponseDto> {
     const url = `${this.BASE_URL}/group_channels`
