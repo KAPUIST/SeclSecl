@@ -76,6 +76,8 @@ export class PaymentsService {
         const orderList = payment.orderName.split(', ')
         for (const order of orderList) {
           const batch = await manager.findOne(Batch, { where: { uid: order }, relations: { lesson: true } })
+          // 결제 한 기수에 인원 수 추가
+          await manager.update(Batch, { uid: batch.uid }, { currentEnrollment: batch.currentEnrollment + 1 })
           // 상세 결제 테이블 생성
           await manager.save(PaymentDetail, {
             paymentUid: payment.uid,
@@ -136,16 +138,16 @@ export class PaymentsService {
       if (userUid !== payment.userUid) {
         throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.NOT_MATCHED_USER)
       }
-      const batchList = await manager.find(PaymentDetail, {
+      const paymentDetails = await manager.find(PaymentDetail, {
         where: { paymentUid: params.paymentsUid },
         relations: { batch: true },
       })
       // 해당 결제 정보와 관련된 상세 결제 정보가 없을 시 에러 처리
-      if (_.isNil(batchList)) {
+      if (_.isNil(paymentDetails)) {
         throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.REFUND_PAYMENT.NOT_FOUND)
       }
       // 수업 시작 하루 전까지만 환불 처리 가능
-      for (const paymentDetail of batchList) {
+      for (const paymentDetail of paymentDetails) {
         const currentDate = new Date()
         const refundLimitDate = paymentDetail.batch.startDate
         refundLimitDate.setDate(refundLimitDate.getDate() - 1)
@@ -171,7 +173,14 @@ export class PaymentsService {
 
       try {
         const detailList = await manager.find(PaymentDetail, { where: { paymentUid: payment.uid } })
-
+        // 기수 환불 인원 제외 처리
+        for (const paymentDetail of paymentDetails) {
+          await manager.update(
+            Batch,
+            { uid: paymentDetail.batch.uid },
+            { currentEnrollment: paymentDetail.batch.currentEnrollment - 1 },
+          )
+        }
         // 유저 강의 데이터 삭제
         for (const detail of detailList) {
           await manager.delete(UserLesson, { userUid, batchUid: detail.batchUid })
@@ -391,6 +400,10 @@ export class PaymentsService {
       // 모집 기간이 지났을 때 에러 처리
       if (currentDate > validBatch.recruitmentEnd) {
         throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.AFTER_RECRUITMENT)
+      }
+      // 해당 기수 정원이 다 찼을 때 에러 처리
+      if (validBatch.currentEnrollment >= validBatch.maxEnrollment) {
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.MAX_ENROLLMENT)
       }
     }
     return

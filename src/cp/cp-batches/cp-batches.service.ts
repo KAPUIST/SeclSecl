@@ -62,6 +62,8 @@ export class CpBatchesService {
       endDate: createBatch.endDate,
       startTime: createBatch.startTime,
       createdAt: createBatch.createdAt,
+      maxEnrollment: createBatch.maxEnrollment,
+      currentEnrollment: createBatch.currentEnrollment,
     }
   }
 
@@ -82,6 +84,8 @@ export class CpBatchesService {
       recruitmentEnd: batch.recruitmentEnd,
       startDate: batch.startDate,
       endDate: batch.endDate,
+      maxEnrollment: batch.maxEnrollment,
+      currentEnrollment: batch.currentEnrollment,
       startTime: batch.startTime,
     }))
   }
@@ -100,6 +104,8 @@ export class CpBatchesService {
       recruitmentEnd: batch.recruitmentEnd,
       startDate: batch.startDate,
       endDate: batch.endDate,
+      maxEnrollment: batch.maxEnrollment,
+      currentEnrollment: batch.currentEnrollment,
       startTime: batch.startTime,
       location: batch.lesson.location,
       teacher: batch.lesson.teacher,
