@@ -26,6 +26,14 @@ export class CreateBatchRo {
   @IsDate()
   endDate: Date
 
+  @ApiProperty({ description: '총 인원 수' })
+  @IsNumber()
+  maxEnrollment: number
+
+  @ApiProperty({ description: '현재 인원 수' })
+  @IsNumber()
+  currentEnrollment: number
+
   @ApiProperty({ description: '수업 시간' })
   @IsString()
   startTime: string

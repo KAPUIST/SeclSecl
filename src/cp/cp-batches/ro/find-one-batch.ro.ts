@@ -34,6 +34,14 @@ export class FindOneBatchRo {
   @IsString()
   startTime: string
 
+  @ApiProperty({ description: '총 인원 수' })
+  @IsNumber()
+  maxEnrollment: number
+
+  @ApiProperty({ description: '현재 인원 수' })
+  @IsNumber()
+  currentEnrollment: number
+
   @ApiProperty({ description: '수업 장소' })
   @IsString()
   location: string
