@@ -89,13 +89,15 @@
 
     <script>
       const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzMTA2Mjk0LCJleHAiOjE3MjMxMTM0OTR9.wJCHKSQ_boFptWZ2x08a8weHQxtox7YiBenrb7cwKCM'
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzMTY2NjkyLCJleHAiOjE3MjMxNzM4OTJ9.CqokWzEmuxy_Nvtu4DnfulG_O2aZvypAdzkH9Rg4IF0'
       const decodedToken = jwt_decode(token)
       const userId = decodedToken.uid
       const userName = 'User'
       let chatRoomId
-      const socket = io('ws://localhost:3000/chatting', {
+      const socket = io('https://dfgdwssegf.shop/chatting', {
+        path: '/socket.io',
         query: { token },
+        transports: ['websocket'],
       })
 
       socket.on('connect', () => {
@@ -140,7 +142,7 @@
       async function loadPreviousMessages() {
         console.log('Loading previous messages for chatRoomId', chatRoomId)
         try {
-          const response = await fetch(`http://localhost:3000/api/chat/${chatRoomId}/messages`, {
+          const response = await fetch(`https://dfgdwssegf.shop/api/chat/${chatRoomId}/messages`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
