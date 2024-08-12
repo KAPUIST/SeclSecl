@@ -1,12 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
 import { InjectRepository } from '@nestjs/typeorm'
 import * as bcrypt from 'bcrypt'
-
 import { Repository } from 'typeorm'
 import { Admin } from './entities/admin.entity'
 import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
-import { ConfigService } from '@nestjs/config'
 import { TokenService } from '../../common/auth/token/token.service'
 import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interface'
 import { CreateAdminDto } from './dto/create-admin.dto'
@@ -18,8 +15,7 @@ export class AdminAuthService {
     private adminRepository: Repository<Admin>,
     @InjectRepository(AdminRefreshToken, 'admin')
     private adminRefreshTokenRepository: Repository<AdminRefreshToken>,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+
     private tokenService: TokenService,
   ) {}
 
