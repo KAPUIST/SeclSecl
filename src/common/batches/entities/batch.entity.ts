@@ -44,6 +44,12 @@ export class Batch {
   @Column()
   startTime: string
 
+  @Column()
+  maxEnrollment: number
+
+  @Column({ default: 0 })
+  currentEnrollment: number
+
   @CreateDateColumn()
   createdAt: Date
 

@@ -204,12 +204,12 @@ export class BandService {
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.JOIN_BAND.NOT_FOUND)
     }
-    // 이미 가입했을 시 에러 처리
+
+    //가입되지 않은 경우 가입 처리
     const isJoined = await this.bandMemberRepository.findOne({ where: { bandUid, userUid } })
-    if (isJoined) {
-      throw new ConflictException('이미 가입된 유저입니다.')
+    if (!isJoined) {
+      await this.bandMemberRepository.save({ userUid, bandUid })
     }
-    await this.bandMemberRepository.save({ userUid, bandUid })
     return {
       userUid,
       bandUid,

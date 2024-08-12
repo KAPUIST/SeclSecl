@@ -235,6 +235,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
         AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
         TRANSACTION_ERROR: '주문 생성 중 오류가 생겼습니다.',
+        MAX_ENROLLMENT: '해당 기수의 정원이 다 찼습니다.',
       },
       GET_PAYMENT_LIST: {
         SUCCESS: '결제 목록 조회에 성공하였습니다.',
