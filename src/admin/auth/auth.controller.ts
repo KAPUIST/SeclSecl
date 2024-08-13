@@ -5,8 +5,10 @@ import { AdminAuthService } from './auth.service'
 import { AdminSignInDto } from './dto/sign-in.dto'
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
 import { CreateAdminDto } from './dto/create-admin.dto'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 
 @ApiTags('어드민 인증')
+@UseGuards(JwtAuthGuard)
 @Controller({ host: 'admin.localhost', path: 'auth' })
 export class AuthController {
   constructor(private readonly adminAuthService: AdminAuthService) {}
@@ -33,6 +35,7 @@ export class AuthController {
    */
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async signIn(@Request() req, @Body() adminSignInDto: AdminSignInDto) {
     const data = await this.adminAuthService.signIn(req.user.uid, req.user.email)
     return {

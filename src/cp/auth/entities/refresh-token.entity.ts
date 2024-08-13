@@ -1,7 +1,6 @@
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   OneToOne,
@@ -15,7 +14,7 @@ export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   uid: string
 
-  @OneToOne(() => Cp, (cp) => cp.refreshToken)
+  @OneToOne(() => Cp, (cp) => cp.refreshToken, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'cpUid', referencedColumnName: 'uid' }) // name 수정
   cp: Cp
 
@@ -27,7 +26,4 @@ export class RefreshToken {
 
   @UpdateDateColumn()
   updatedAt: Date
-
-  // @DeleteDateColumn({ select: false })
-  // deletedAt: Date
 }
