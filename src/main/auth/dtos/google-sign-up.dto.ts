@@ -1,0 +1,62 @@
+import { IsString, IsEmail, IsNotEmpty, MinLength, MaxLength, IsOptional, IsDateString } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger'
+
+import { Gender } from '../types/gender.type'
+import { Provider } from '../types/provider.type'
+
+export class GoogleSignUpDto {
+  @ApiProperty({ required: true })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(5, { message: '닉네임은 5글자 이상이여야 합니다.' })
+  @MaxLength(10, { message: '닉네임은 10글자 이하 여야 합니다.' })
+  nickname: string
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  name: string
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  phoneNumber: string
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  gender: Gender
+
+  @ApiProperty({ required: true })
+  @IsDateString()
+  @IsNotEmpty()
+  birthDate: string
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  address?: string
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  dong?: string
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  sido?: string
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  sigungu?: string
+
+  @ApiProperty({ enum: Provider })
+  provider: Provider
+}
