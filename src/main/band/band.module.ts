@@ -9,9 +9,11 @@ import { BandPost } from './entities/band-posts.entity'
 import { BandPostComment } from './entities/band-post-comments.entity'
 import { BandLike } from './entities/band-likes.entity'
 import { SendbirdModule } from '../../common/sendbird/sendbird.module'
+import { Notification } from '../notification/entities/notification.entity'
+import { NotificationModule } from '../notification/notification.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Band, BandMember, BandPost, BandPostComment, BandLike, User]), SendbirdModule],
+  imports: [TypeOrmModule.forFeature([Band, BandMember, BandPost, BandPostComment, BandLike, User]), SendbirdModule, NotificationModule],
   controllers: [BandController],
   providers: [BandService],
   exports: [BandService],
