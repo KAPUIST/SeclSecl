@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDate, IsNumber, IsString } from 'class-validator'
+import { IsDate, IsEnum, IsNumber, IsString } from 'class-validator'
+import { BatchDayType } from '../../../common/batches/types/batch-types'
 
 export class UpdateBatchRo {
   @ApiProperty({ description: '강의 UID' })
@@ -37,4 +38,8 @@ export class UpdateBatchRo {
   @ApiProperty({ description: '수정시간' })
   @IsDate()
   updatedAt: Date
+
+  @ApiProperty({ description: '수강 요일' })
+  @IsEnum(BatchDayType, { each: true })
+  updatedDays: BatchDayType[]
 }
