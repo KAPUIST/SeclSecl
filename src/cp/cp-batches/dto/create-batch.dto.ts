@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import { ArrayMinSize, ArrayNotEmpty, IsDate, IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import { BatchDayType } from '../../../common/batches/types/batch-types'
 
 export class CreateBatchDto {
   @ApiProperty({ required: true })
@@ -41,4 +42,9 @@ export class CreateBatchDto {
   @IsString()
   @IsNotEmpty()
   startTime: string
+
+  @ArrayNotEmpty()
+  @ArrayMinSize(1)
+  @IsEnum(BatchDayType, { each: true })
+  days: BatchDayType[]
 }

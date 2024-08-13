@@ -5,9 +5,10 @@ import { Batch } from '../../common/batches/entities/batch.entity'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { MainBatchesController } from './main-batches.controller'
 import { MainBatchesService } from './main-batches.service'
+import { BatchDay } from '../../common/batches/entities/band-day.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Lesson, Batch, User])],
+  imports: [TypeOrmModule.forFeature([Lesson, Batch, User, BatchDay])],
   controllers: [MainBatchesController],
   providers: [MainBatchesService],
 })

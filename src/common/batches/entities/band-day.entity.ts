@@ -13,7 +13,7 @@ export class BatchDay {
   @Column({ type: 'enum', enum: BatchDayType })
   day: BatchDayType
 
-  @ManyToOne(() => Batch, (batch) => batch.batchDays)
+  @ManyToOne(() => Batch, (batch) => batch.batchDays, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'batch_uid' })
   batch: Batch
 }
