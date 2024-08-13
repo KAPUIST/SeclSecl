@@ -14,6 +14,7 @@ import { FindLessonReviewRO } from './ro/find-lesson-reviews.ro'
 import { UserLesson } from '../../main/users/entities/user-lessons.entity'
 import { Batch } from '../../common/batches/entities/batch.entity'
 import { StudentRO } from './ro/student.ro'
+import { ElasticsearchService } from '@nestjs/elasticsearch'
 
 @Injectable()
 export class LessonsService {
@@ -30,6 +31,7 @@ export class LessonsService {
     private readonly lessonReviewRepository: Repository<LessonReview>,
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,
+    private readonly elasticsearchService: ElasticsearchService,
   ) {}
 
   async createLesson(cpUid: string, createLessonDto: CreateLessonDto, files: Express.Multer.File[]): Promise<Lesson> {
@@ -38,14 +40,20 @@ export class LessonsService {
     await queryRunner.startTransaction()
     const uploadedFiles: { location: string; key: string }[] = []
     try {
-      const lesson = this.lessonsRepository.create({ ...createLessonDto, cpUid: cpUid })
+      const lesson = this.lessonsRepository.create({
+        ...createLessonDto,
+        cpUid: cpUid,
+      })
 
       const savedLesson = await queryRunner.manager.save(Lesson, lesson)
       const imageEntities = []
 
       for (const file of files) {
         const { location, key, cdnUrl } = await this.s3Service.uploadFile(file, 'lessons')
-        const imageEntity = this.lessonImagesRepository.create({ url: cdnUrl, lesson: savedLesson })
+        const imageEntity = this.lessonImagesRepository.create({
+          url: cdnUrl,
+          lesson: savedLesson,
+        })
         imageEntities.push(imageEntity)
         uploadedFiles.push({ location, key }) // 업로드된 파일 정보를 저장
       }
@@ -54,6 +62,19 @@ export class LessonsService {
 
       await queryRunner.manager.save(Lesson, lesson)
       await queryRunner.manager.save(LessonImages, imageEntities)
+
+      // Elasticsearch에 인덱싱
+      await this.elasticsearchService.index({
+        index: 'lessons',
+        id: lesson.uid,
+        body: {
+          title: lesson.title,
+          teacher: lesson.teacher,
+          description: lesson.description,
+          location: lesson.location,
+          status: lesson.status,
+        },
+      })
 
       await queryRunner.commitTransaction()
 
@@ -124,7 +145,10 @@ export class LessonsService {
     const uploadedFiles: { location: string; key: string }[] = []
     const oldFiles: string[] = []
     try {
-      const lesson = await this.lessonsRepository.findOne({ where: { uid, cpUid: cpUid }, relations: ['images'] })
+      const lesson = await this.lessonsRepository.findOne({
+        where: { uid, cpUid: cpUid },
+        relations: ['images'],
+      })
       if (!lesson) {
         throw new NotFoundException('수업이 존재하지 않습니다.')
       }
@@ -134,13 +158,18 @@ export class LessonsService {
         oldFiles.push(image.url)
         await this.s3Service.deleteFile(image.url.split('/').pop()) // 파일 이름 추출하여 삭제
       }
-      await this.lessonImagesRepository.delete({ lesson: { uid: lesson.uid } })
+      await this.lessonImagesRepository.delete({
+        lesson: { uid: lesson.uid },
+      })
 
       // 새로운 이미지 업로드
       const imageEntities = []
       for (const file of files) {
         const { location, key } = await this.s3Service.uploadFile(file, 'lessons')
-        const imageEntity = this.lessonImagesRepository.create({ url: location, lesson })
+        const imageEntity = this.lessonImagesRepository.create({
+          url: location,
+          lesson,
+        })
         imageEntities.push(imageEntity)
         uploadedFiles.push({ location, key })
       }
@@ -150,6 +179,21 @@ export class LessonsService {
 
       await queryRunner.manager.save(Lesson, lesson)
       await queryRunner.manager.save(LessonImages, imageEntities)
+
+      // Elasticsearch에 업데이트
+      await this.elasticsearchService.update({
+        index: 'lessons',
+        id: lesson.uid,
+        body: {
+          doc: {
+            title: lesson.title,
+            teacher: lesson.teacher,
+            description: lesson.description,
+            location: lesson.location,
+            status: lesson.status,
+          },
+        },
+      })
 
       await queryRunner.commitTransaction()
 
@@ -176,7 +220,10 @@ export class LessonsService {
     await queryRunner.connect()
     await queryRunner.startTransaction()
     try {
-      const lesson = await this.lessonsRepository.findOne({ where: { uid, cpUid: cpUid }, relations: ['images'] })
+      const lesson = await this.lessonsRepository.findOne({
+        where: { uid, cpUid: cpUid },
+        relations: ['images'],
+      })
       if (!lesson) {
         throw new NotFoundException('수업이 존재하지 않습니다.')
       }
@@ -187,8 +234,16 @@ export class LessonsService {
       // }
 
       // 데이터베이스에서 레슨과 관련된 이미지 삭제
-      await queryRunner.manager.softRemove(LessonImages, { lesson: { uid: lesson.uid } })
+      await queryRunner.manager.softRemove(LessonImages, {
+        lesson: { uid: lesson.uid },
+      })
       await queryRunner.manager.softRemove(Lesson, { uid })
+
+      // Elasticsearch에서 삭제
+      await this.elasticsearchService.delete({
+        index: 'lessons',
+        id: uid,
+      })
 
       await queryRunner.commitTransaction()
     } catch (error) {
@@ -241,12 +296,16 @@ export class LessonsService {
     batchId: string
   }): Promise<StudentRO[]> {
     try {
-      const lesson = await this.lessonsRepository.findOne({ where: { uid: lessonId, cpUid: cpUid } })
+      const lesson = await this.lessonsRepository.findOne({
+        where: { uid: lessonId, cpUid: cpUid },
+      })
       if (!lesson) {
         throw new NotFoundException('레슨을 찾을 수 없습니다.')
       }
 
-      const batch = await this.batchRepository.findOne({ where: { uid: batchId, lesson: { uid: lesson.uid } } })
+      const batch = await this.batchRepository.findOne({
+        where: { uid: batchId, lesson: { uid: lesson.uid } },
+      })
       if (!batch) {
         throw new NotFoundException('배치를 찾을 수 없습니다.')
       }

@@ -14,6 +14,7 @@ import { HttpModule } from '@nestjs/axios'
 import { BatchNoticeModule } from './common/batch-notice/batch-notice.module'
 import { BatchPostsModule } from './main/batch-posts/batch-posts.module'
 import { SentryModule } from '@sentry/nestjs/setup'
+import { SearchModule } from './main/search/search.module'
 @Module({
   imports: [
     SentryModule.forRoot(),
@@ -32,6 +33,7 @@ import { SentryModule } from '@sentry/nestjs/setup'
     ChatModule,
     BatchNoticeModule,
     BatchPostsModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],
