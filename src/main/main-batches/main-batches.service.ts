@@ -9,6 +9,7 @@ import { FindBatchParamsDTO } from './dto/find-batch-parms.dto'
 import { FindBatchRo } from './ro/find-batch.ro'
 import { FindOneBatchParamsDTO } from './dto/find-one-batch-parms.dto'
 import { FindOneBatchRo } from './ro/find-one-batch.ro'
+import { BatchDay } from '../../common/batches/entities/band-day.entity'
 
 @Injectable()
 export class MainBatchesService {
@@ -17,6 +18,8 @@ export class MainBatchesService {
     private readonly lessonRepository: Repository<Lesson>,
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
+    @InjectRepository(BatchDay)
+    private readonly batchDayRepository: Repository<BatchDay>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
@@ -30,16 +33,26 @@ export class MainBatchesService {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_EXISTING_BATCH)
     }
 
-    return batches.map((batch) => ({
-      batchUid: batch.uid,
-      batchNumber: batch.batchNumber,
-      lessonUid: batch.lessonUid,
-      recruitmentStart: batch.recruitmentStart,
-      recruitmentEnd: batch.recruitmentEnd,
-      startDate: batch.startDate,
-      endDate: batch.endDate,
-      startTime: batch.startTime,
-    }))
+    const reviseList = await Promise.all(
+      batches.map(async (batch) => {
+        const days = await this.batchDayRepository.find({ where: { batchUid: batch.uid } })
+        const batchDays = days.map((entry) => entry.day)
+        return {
+          batchUid: batch.uid,
+          batchNumber: batch.batchNumber,
+          lessonUid: batch.lessonUid,
+          recruitmentStart: batch.recruitmentStart,
+          recruitmentEnd: batch.recruitmentEnd,
+          startDate: batch.startDate,
+          endDate: batch.endDate,
+          maxEnrollment: batch.maxEnrollment,
+          currentEnrollment: batch.currentEnrollment,
+          startTime: batch.startTime,
+          batchDays,
+        }
+      }),
+    )
+    return reviseList
   }
   // 기수 상세 조회
   async findOne(uid: string, params: FindOneBatchParamsDTO): Promise<FindOneBatchRo> {
@@ -47,7 +60,8 @@ export class MainBatchesService {
     await this.checkAuthorization(uid, params.lessonUid)
 
     const batch = await this.findBatchOrThrow(params.lessonUid, params.batchUid)
-
+    const days = await this.batchDayRepository.find({ where: { batchUid: batch.uid } })
+    const batchDays = days.map((entry) => entry.day)
     return {
       batchUid: batch.uid,
       batchNumber: batch.batchNumber,
@@ -62,6 +76,7 @@ export class MainBatchesService {
       price: batch.lesson.price,
       title: batch.lesson.title,
       description: batch.lesson.description,
+      batchDays,
     }
   }
 
