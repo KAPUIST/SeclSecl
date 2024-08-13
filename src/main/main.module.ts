@@ -10,6 +10,7 @@ import { MainLessonsModule } from './mainlessons/mainlessons.module'
 import { BandChatModule } from './bandsChats/bandChat.module'
 import { MainBatchesModule } from './main-batches/main-batches.module'
 import { MainBatchNoticeModule } from './main-batch-notices/main-batch-notices.module'
+import { ChatbotModule } from '../common/chatbot/chatbot.module'
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MainBatchNoticeModule } from './main-batch-notices/main-batch-notices.m
     BandChatModule,
     MainBatchesModule,
     MainBatchNoticeModule,
+    ChatbotModule,
   ],
   controllers: [],
   providers: [],
