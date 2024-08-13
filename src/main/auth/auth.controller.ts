@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Headers, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Request,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+  Response,
+  Query,
+} from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { SignUpDto } from './dtos/sign-up.dto'
@@ -9,6 +22,8 @@ import { LocalAuthGuard } from '../../common/guards/local-auth.guard'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { User } from '../../common/decorator/user-decorator'
 import { ApiResponseRo } from '../../common/ro/api-response.ro'
+import { GoogleAuthGuard } from '../../common/guards/google.guard'
+import { GoogleSignUpDto } from './dtos/google-sign-up.dto'
 
 @ApiTags('유저 인증')
 @Controller({ host: 'localhost', path: 'auth' })
@@ -44,6 +59,53 @@ export class AuthController {
     }
   }
 
+  @Get('/google')
+  @UseGuards(GoogleAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '구글 로그인' })
+  @ApiResponse({ status: HttpStatus.OK, description: '로그인 성공' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '로그인 실패' })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async signInGoogle() {}
+
+  @Get('/google/callback')
+  @UseGuards(GoogleAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '구글 로그인' })
+  @ApiResponse({ status: HttpStatus.OK, description: '로그인 성공' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: '로그인 실패' })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async signInGoogleRedirect(@Request() req, @Response() res) {
+    const result = await this.authService.signInGoogle({ email: req.user.email, sub: req.user.sub })
+
+    if (result.email) {
+      // 이미 등록된 이메일인 경우
+      const redirectUrl = `https://sclescle.bubbleapps.io/version-test/google_auth_callback?email=${result.email}`
+      return res.redirect(redirectUrl)
+    } else {
+      // 추가 정보 입력이 필요한 경우
+      return res.redirect(result.redirect)
+    }
+  }
+  @Post('google-signup')
+  async googleSignup(@Body() signUpDto: GoogleSignUpDto) {
+    const data = await this.authService.googleSignUp(signUpDto)
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: '회원가입에 성공 하였습니다 다시 로그인 해주세요.',
+      data,
+    }
+  }
+  @Get('exchange-token')
+  async googleExchangeToken(@Query('email') email: string) {
+    const data = await this.authService.getUserToken(email)
+    console.log(data)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.AUTH.SIGN_IN.SUCCEED,
+      data,
+    }
+  }
   @Post('/sign-out')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '로그아웃' })

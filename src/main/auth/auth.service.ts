@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -6,7 +7,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
-
+import { v4 as uuidv4 } from 'uuid'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../users/entities/user.entity'
 import { Repository } from 'typeorm'
@@ -22,6 +23,7 @@ import { TokenService } from '../../common/auth/token/token.service'
 import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interface'
 import { SendBirdService } from '../../common/sendbird/sendbird.service'
 import { lastValueFrom } from 'rxjs'
+import { GoogleSignUpDto } from './dtos/google-sign-up.dto'
 
 @Injectable()
 export class AuthService {
@@ -143,6 +145,64 @@ export class AuthService {
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.SIGNUP_FAILED)
     }
   }
+  async getUserToken(email: string) {
+    const key = `user_token:${email}`
+    const tempUserData = await this.redisService.getValue(key)
+    const data = await JSON.parse(tempUserData)
+    await this.redisService.deleteValue(key)
+    return data
+  }
+  async googleSignUp(signUpDto: GoogleSignUpDto) {
+    const tempUserKey = `temp_user:${signUpDto.email}`
+    const tempUserData = await this.redisService.getValue(tempUserKey)
+    const { email } = JSON.parse(tempUserData)
+    const { phoneNumber, nickname, ...otherUserInfo } = signUpDto
+
+    if (!tempUserData) {
+      throw new BadRequestException('Invalid or expired signup session')
+    }
+    const [existingUser, existingNickname, isVerified] = await Promise.all([
+      this.userRepository.findOne({ where: { email } }),
+      this.userInfosRepository.findOne({ where: { nickname } }),
+      this.isPhoneNumberVerified(phoneNumber),
+    ])
+
+    if (existingUser) {
+      throw new ConflictException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.EMAIL_EXISTS)
+    }
+
+    if (existingNickname) {
+      throw new ConflictException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.NICKNAME_EXISTS)
+    }
+
+    if (!isVerified) {
+      throw new ConflictException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.PHONE_NOT_VERIFIED)
+    }
+
+    const randomPassword = uuidv4()
+    const hashedPassword = await bcrypt.hash(randomPassword, 10)
+
+    const userData = await this.userRepository.save(
+      this.userRepository.create({
+        email,
+        password: hashedPassword,
+      }),
+    )
+
+    await this.userInfosRepository.save(
+      this.userInfosRepository.create({
+        ...otherUserInfo,
+        phoneNumber,
+        nickname,
+        user: userData,
+      }),
+    )
+
+    await lastValueFrom(this.sendBirdService.createUser(userData.uid, nickname, 'https://example.com/profile.jpg'))
+    await this.redisService.deleteValue(`verified:${phoneNumber}`)
+
+    return { email: userData.email }
+  }
 
   async sendVerificationCode(phoneNumber: string): Promise<void> {
     try {
@@ -201,6 +261,21 @@ export class AuthService {
     } catch (error) {
       this.logger.error(`로그인 실패: ${error.message}`, error.stack)
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.SIGNIN_FAILED)
+    }
+  }
+  async signInGoogle({ email, sub }: { email: string; sub: number }) {
+    const existingUser = await this.userRepository.findOne({ where: { email }, relations: ['userInfo'] })
+    const tempUser = `user_token:${email}`
+    if (existingUser) {
+      const { user, tokens } = await this.signIn(existingUser.uid, email)
+      await this.redisService.setValue(tempUser, JSON.stringify({ user, tokens }), 300)
+      return { email }
+    } else {
+      // 사용자가 존재하지 않으면, 임시 데이터를 Redis에 저장
+      const tempUser = `temp_user:${email}`
+      await this.redisService.setValue(tempUser, JSON.stringify({ email, googleId: sub }), 300)
+      // 추가 정보 입력 페이지로 리디렉션 (프론트엔드에서 처리)
+      return { redirect: 'https://sclescle.bubbleapps.io/version-test/google_sign_up' }
     }
   }
   async signOut(refreshToken: string): Promise<void> {
