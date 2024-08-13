@@ -32,6 +32,8 @@ import { CreateOrderRO } from './ro/create-order.ro'
 import { RefundPaymentRO } from './ro/refund-payment.ro'
 import { CheckCartQueryDto } from './dto/check-cart-query.dto'
 import { PurchaseItemRO } from './ro/purchase-item.ro'
+import { InjectQueue } from '@nestjs/bullmq'
+import { Queue } from 'bullmq'
 
 @Injectable()
 export class PaymentsService {
@@ -50,6 +52,7 @@ export class PaymentsService {
     private readonly userLessonRepository: Repository<UserLesson>,
     private dataSource: DataSource,
     private readonly configService: ConfigService,
+    @InjectQueue('paymentQueue') private readonly paymentQueue: Queue,
   ) {}
   // 주문 결제 로직
   async purchaseItem(userUid: string, purchaseItemDto: PurchaseItemDto): Promise<PurchaseItemRO> {
@@ -407,5 +410,14 @@ export class PaymentsService {
       }
     }
     return
+  }
+
+  // bull queue 테스트 queue
+  async bullTestQueue(userId, bodyId) {
+    await this.paymentQueue.add('bullTestQueue', { userId, bodyId })
+  }
+
+  async bullTest(userId, bodyId) {
+    await this.paymentQueue.add('bullTestQueue', { userId, bodyId })
   }
 }
