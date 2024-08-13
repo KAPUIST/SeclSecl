@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -37,6 +36,6 @@ export class Cp {
   @OneToOne(() => CpInfo, (cpInfo) => cpInfo.cp, { cascade: true })
   cpInfo: CpInfo
 
-  @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.cp, { cascade: ['remove', 'soft-remove'] })
+  @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.cp, { cascade: true })
   refreshToken: RefreshToken
 }

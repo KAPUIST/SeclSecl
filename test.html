@@ -1,0 +1,208 @@
+<div style="display: flex; border: 1px solid #ccc; width: 500px; height: 400px; border-radius: 5px; overflow: hidden">
+  <div
+    id="participant-list"
+    style="width: 150px; border-right: 1px solid #ccc; padding: 10px; background-color: #f7f7f7; overflow-y: auto"
+  >
+    <h4 style="margin-top: 0; font-family: Arial, sans-serif">Participants</h4>
+    <ul
+      id="participant-names"
+      style="list-style-type: none; padding: 0; font-family: Arial, sans-serif; font-size: 14px"
+    ></ul>
+  </div>
+
+  <div
+    id="chat-container"
+    style="flex-grow: 1; padding: 10px; display: flex; flex-direction: column; background-color: #fff"
+  >
+    <div
+      id="message-list"
+      style="
+        flex-grow: 1;
+        overflow-y: auto;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #fafafa;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        height: 300px;
+      "
+    ></div>
+    <div style="display: flex">
+      <input
+        type="text"
+        id="message-input"
+        placeholder="Type a message..."
+        style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px"
+      />
+      <button
+        id="send-button"
+        style="
+          margin-left: 10px;
+          padding: 8px 12px;
+          border: none;
+          border-radius: 5px;
+          background-color: #007bff;
+          color: #fff;
+          font-weight: bold;
+          cursor: pointer;
+        "
+      >
+        Send
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://804f62ca1c93c08137cc267122e07468.cdn.bubble.io/f1723442840391x131068203634279840/SendBird.min.js?_gl=1*k39uxk*_gcl_aw*R0NMLjE3MjI5NDUxNjkuQ2p3S0NBandrOGUxQmhBTEVpd0FjOE1IaUUyUGt0T1psbXk5RUJtZU43ekNJRXFTMDJCYlE1VmdnTzZiVk04OTFNWjVRYk1VdGNFRGRob0NyTGdRQXZEX0J3RQ..*_gcl_au*MjcwMjE1MjkuMTcyMTk5MTExNQ..*_ga*NjYwOTc4Njc5LjE3MjE5OTExMTU.*_ga_BFPVR2DEE2*MTcyMzQzOTQ1NC45LjEuMTcyMzQ0Mjk0OS42MC4wLjA."></script>
+<script type="text/javascript">
+  window.addEventListener('load', (event) => {
+    // Sendbird SDK 초기화
+    var appId = '22EE72E3-8B62-4D55-B02C-8200FCECD00F'
+    var userId = '8b1f73a9-119c-481c-8736-d8ca847241a7'
+    var channelId = 'sendbird_group_channel_204269109_2256e3949cc433f1e4434a6b0b2b78f7853e0cab'
+    var accessToken =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI4YjFmNzNhOS0xMTljLTQ4MWMtODczNi1kOGNhODQ3MjQxYTciLCJlbWFpbCI6InRoc3hvcm5qczEyM0BnbWFpbC5jb20iLCJ0eXBlIjoibWFpbiIsImlhdCI6MTcyMzQ4NDgwNSwiZXhwIjoxNzIzNDkyMDA1fQ.gbtP1jPevzptcxioEnUb812LUUMhbvWYut2XQ1JmVK8'
+    var sb = new SendBird({ appId: appId })
+    var channel, messageListQuery
+    var isLoadingMessages = false // 메시지 로드 상태를 추적하는 플래그
+
+    // 유저 연결
+    sb.connect(userId, accessToken, function (user, error) {
+      if (error) {
+        console.error('Connection failed:', error)
+        return
+      }
+
+      // 채널에 입장
+      sb.GroupChannel.getChannel(channelId, function (ch, error) {
+        if (error) {
+          console.error('Failed to get channel:', error)
+          return
+        }
+
+        channel = ch
+
+        // 참여자 목록 표시
+        updateParticipantList(channel.members)
+
+        // 메시지 목록 쿼리 생성
+        messageListQuery = channel.createPreviousMessageListQuery()
+
+        // 기존 메시지 로드
+        loadPreviousMessages(true)
+
+        // 메시지 전송 기능
+        document.getElementById('send-button').addEventListener('click', sendMessage)
+
+        // 메시지 입력 필드에서 엔터키로 메시지 전송
+        document.getElementById('message-input').addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') sendMessage()
+        })
+
+        // 실시간 메시지 수신 처리
+        var ChannelHandler = new sb.ChannelHandler()
+        ChannelHandler.onMessageReceived = function (channel, message) {
+          displayMessage(message)
+        }
+        sb.addChannelHandler('uniqueHandlerId', ChannelHandler)
+
+        // 스크롤하여 이전 메시지 로드
+        document.getElementById('message-list').addEventListener('scroll', function () {
+          if (this.scrollTop === 0 && messageListQuery.hasMore && !isLoadingMessages) {
+            loadPreviousMessages(false)
+          }
+        })
+
+        window.addEventListener('beforeunload', function () {
+          sb.disconnect(function () {
+            var connectionState = sb.getConnectionState()
+            console.log('현재 연결 상태:', connectionState)
+            console.log('Sendbird 연결이 성공적으로 끊어졌습니다.')
+          })
+        })
+      })
+    })
+
+    function updateParticipantList(members) {
+      var participantList = document.getElementById('participant-names')
+      participantList.innerHTML = '' // 기존 목록 초기화
+
+      members.forEach(function (member) {
+        var participantItem = document.createElement('li')
+        participantItem.innerText = member.nickname
+        participantList.appendChild(participantItem)
+      })
+    }
+
+    function loadPreviousMessages(initialLoad = false) {
+      if (!messageListQuery || isLoadingMessages) return
+
+      isLoadingMessages = true
+
+      messageListQuery.load(20, false, function (messages, error) {
+        if (error) {
+          console.error('Failed to load messages:', error)
+          isLoadingMessages = false
+          return
+        }
+
+        // 메시지를 createdAt 기준으로 정렬
+        console.log(messages)
+        messages.sort((a, b) => b.createdAt - a.createdAt)
+
+        var messageList = document.getElementById('message-list')
+        var scrollPosition = messageList.scrollHeight
+
+        messages.forEach(function (message) {
+          displayMessage(message, true)
+        })
+
+        if (initialLoad) {
+          // 초기 로드 시 최신 메시지로 스크롤
+          messageList.scrollTop = messageList.scrollHeight
+        } else {
+          // 이전 메시지를 로드할 때 스크롤 위치 유지
+          messageList.scrollTop = messageList.scrollHeight - scrollPosition
+        }
+
+        isLoadingMessages = false
+      })
+    }
+
+    function sendMessage() {
+      var messageInput = document.getElementById('message-input')
+      var message = messageInput.value
+      if (message.trim() === '') return
+      channel.sendUserMessage(message, function (message, error) {
+        if (error) {
+          console.error('Failed to send message:', error)
+          return
+        }
+
+        // 메시지 UI에 추가
+        displayMessage(message)
+        messageInput.value = '' // 입력창 초기화
+      })
+    }
+
+    function displayMessage(message, prepend = false) {
+      var messageElement = document.createElement('div')
+      messageElement.style.marginBottom = '10px'
+      if (message.messageType === 'admin') {
+        messageElement.innerHTML = '<strong>' + 'admin' + ':</strong> ' + message.message
+      } else {
+        messageElement.innerHTML = '<strong>' + message.sender.nickname + ':</strong> ' + message.message
+      }
+
+      var messageList = document.getElementById('message-list')
+      if (prepend) {
+        messageList.prepend(messageElement)
+      } else {
+        messageList.appendChild(messageElement)
+        messageList.scrollTop = messageList.scrollHeight // 최신 메시지로 스크롤
+      }
+    }
+  })
+</script>
