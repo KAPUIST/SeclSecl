@@ -1,12 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { ArrayMinSize, ArrayNotEmpty, IsDate, IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import { ArrayMinSize, ArrayNotEmpty, IsDate, IsEnum, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator'
 import { BatchDayType } from '../../../common/batches/types/batch-types'
 
 export class CreateBatchDto {
   @ApiProperty({ required: true })
   @IsNumber()
   @IsNotEmpty()
+  @Min(1, {
+    message: 'Batch number must be at least 1',
+  })
   batchNumber: number
 
   @ApiProperty({ required: true })
