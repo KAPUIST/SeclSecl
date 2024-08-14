@@ -8,6 +8,8 @@ export class PaymentConsumer extends WorkerHost {
     super()
   }
   async process(job: Job<any, any, string>): Promise<any> {
-    return await this.paymentService.bullTest(job.data.userId, job.data.bodyId)
+    // return await this.paymentService.bullTest(job.data.userUid, job.data.bodyId)
+    // return await this.paymentService.addCart(job.data.userUid, job.data.params)
+    return await this.paymentService.purchaseItem(job.data.userUid, job.data.purchaseItemDto)
   }
 }

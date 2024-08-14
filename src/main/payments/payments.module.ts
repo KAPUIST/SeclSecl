@@ -11,15 +11,17 @@ import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { PaymentOrder } from './entities/payment-orders.entity'
 import { UserLesson } from '../users/entities/user-lessons.entity'
 import { BullModule } from '@nestjs/bullmq'
+import { PaymentConsumer } from './payment.queue.consumer'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Payment, PaymentDetail, PaymentCart, PaymentOrder, User, UserLesson, Batch, Lesson]),
     BullModule.forRoot({
       connection: {
-        host: 'one-jackal-54816.upstash.io',
-        password: 'AdYgAAIjcDE2NjRjODAxMzVhZDg0ODFkYThmZGQ3NTE3N2JkYWVmNnAxMA',
+        host: '3.39.240.213',
         port: 6379,
+        password: '5577porta',
+        // tls: {},
       },
     }),
     BullModule.registerQueue({
@@ -27,6 +29,6 @@ import { BullModule } from '@nestjs/bullmq'
     }),
   ],
   controllers: [PaymentsController],
-  providers: [PaymentsService],
+  providers: [PaymentsService, PaymentConsumer],
 })
 export class PaymentsModule {}
