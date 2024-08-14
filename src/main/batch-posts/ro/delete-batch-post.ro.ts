@@ -15,7 +15,7 @@ export class PostImage {
   postUid: string
 }
 
-export class CreateBatchPostRo {
+export class DeleteBatchPostRo {
   @ApiProperty({ description: 'UID' })
   @IsString()
   uid: string
@@ -42,5 +42,5 @@ export class CreateBatchPostRo {
 
   @ApiProperty({ description: '생성시간' })
   @IsDate()
-  createdAt: Date
+  deletedAt: Date
 }

@@ -37,6 +37,16 @@ import { LikeBatchPostParamsDTO } from './dto/like-batch-post-params.dto'
 import { LikeBatchPostRO } from './ro/like-batch-post.ro'
 import { UnlikeBatchPostParamsDTO } from './dto/unlike-batch-post-params.dto'
 import { UnlikeBatchPostRO } from './ro/unlike-batch-post.ro'
+import { CreateBatchPostParamsDTO } from './dto/create-batch-post-prams.dto'
+import { FindAllBatchPostParamsDTO } from './dto/find-all-batch-post-parms.dto'
+import { FindOneBatchPostParamsDTO } from './dto/find-one-batch-post-parms.dto'
+import { UpdateBatchPostParamsDTO } from './dto/update-batch-post-parms.dto'
+import { DeleteBatchPostParamsDTO } from './dto/delete-batch-post-parms.dto'
+import { CreateBatchPostRo } from './ro/create-batch-post.ro'
+import { FindAllBatchPostRo } from './ro/fina-all-batch-post.ro'
+import { FindOneBatchPostRo } from './ro/find-one-batch-post.ro'
+import { UpdateBatchPostRo } from './ro/update-batch-post.ro'
+import { DeleteBatchPostRo } from './ro/delete-batch-post.ro'
 
 @Injectable()
 export class BatchPostsService {
@@ -56,7 +66,12 @@ export class BatchPostsService {
     private readonly dataSource: DataSource,
   ) {}
   // 기수 커뮤니티 생성
-  async create(uid: string, batchUid: string, files: Express.Multer.File[], createBatchPostDto: CreateBatchPostDto) {
+  async create(
+    uid: string,
+    params: CreateBatchPostParamsDTO,
+    files: Express.Multer.File[],
+    createBatchPostDto: CreateBatchPostDto,
+  ): Promise<CreateBatchPostRo> {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       const uploadedFiles: { location: string; key: string }[] = []
       try {
@@ -65,7 +80,7 @@ export class BatchPostsService {
 
         const newBatchPost = await transactionalEntityManager.create(BatchPost, {
           ...createBatchPostDto,
-          batchUid,
+          batchUid: params.batchUid,
           userUid: uid,
         })
 
@@ -84,13 +99,21 @@ export class BatchPostsService {
 
         const postImages = await transactionalEntityManager.save(PostImage, imageEntities)
 
-        postImages.forEach((image) => {
-          delete image.deletedAt
-        })
+        const images = postImages.map((item) => ({
+          postImage: item.postImage,
+          field: item.field,
+          postUid: item.postUid,
+        }))
 
-        delete savedBatchPost.deletedAt
-
-        return [savedBatchPost, postImages]
+        return {
+          uid: savedBatchPost.uid,
+          batchUid: savedBatchPost.batchUid,
+          title: savedBatchPost.title,
+          content: savedBatchPost.content,
+          likeCount: savedBatchPost.likeCount,
+          createdAt: savedBatchPost.createdAt,
+          postImages: images,
+        }
       } catch (error) {
         // 업로드된 파일 삭제
         for (const file of uploadedFiles) {
@@ -101,68 +124,88 @@ export class BatchPostsService {
     })
   }
   //기수 커뮤니티 전체 조회
-  async findAll(uid: string, batchUid: string) {
+  async findAll(uid: string, params: FindAllBatchPostParamsDTO): Promise<FindAllBatchPostRo[]> {
     //유저 권한 확인
     await this.checkUserPermission(uid)
     //기수가 존재하나 확인
-    await this.verifyBatchExistence(batchUid)
+    await this.verifyBatchExistence(params.batchUid)
 
-    const data = await this.batchPostRepository.find({ where: { batchUid }, relations: ['postImages'] })
-
-    // deletedAt 필드 삭제
-    data.forEach((post) => {
-      delete post.deletedAt
-      post.postImages.forEach((image) => {
-        delete image.deletedAt
-      })
-    })
-    return data
-  }
-  // 커뮤니티 상세조회
-  async findOne(uid: string, batchUid: string, postUid: string) {
-    //유저 권한 확인
-    await this.checkUserPermission(uid)
-    //기수가 존재하나 확인
-    await this.verifyBatchExistence(batchUid)
-
-    const existingBatchPost = await this.batchPostRepository.find({
-      where: { uid: postUid },
+    const data = await this.batchPostRepository.find({
+      where: { batchUid: params.batchUid },
       relations: ['postImages'],
     })
-    if (!(existingBatchPost.length > 0)) {
+
+    const results = data.map((item) => {
+      const postImages = item.postImages.map((note) => ({
+        postImage: note.postImage,
+        field: note.field,
+        postUid: note.postUid,
+      }))
+      return {
+        uid: item.uid,
+        batchUid: item.batchUid,
+        title: item.title,
+        content: item.content,
+        likeCount: item.likeCount,
+        postImages,
+      }
+    })
+
+    return results
+  }
+  // 커뮤니티 상세조회
+  async findOne(uid: string, params: FindOneBatchPostParamsDTO): Promise<FindOneBatchPostRo[]> {
+    //유저 권한 확인
+    await this.checkUserPermission(uid)
+    //기수가 존재하나 확인
+    await this.verifyBatchExistence(params.batchUid)
+
+    const existingBatchPost = await this.batchPostRepository.findOne({
+      where: { uid: params.postUid },
+      relations: ['postImages'],
+    })
+    const postImages = existingBatchPost.postImages
+
+    if (!existingBatchPost) {
       throw new NotFoundException('게시물을 찾을 수 없습니다.')
     }
 
-    // deletedAt 필드 삭제
-    existingBatchPost.forEach((post) => {
-      delete post.deletedAt
-      post.postImages.forEach((image) => {
-        delete image.deletedAt
-      })
-    })
+    const images = postImages.map((item) => ({
+      postImage: item.postImage,
+      field: item.field,
+      postUid: item.postUid,
+    }))
 
-    return existingBatchPost
+    return [
+      {
+        uid: existingBatchPost.uid,
+        batchUid: existingBatchPost.batchUid,
+        title: existingBatchPost.title,
+        content: existingBatchPost.content,
+        likeCount: existingBatchPost.likeCount,
+        postImages: images,
+      },
+    ]
   }
 
   async update(
     uid: string,
-    batchUid: string,
-    postUid: string,
+    params: UpdateBatchPostParamsDTO,
     files: Express.Multer.File[] = [],
     updateBatchPostDto: UpdateBatchPostDto,
-  ) {
+  ): Promise<UpdateBatchPostRo> {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       const uploadedFiles: { location: string; key: string }[] = []
       const oldFiles: string[] = []
 
       try {
         //글 작성 유저 권한 확인
-        await this.verifyAuthor(uid, postUid)
+        await this.verifyAuthor(uid, params.postUid)
         //기수가 존재하나 확인
-        await this.verifyBatchExistence(batchUid)
+        await this.verifyBatchExistence(params.batchUid)
 
         const existingBatchPost = await transactionalEntityManager.findOne(BatchPost, {
-          where: { uid: postUid },
+          where: { uid: params.postUid },
           relations: ['postImages'],
         })
         if (!existingBatchPost) {
@@ -185,7 +228,7 @@ export class BatchPostsService {
           const fileEntity = this.postImageRepository.create({
             postImage: cdnUrl, // 파일 위치 URL
             field: file.originalname, // 파일 원본 이름
-            postUid,
+            postUid: params.postUid,
           })
           fileEntities.push(fileEntity)
           uploadedFiles.push({ location, key })
@@ -199,13 +242,21 @@ export class BatchPostsService {
 
         updateBatchPost.postImages = postImages
 
-        postImages.forEach((note) => {
-          delete note.deletedAt
-        })
+        const images = postImages.map((item) => ({
+          postImage: item.postImage,
+          field: item.field,
+          postUid: item.postUid,
+        }))
 
-        delete updateBatchPost.deletedAt
-
-        return updateBatchPost
+        return {
+          uid: updateBatchPost.uid,
+          batchUid: updateBatchPost.batchUid,
+          title: updateBatchPost.title,
+          content: updateBatchPost.content,
+          likeCount: updateBatchPost.likeCount,
+          updatedAt: updateBatchPost.updatedAt,
+          postImages: images,
+        }
       } catch (error) {
         console.log('error', error)
         // 업로드된 파일 삭제
@@ -217,16 +268,16 @@ export class BatchPostsService {
     })
   }
 
-  async remove(uid: string, batchUid: string, postUid: string) {
+  async remove(uid: string, params: DeleteBatchPostParamsDTO): Promise<DeleteBatchPostRo> {
     return await this.dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       try {
         //글 작성 유저 권한 확인
-        await this.verifyAuthor(uid, postUid)
+        await this.verifyAuthor(uid, params.postUid)
         //기수가 존재하나 확인
-        await this.verifyBatchExistence(batchUid)
+        await this.verifyBatchExistence(params.batchUid)
 
         const existingBatchPost = await transactionalEntityManager.findOne(BatchPost, {
-          where: { uid: postUid },
+          where: { uid: params.postUid },
           relations: ['postImages'],
         })
         if (!existingBatchPost) {
@@ -240,7 +291,21 @@ export class BatchPostsService {
           await transactionalEntityManager.softRemove(PostImage, postImages)
         }
 
-        return deleteBatch
+        const images = postImages.map((item) => ({
+          postImage: item.postImage,
+          field: item.field,
+          postUid: item.postUid,
+        }))
+
+        return {
+          uid: deleteBatch.uid,
+          batchUid: deleteBatch.batchUid,
+          title: deleteBatch.title,
+          content: deleteBatch.content,
+          likeCount: deleteBatch.likeCount,
+          deletedAt: deleteBatch.deletedAt,
+          postImages: images,
+        }
       } catch (error) {
         if (error instanceof NotFoundException) {
           throw error

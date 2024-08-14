@@ -362,7 +362,7 @@ export const MAIN_MESSAGE_CONSTANT = {
       TRANSACTION_ERROR: '기수 생성중 오류가 발생했습니다.',
     },
     COMMON: {
-      BATCH__ENTITY: {
+      BATCH_ENTITY: {
         LESSON_UID: '강의 UID를 입력해 주세요',
         BATCH_UID: '기수 UID를 입력해 주세요',
       },
@@ -378,6 +378,20 @@ export const MAIN_MESSAGE_CONSTANT = {
     SERVICE: {
       NOT_FIND_NOTICE: '기수 공지를 찾을 수 없습니다.',
       NOT_AUTHORIZED_NOTICE: '공지를 읽을 수 있는 권한이 없습니다.',
+      NOT_AUTHORIZED_LESSON: '해당 강의에 대한 권한이 없습니다.',
+      NOT_EXISTING_BATCH: '존재하는 기수가 없습니다.',
+      TRANJECTION: {
+        CREATE: '기수 공지 등록 중 오류가 발생했습니다.',
+        UPDATE: '기수 공지 수정 중 오류가 발생했습니다.',
+        DELETE: '기수 공지 삭제 중 오류가 발생했습니다.',
+      },
+    },
+    COMMON: {
+      BATCH_NOTICE_ENTITY: {
+        LESSON_UID: '강의 UID를 입력해 주세요',
+        BATCH_UID: '기수 UID를 입력해 주세요',
+        NOTIFICATION_UID: '기수 공지 UID를 입력해 주세요',
+      },
     },
   },
   BATCH_POST: {
@@ -463,6 +477,9 @@ export const MAIN_MESSAGE_CONSTANT = {
         },
         BATCH_UID: {
           REQUIRED: '기수 UID를 입력해 주세요',
+        },
+        POST_UID: {
+          REQUIRED: '게시물 UID를 입력해 주세요',
         },
       },
       BAND_POSTS_COMMENTS_ENTITY: {
