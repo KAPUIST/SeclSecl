@@ -350,6 +350,7 @@ export const MAIN_MESSAGE_CONSTANT = {
       NOT_EXISTING_BATCH: '존재하는 기수가 없습니다.',
       NOT_AUTHORIZED_LESSON: '해당 강의에 대한 권한이 없습니다.',
       EXISTING_BATCH: '이미 있는 기수입니다.',
+      TRANSACTION_ERROR: '기수 생성중 오류가 발생했습니다.',
     },
     COMMON: {
       BATCH__ENTITY: {
