@@ -12,6 +12,7 @@ import { NotificationGateway } from './notification.gateway'
 import { NotificationType } from './types/notification.type'
 import { RecipientType } from './types/recipient.type'
 import { RelatedEntityType } from './types/related-entity.type'
+import { NotificationValidator } from './validators/notification.validator'
 
 @Injectable()
 export class NotificationService {
@@ -30,11 +31,12 @@ export class NotificationService {
     private readonly lessonReviewRepository: Repository<LessonReview>,
     private readonly redisService: RedisService,
     private readonly notificationGateway: NotificationGateway,
+    private readonly notificationValidator: NotificationValidator,
   ) {}
 
   //안읽음 알림 조회
   async getUnreadNotification(uid: string): Promise<Notification[]> {
-    const unread =  await this.notificationRepository.find({
+    const unread = await this.notificationRepository.find({
       where: {
         recipientUid: uid,
         isRead: false,
@@ -48,16 +50,23 @@ export class NotificationService {
 
   //밴드 새글 알림
   async createPostNotification(createdPost) {
+    await this.notificationValidator.validateEntity(createdPost.uid, RelatedEntityType.BAND_POST)
+
     const bandMembers = await this.bandMemberRepository.find({
       where: { bandUid: createdPost.bandUid },
     })
+    console.log(bandMembers)
 
     const band = await this.bandRepository.findOne({
-        where: {uid: createdPost.bandUid}
+      where: { uid: createdPost.bandUid },
     })
 
-    const notifications = bandMembers.map((member) => {
-      return this.notificationRepository.create({
+    const notifications = []
+    
+    for (const member of bandMembers){
+    await this.notificationValidator.validateRecipient(member.userUid, RecipientType.USER)
+
+      const notification =  this.notificationRepository.create({
         recipientUid: member.userUid,
         recipientType: RecipientType.USER,
         notificationType: NotificationType.NEW_POST,
@@ -66,28 +75,36 @@ export class NotificationService {
         relatedEntityType: RelatedEntityType.BAND_POST,
         isRead: false,
       })
-    })
+
+      notifications.push(notification)
+    }
 
     const savedNotificatioins = await this.notificationRepository.save(notifications)
 
     //Redis Pub/Sub 통해 알림 발행
-    savedNotificatioins.forEach(async (notification) => {
+    for (const notification of savedNotificatioins) {
       console.log('Publishing notification to Redis:', notification.uid)
       await this.redisService.publish('notifications', notification)
-    })
+    }
 
     //Socket.IO 클라이언트에게 실시간 알림 전송
-    savedNotificatioins.forEach((notification) => {
+    for (const notification of savedNotificatioins){
       this.notificationGateway.sendNotification(notification)
-    })
+    }
+
+
   }
 
   //댓글 등록 알림
   async createCommentNotification(createdBandComment) {
+    await this.notificationValidator.validateEntity(createdBandComment.uid, RelatedEntityType.BAND_COMMENT)
+
     const post = await this.bandPostRepository.findOne({
       where: { uid: createdBandComment.bandPostUid },
       relations: ['bandMember'],
     })
+
+    await this.notificationValidator.validateRecipient(post.bandMember.userUid, RecipientType.USER)
 
     const notification = this.notificationRepository.create({
       recipientUid: post.bandMember.userUid,
@@ -110,12 +127,13 @@ export class NotificationService {
 
   //새 리뷰 등록 알림
   async createReviewNotification(savedReview) {
+    await this.notificationValidator.validateEntity(savedReview.uid, RelatedEntityType.REVIEW)
     const review = await this.lessonReviewRepository.findOne({
       where: { uid: savedReview.Uid },
       relations: ['user', 'lesson'],
     })
 
-    console.log(review)
+    await this.notificationValidator.validateRecipient(review.lesson.cpUid, RecipientType.CP)
 
     const notification = this.notificationRepository.create({
       recipientUid: review.lesson.cpUid,
@@ -136,33 +154,30 @@ export class NotificationService {
     this.notificationGateway.sendNotification(savedNotificatioin)
   }
 
-
   //밴드 대댓글 알림
 
-//   //밴드 댓글 좋아요 알림
-//   async createLikeNotification(bandCommentUid, userUid) {
-//      const comment = await this.bandPostCommentRepository.findOne({
-//           where: { uid: bandCommentUid },
-//                   relations: ['bandMember',],
-//                 })
-//    const notification = this.notificationRepository.create({
-//             recipientUid: comment.bandMember.userUid,
-//           recipientType: RecipientType.USER,
-//              notificationType: 'NEW_COMMENT_LIKE',
-//              content: `${co.title} 글에 새 댓글이 등록되었습니다.: ${createdBandComment.content}`,
-//                  relatedEntityUid: comment.bandLikes.uid,
-//                   relatedEntityType: RelatedEntityType.BAND_LIKE,
-//                   isRead: false,
-//                 })
-            
-//                 const savedNotificatioin = await this.notificationRepository.save(notification)
-            
-//                 //Redis Pub/Sub 알림 발행
-//                 await this.redisService.publish('notifications', savedNotificatioin)
-            
-//                 //Socket.IO 알림 전송
-//                 this.notificationGateway.sendNotification(savedNotificatioin)
-//               }
+  //   //밴드 댓글 좋아요 알림
+  //   async createLikeNotification(bandCommentUid, userUid) {
+  //      const comment = await this.bandPostCommentRepository.findOne({
+  //           where: { uid: bandCommentUid },
+  //                   relations: ['bandMember',],
+  //                 })
+  //    const notification = this.notificationRepository.create({
+  //             recipientUid: comment.bandMember.userUid,
+  //           recipientType: RecipientType.USER,
+  //              notificationType: 'NEW_COMMENT_LIKE',
+  //              content: `${co.title} 글에 새 댓글이 등록되었습니다.: ${createdBandComment.content}`,
+  //                  relatedEntityUid: comment.bandLikes.uid,
+  //                   relatedEntityType: RelatedEntityType.BAND_LIKE,
+  //                   isRead: false,
+  //                 })
 
+  //                 const savedNotificatioin = await this.notificationRepository.save(notification)
 
+  //                 //Redis Pub/Sub 알림 발행
+  //                 await this.redisService.publish('notifications', savedNotificatioin)
+
+  //                 //Socket.IO 알림 전송
+  //                 this.notificationGateway.sendNotification(savedNotificatioin)
+  //               }
 }

@@ -16,7 +16,7 @@ import { ChatService } from './chat.service'
   },
   namespace: 'chatting',
 })
-// @UseGuards(WsAuthGuard)
+
 export class ChatGateway {
   @WebSocketServer()
   server: Server

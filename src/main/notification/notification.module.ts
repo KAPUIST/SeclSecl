@@ -11,10 +11,15 @@ import { BandPost } from '../band/entities/band-posts.entity'
 import { Band } from '../band/entities/band.entity'
 import { BandPostComment } from '../band/entities/band-post-comments.entity'
 import { LessonReview } from '../review/entities/lesson.review.entity'
+import { NotificationValidator } from './validators/notification.validator'
+import { Lesson } from '../../common/lessons/entities/lessons.entity'
+import { User } from '../users/entities/user.entity'
+import { Cp } from '../../cp/auth/entities/cp.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Notification, BandMember, BandPost, Band, BandPostComment, LessonReview]), RedisModule],
-  providers: [NotificationService, NotificationGateway],
+  imports: [TypeOrmModule.forFeature([Notification, BandMember, BandPost, Band, BandPostComment, LessonReview, Lesson, User]), 
+  TypeOrmModule.forFeature([Cp], 'cp'),RedisModule],
+  providers: [NotificationService, NotificationGateway, NotificationValidator],
   controllers: [NotificationController],
   exports: [NotificationGateway, NotificationService],
 })

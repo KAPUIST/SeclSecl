@@ -66,8 +66,8 @@ export class LessonReviewService {
     const review = await this.lessonReviewRepository.create({ ...createReviewDto, lesson, user, batch: confirmBatch })
     const savedReview = await this.lessonReviewRepository.save(review)
 
-     // 새 리뷰 등록 알림 전송
-     await this.notificationService.createReviewNotification(savedReview)
+    // 새 리뷰 등록 알림 전송
+    await this.notificationService.createReviewNotification(savedReview)
 
     const response = new LessonReviewResponseDto()
     response.uid = savedReview.uid
