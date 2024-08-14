@@ -2,8 +2,7 @@ import { Logger } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway, WebSocketServer, MessageBody, ConnectedSocket } from '@nestjs/websockets'
 import { CharsetToEncoding } from 'mysql2'
 import { Server, Socket } from 'socket.io'
-import { WsAuthGuard } from './chat.jwt.guard'
-import { ChatJwtStrategy } from './chat.jwt.strategy'
+import { SocketJwtStrategy } from '../../common/strategies/socket.jwt.strategy'
 import { ChatService } from './chat.service'
 
 @WebSocketGateway({
@@ -16,7 +15,6 @@ import { ChatService } from './chat.service'
   },
   namespace: 'chatting',
 })
-// @UseGuards(WsAuthGuard)
 export class ChatGateway {
   @WebSocketServer()
   server: Server
@@ -24,7 +22,7 @@ export class ChatGateway {
 
   constructor(
     private readonly chatService: ChatService,
-    private readonly chatJwtStrategy: ChatJwtStrategy,
+    private readonly socketJwtStrategy: SocketJwtStrategy,
   ) {}
 
   afterInit(server: Server) {
@@ -35,7 +33,7 @@ export class ChatGateway {
     try {
       const token = client.handshake.query.token as string
 
-      const payload = this.chatJwtStrategy.validateToken(token)
+      const payload = this.socketJwtStrategy.validateToken(token)
       client.data.user = payload
       this.logger.log(`Client connected: ${client.id}`)
     } catch (error) {

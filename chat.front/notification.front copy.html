@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification Test</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>Notification Test</h1>
+    <ul id="notifications"></ul>
+
+    <script>
+      const socket = io('http://localhost:3000') // Socket.IO 서버 URL로 변경
+
+      // 필터링할 recipientUid 설정 (예: 사용자의 UID)
+      const userRecipientUid = '8b1f73a9-119c-481c-8736-d8ca847241a7'
+
+      // 기존 리스너를 제거하고 새 리스너를 등록
+      socket.off('notifications')
+      socket.on('notifications', function (notification) {
+        // 해당 사용자의 recipientUid와 일치하는 알림만 처리
+        if (notification.recipientUid === userRecipientUid) {
+          console.log('Notification received from server:', notification.uid)
+          const notificationList = document.getElementById('notifications')
+          const newNotification = document.createElement('li')
+          newNotification.textContent = `알림: ${notification.content}`
+          notificationList.appendChild(newNotification)
+        }
+      })
+
+      socket.on('connect', () => {
+        console.log('Connected to server with ID:', socket.id)
+      })
+
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server')
+      })
+    </script>
+  </body>
+</html>

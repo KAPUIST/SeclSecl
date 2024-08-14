@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import * as jwt from 'jsonwebtoken'
 
 @Injectable()
-export class ChatJwtStrategy {
+export class SocketJwtStrategy {
   constructor(private readonly configService: ConfigService) {}
 
   private extractPayloadFromToken(token: string) {
