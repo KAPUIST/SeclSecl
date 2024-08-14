@@ -196,14 +196,14 @@ export class BandService {
     return { uid: band.uid }
   }
   // 밴드 가입 로직
-  async joinBand(userUid: string, params: JoinBandParamsDTO): Promise<JoinBandRO> {
+  async joinBand(userUid: string, nickname: string, params: JoinBandParamsDTO): Promise<JoinBandRO> {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
     // 밴드가 존재하지 않을 시 에러 처리
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.JOIN_BAND.NOT_FOUND)
     }
-    this.sendBirdService.addUserToChannel(userUid, band.chatUrl)
+    this.sendBirdService.addUserToChannel(userUid, nickname, band.chatUrl)
     //가입되지 않은 경우 가입 처리
     const isJoined = await this.bandMemberRepository.findOne({ where: { bandUid, userUid } })
     if (!isJoined) {

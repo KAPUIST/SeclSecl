@@ -130,7 +130,8 @@ export class BandController {
   @Post(':bandUid/join')
   async joinBand(@Request() req, @Param() params: JoinBandParamsDTO) {
     const userUid = req.user.uid
-    const joinedBand = await this.bandService.joinBand(userUid, params)
+    const nickname = req.user.nickName
+    const joinedBand = await this.bandService.joinBand(userUid, nickname, params)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.JOIN_BAND.SUCCEED,
