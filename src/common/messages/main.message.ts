@@ -265,6 +265,13 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
       CHECK_CART: {
         SUCCESS: '장바구니 체크에 성공하였습니다.',
+        NOT_FOUND: '해당 수업은 존재하지 않습니다.',
+        CONFLICT_LESSON: '이미 보유한 강의입니다.',
+        BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
+        AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
+        MAX_ENROLLMENT: '해당 기수의 정원이 다 찼습니다.',
+        CONFLICT_CART_BATCH: '결제할 강의 중에 중복되는 요일, 시간을 가지는 강의가 있습니다.',
+        CONFLICT_OWNED_BATCH: '보유한 강의 중에 중복되는 요일, 시간을 가지는 강의가 있습니다.',
       },
     },
     COMMON: {
