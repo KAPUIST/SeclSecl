@@ -64,6 +64,8 @@ import { DeleteBandCommentRO } from './ro/delete-band-comment.ro'
 import { LikeBandCommentRO } from './ro/like-band-comment.ro'
 import { UnlikeBandCommentRO } from './ro/unlike-band-comment.ro'
 import { NotificationService } from '../notification/notification.service'
+import { tryCatch } from 'bullmq'
+import { JoinedBandRO } from './ro/joined-band.ro'
 
 @Injectable()
 export class BandService {
@@ -155,6 +157,19 @@ export class BandService {
       content: band.content,
       chatUrl: band.chatUrl,
       createdAt: band.createdAt,
+    }
+  }
+  // 가입한 밴드 목록 가져오기
+  async getMyBandList(userUid: string): Promise<JoinedBandRO[]> {
+    try {
+      const bands = await this.bandMemberRepository.find({ where: { userUid: userUid }, relations: ['band'] })
+      return bands.map((band) => ({
+        bandUid: band.band.uid,
+        name: band.band.name,
+      }))
+    } catch (error) {
+      console.log(error)
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_List.FAILED)
     }
   }
   // 밴드 수정 로직
@@ -637,7 +652,6 @@ export class BandService {
         const newCount = bandComment.likeCount + 1
         await manager.update(BandPostComment, { uid: bandCommentUid }, { likeCount: newCount })
         const likedBandComment = await manager.findOne(BandPostComment, { where: { uid: bandCommentUid } })
-
 
         return {
           uid: likedBandComment.uid,

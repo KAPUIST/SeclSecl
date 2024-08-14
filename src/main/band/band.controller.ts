@@ -31,6 +31,7 @@ import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { User } from '../../common/decorator/user-decorator'
 
 @ApiTags('밴드 관련 API')
 @Controller({ host: 'localhost', path: 'bands' })
@@ -53,6 +54,22 @@ export class BandController {
       status: HttpStatus.CREATED,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.CREATE_BAND.SUCCEED,
       data: createdBand,
+    }
+  }
+  /**
+   * 가입한 밴드 조회 기능
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('/joined')
+  async getMyBandList(@User() user) {
+    const userUid = user.uid
+    const bandList = await this.bandService.getMyBandList(userUid)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_List.SUCCEED,
+      data: bandList,
     }
   }
   /**
@@ -196,6 +213,7 @@ export class BandController {
       data: createdBandPost,
     }
   }
+
   /**
    * 밴드 게시글 목록 조회
    * @param req
