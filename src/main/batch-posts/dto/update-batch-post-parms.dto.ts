@@ -7,6 +7,6 @@ export class UpdateBatchPostParamsDTO {
   batchUid: string
 
   @IsUUID()
-  @IsNotEmpty({ message: MAIN_MESSAGE_CONSTANT.BATCH_POST.COMMON.BATCH_POST_ENTITY.BATCH_UID.REQUIRED })
+  @IsNotEmpty({ message: MAIN_MESSAGE_CONSTANT.BATCH_POST.COMMON.BATCH_POST_ENTITY.POST_UID.REQUIRED })
   postUid: string
 }

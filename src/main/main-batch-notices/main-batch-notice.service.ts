@@ -7,6 +7,7 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { BatchNotice } from '../../common/batch-notice/entities/batch-notice.entity'
 import { UserLesson } from '../users/entities/user-lessons.entity'
 import { FindAllBatchNoticeParamsDTO } from './dto/find-all-main-batch-notice-params.dto'
+import { FindAllBatchNoticeRo } from './ro/find-all-batch-notice.ro'
 
 @Injectable()
 export class MianBatchNoticeService {
@@ -22,7 +23,7 @@ export class MianBatchNoticeService {
   ) {}
 
   // 기수 공지 전체조회
-  async findAll(uid, params: FindAllBatchNoticeParamsDTO) {
+  async findAll(uid, params: FindAllBatchNoticeParamsDTO): Promise<FindAllBatchNoticeRo[]> {
     // 기수가 존재하는지 확인
     await this.findBatchOrThrow(params.lessonUid, params.batchUid)
 
@@ -41,12 +42,23 @@ export class MianBatchNoticeService {
       relations: ['lessonNotes'],
     })
 
-    // deletedAt 필드 삭제
-    data.forEach((notice) => {
-      delete notice.deletedAt
+    const results = data.map((item) => {
+      const lessonNotes = item.lessonNotes.map((note) => ({
+        lessonNote: note.lessonNote,
+        field: note.field,
+        noticeUid: note.noticeUid,
+      }))
+
+      return {
+        uid: item.uid,
+        batchUid: item.batchUid,
+        title: item.title,
+        content: item.content,
+        lessonNotes,
+      }
     })
 
-    return data
+    return results
   }
 
   // 기수가 존재하는지 확인

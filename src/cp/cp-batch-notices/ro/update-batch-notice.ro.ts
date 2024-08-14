@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDate, IsNumber, IsString } from 'class-validator'
+import { IsDate, IsString } from 'class-validator'
 
-export class PostImage {
+export class LessonNote {
   @ApiProperty({ description: '수업 자료' })
   @IsString()
-  postImage: string
+  lessonNote: string
 
   @ApiProperty({ description: '자료 이름' })
   @IsString()
@@ -12,10 +12,10 @@ export class PostImage {
 
   @ApiProperty({ description: '자료테이블 공지 UID' })
   @IsString()
-  postUid: string
+  noticeUid: string
 }
 
-export class CreateBatchPostRo {
+export class UpdateBatchNoticeRo {
   @ApiProperty({ description: 'UID' })
   @IsString()
   uid: string
@@ -32,15 +32,11 @@ export class CreateBatchPostRo {
   @IsString()
   content: string
 
-  @ApiProperty({ description: '좋아요 수' })
-  @IsNumber()
-  likeCount: number
-
-  @ApiProperty({ description: '게시글 이미지들' })
+  @ApiProperty({ description: '수업 자료' })
   @IsString()
-  postImages: PostImage[]
+  lessonNotes: LessonNote[]
 
-  @ApiProperty({ description: '생성시간' })
+  @ApiProperty({ description: '업데이트시간' })
   @IsDate()
-  createdAt: Date
+  updatedAt: Date
 }
