@@ -9,12 +9,17 @@ import { RefundPaymentParamsDTO } from './dto/refund-payment-params.dto'
 import { GetPaymentDetailParamsDTO } from './dto/get-payment-detail-params.dto'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { CheckCartQueryDto } from './dto/check-cart-query.dto'
+import { Queue } from 'bullmq'
+import { InjectQueue } from '@nestjs/bullmq'
 
-@ApiTags('밴드 관련 API')
+@ApiTags('결제 관련 API')
 @ApiBearerAuth()
-@Controller({ host: 'localhost', path: 'payments' })
+@Controller({ path: 'payments' })
 export class PaymentsController {
-  constructor(private readonly paymentService: PaymentsService) {}
+  constructor(
+    @InjectQueue('paymentQueue') private readonly paymentQueue: Queue,
+    private readonly paymentService: PaymentsService,
+  ) {}
 
   /**
    * 결제 승인 - 토스 결제, 카드사 승인 시 요청
@@ -26,12 +31,14 @@ export class PaymentsController {
   @Post()
   async purchaseItem(@Request() req, @Body() purchaseItemDto: PurchaseItemDto) {
     const userUid = req.user.uid
-    const purchasedItems = await this.paymentService.purchaseItem(userUid, purchaseItemDto)
-    return {
-      status: HttpStatus.CREATED,
-      message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.SUCCESS,
-      data: purchasedItems,
-    }
+    return await this.paymentService.bullTestQueue(userUid, purchaseItemDto)
+
+    // const purchasedItems = await this.paymentService.purchaseItem(userUid, purchaseItemDto)
+    // return {
+    //   status: HttpStatus.CREATED,
+    //   message: MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.SUCCESS,
+    //   data: purchasedItems,
+    // }
   }
 
   /**
@@ -114,8 +121,9 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @Post('carts/:batchUid')
   async addCart(@Request() req, @Param() params: AddCartParamsDTO) {
-    console.log('111111')
+    console.log('controller')
     const userUid = req.user.uid
+    // return await this.paymentService.bullTestQueue(userUid, params)
     const addedLesson = await this.paymentService.addCart(userUid, params)
     return {
       status: HttpStatus.CREATED,
@@ -170,4 +178,16 @@ export class PaymentsController {
       data: checkCart,
     }
   }
+
+  // bull queue 테스트
+  // @UseGuards(JwtAuthGuard)
+  // @Post('test')
+  // async bullTest(@Request() req, @Body() body: any) {
+  //   return await this.paymentService.bullTestQueue(req.user.uid, body.id)
+  // return {
+  //   status: 200,
+  //   message: 'ok',
+  //   data: { userId: req.user.uid, body: body.id },
+  // }
+  // }
 }
