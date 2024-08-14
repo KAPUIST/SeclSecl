@@ -59,6 +59,7 @@ export const MAIN_MESSAGE_CONSTANT = {
         TRANSACTION_ERROR: '밴드 생성중 오류가 생겼습니다.',
       },
       GET_BAND_List: {
+        FAILED: '밴드 목록 조회를 실패 하였습니다.',
         SUCCEED: '밴드 목록 조회에 성공하였습니다.',
       },
       GET_BAND_Detail: {
