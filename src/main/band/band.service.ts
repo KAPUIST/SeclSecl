@@ -638,8 +638,6 @@ export class BandService {
         await manager.update(BandPostComment, { uid: bandCommentUid }, { likeCount: newCount })
         const likedBandComment = await manager.findOne(BandPostComment, { where: { uid: bandCommentUid } })
 
-        //         // 좋아요 등록 알림 전송
-        // await this.notificationService.createLikeNotification(bandCommentUid, userUid)
 
         return {
           uid: likedBandComment.uid,

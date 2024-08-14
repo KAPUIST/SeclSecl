@@ -152,30 +152,4 @@ export class NotificationService {
     this.notificationGateway.sendNotification(savedNotificatioin)
   }
 
-  //밴드 대댓글 알림
-
-  //   //밴드 댓글 좋아요 알림
-  //   async createLikeNotification(bandCommentUid, userUid) {
-  //      const comment = await this.bandPostCommentRepository.findOne({
-  //           where: { uid: bandCommentUid },
-  //                   relations: ['bandMember',],
-  //                 })
-  //    const notification = this.notificationRepository.create({
-  //             recipientUid: comment.bandMember.userUid,
-  //           recipientType: RecipientType.USER,
-  //              notificationType: 'NEW_COMMENT_LIKE',
-  //              content: `${co.title} 글에 새 댓글이 등록되었습니다.: ${createdBandComment.content}`,
-  //                  relatedEntityUid: comment.bandLikes.uid,
-  //                   relatedEntityType: RelatedEntityType.BAND_LIKE,
-  //                   isRead: false,
-  //                 })
-
-  //                 const savedNotificatioin = await this.notificationRepository.save(notification)
-
-  //                 //Redis Pub/Sub 알림 발행
-  //                 await this.redisService.publish('notifications', savedNotificatioin)
-
-  //                 //Socket.IO 알림 전송
-  //                 this.notificationGateway.sendNotification(savedNotificatioin)
-  //               }
 }

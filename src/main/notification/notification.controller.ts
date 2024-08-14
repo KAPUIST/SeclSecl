@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { NotificationService } from './notification.service'
 
 @ApiBearerAuth()
-@ApiTags('공지 불러오기')
+@ApiTags('알림 불러오기')
 @UseGuards(JwtAuthGuard)
 @Controller('notifications')
 export class NotificationController {
