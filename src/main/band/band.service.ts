@@ -295,7 +295,7 @@ export class BandService {
       bandMemberUid: isMember.uid,
       ...createBandPostDto,
     })
-console.log(createdPost)
+    console.log(createdPost)
     // 새 게시물 등록 알림 전송
     await this.notificationService.createPostNotification(createdPost)
 

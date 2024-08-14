@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Notification Test</title>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -51,7 +52,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        -webkit-line-clamp: 2; /* 최대 2줄까지 표시 */
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         white-space: normal;
         width: 80%;
@@ -60,7 +61,7 @@
       .notification-status {
         font-size: 12px;
         color: #fff;
-        background-color: #6c757d; /* 회색 */
+        background-color: #6c757d;
         padding: 2px 8px;
         border-radius: 4px;
         margin-left: 10px;
@@ -74,11 +75,29 @@
     </div>
 
     <script>
-      const token = 'YOUR_JWT_TOKEN' // 여기에 실제 JWT 토큰을 넣으세요
-      const userRecipientUid = 'e472dc47-764e-492b-8b1f-73287360ac39' // 여기에 실제 사용자 ID를 넣으세요
-      const socket = io('http://localhost:3000')
+      const token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzNjM3MzM1LCJleHAiOjE3MjM2NDQ1MzV9.8RtXdlDcNf1ljL-Su63memN2wh2mqTIsy51WlpKS6MQ'
+      const decodedToken = jwt_decode(token)
+      const userRecipientUid = decodedToken.uid
 
-      // 서버에서 읽지 않은 알림을 가져와 화면에 표시하는 함수
+      const socket = io('ws://localhost:3000/notification', {
+        query: { token },
+      })
+
+      socket.on('connect', () => {
+        console.log('WebSocket connection opened')
+        loadUnreadNotifications()
+      })
+
+      socket.on('disconnect', (event) => {
+        console.log('WebSocket connection closed', event)
+      })
+
+      socket.on('notifications', (notification) => {
+        console.log('Notification received from server:', notification.uid)
+        displayNotification(notification)
+      })
+
       async function loadUnreadNotifications() {
         try {
           const response = await fetch('http://localhost:3000/api/notifications', {
@@ -91,11 +110,8 @@
           const unreadNotifications = await response.json()
           console.log('Unread notifications:', unreadNotifications)
 
-          // 서버에서 받은 알림을 createdAt 기준으로 내림차순 정렬
-          unreadNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-
-          // 정렬된 알림을 화면에 표시
-          unreadNotifications.forEach(displayNotification)
+          // 서버에서 받은 알림을 화면에 표시
+          unreadNotifications.reverse().forEach(displayNotification)
         } catch (error) {
           console.error('Error fetching unread notifications:', error)
         }
@@ -121,7 +137,7 @@
             newNotification.appendChild(contentSpan)
             newNotification.appendChild(statusSpan)
 
-            // 리스트의 맨 위에 새로운 알림을 추가
+            // 문제를 해결하기 위해 잠재적 충돌을 방지하며 DOM 업데이트
             notificationList.insertBefore(newNotification, notificationList.firstChild)
 
             console.log('Notification added to DOM:', newNotification)
@@ -130,21 +146,6 @@
           }
         }
       }
-
-      // 소켓 연결 시 읽지 않은 알림 로드 및 실시간 알림 처리
-      socket.on('connect', () => {
-        console.log('Connected to server with ID:', socket.id)
-        loadUnreadNotifications() // 연결 시 이전 알림 로드
-      })
-
-      socket.on('notifications', (notification) => {
-        console.log('Notification received from server:', notification.uid)
-        displayNotification(notification) // 실시간 알림 처리
-      })
-
-      socket.on('disconnect', () => {
-        console.log('Disconnected from server')
-      })
     </script>
   </body>
 </html>

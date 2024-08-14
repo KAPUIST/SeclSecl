@@ -62,11 +62,11 @@ export class NotificationService {
     })
 
     const notifications = []
-    
-    for (const member of bandMembers){
-    await this.notificationValidator.validateRecipient(member.userUid, RecipientType.USER)
 
-      const notification =  this.notificationRepository.create({
+    for (const member of bandMembers) {
+      await this.notificationValidator.validateRecipient(member.userUid, RecipientType.USER)
+
+      const notification = this.notificationRepository.create({
         recipientUid: member.userUid,
         recipientType: RecipientType.USER,
         notificationType: NotificationType.NEW_POST,
@@ -88,11 +88,9 @@ export class NotificationService {
     }
 
     //Socket.IO 클라이언트에게 실시간 알림 전송
-    for (const notification of savedNotificatioins){
+    for (const notification of savedNotificatioins) {
       this.notificationGateway.sendNotification(notification)
     }
-
-
   }
 
   //댓글 등록 알림

@@ -15,10 +15,14 @@ import { NotificationValidator } from './validators/notification.validator'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { User } from '../users/entities/user.entity'
 import { Cp } from '../../cp/auth/entities/cp.entity'
+import { GuardModule } from '../../common/guards/guard.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Notification, BandMember, BandPost, Band, BandPostComment, LessonReview, Lesson, User]), 
-  TypeOrmModule.forFeature([Cp], 'cp'),RedisModule],
+  imports: [
+    TypeOrmModule.forFeature([Notification, BandMember, BandPost, Band, BandPostComment, LessonReview, Lesson, User]),
+    TypeOrmModule.forFeature([Cp], 'cp'),
+    RedisModule,GuardModule
+  ],
   providers: [NotificationService, NotificationGateway, NotificationValidator],
   controllers: [NotificationController],
   exports: [NotificationGateway, NotificationService],
