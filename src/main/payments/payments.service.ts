@@ -34,7 +34,6 @@ import { CheckCartQueryDto } from './dto/check-cart-query.dto'
 import { PurchaseItemRO } from './ro/purchase-item.ro'
 import { InjectQueue } from '@nestjs/bullmq'
 import { Queue } from 'bullmq'
-import { date } from 'joi'
 
 @Injectable()
 export class PaymentsService {
