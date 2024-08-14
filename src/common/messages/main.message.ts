@@ -455,6 +455,9 @@ export const MAIN_MESSAGE_CONSTANT = {
         BATCH_UID: {
           REQUIRED: '기수 UID를 입력해 주세요',
         },
+        POST_UID: {
+          REQUIRED: '게시물 UID를 입력해 주세요',
+        },
       },
       BAND_POSTS_COMMENTS_ENTITY: {
         UID: {

@@ -19,6 +19,10 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { FilesInterceptor } from '@nestjs/platform-express'
+import { CreateBatchNoticeParamsDTO } from './dto/create-batch-notice-parmms.dto'
+import { FindAllBatchNoticeParamsDTO } from './dto/find-all-batch-post.dto'
+import { UpdateBatchNoticeParamsDTO } from './dto/update-batch-post-params.dto'
+import { DeleteBatchNoticeParamsDTO } from './dto/delete-batch-notice-params.dto'
 
 @ApiTags('기수 공지')
 @ApiBearerAuth()
@@ -38,15 +42,13 @@ export class CpBatchNoticeController {
   @UseInterceptors(FilesInterceptor('files', 10)) // 파일 필드 'files'에서 최대 10개의 파일 업로드
   async create(
     @Request() req,
-    @Param('lessonUid') lessonUid: string,
-    @Param('batchUid') batchUid: string,
+    @Param() params: CreateBatchNoticeParamsDTO,
     @Body() createBatchNoticeDto: CreateBatchNoticeDto,
     @UploadedFiles() files: Express.Multer.File[], // 파일 배열을 주입받음
   ) {
     const data = await this.batchNoticeService.create(
       req.user.uid,
-      lessonUid,
-      batchUid,
+      params,
       files, // 파일 배열을 서비스로 전달
       createBatchNoticeDto,
     )
@@ -65,8 +67,8 @@ export class CpBatchNoticeController {
    * @returns
    */
   @Get()
-  async findAll(@Request() req, @Param('lessonUid') lessonUid: string, @Param('batchUid') batchUid: string) {
-    const data = await this.batchNoticeService.findAll(req.user.uid, lessonUid, batchUid)
+  async findAll(@Request() req, @Param() params: FindAllBatchNoticeParamsDTO) {
+    const data = await this.batchNoticeService.findAll(req.user.uid, params)
 
     return {
       statusCode: HttpStatus.OK,
@@ -85,17 +87,13 @@ export class CpBatchNoticeController {
   @Patch('/:notificationUid')
   async update(
     @Request() req,
-    @Param('lessonUud') lessonUud: string,
-    @Param('batchIUid') batchIUid: string,
-    @Param('notificationUid') notificationUid: string,
+    @Param() params: UpdateBatchNoticeParamsDTO,
     @UploadedFiles() files: Express.Multer.File[], // 파일 배열을 주입받음
     @Body() updateBatchNoticeDto: UpdateBatchNoticeDto,
   ) {
     const data = await this.batchNoticeService.update(
       req.user.uid,
-      lessonUud,
-      batchIUid,
-      notificationUid,
+      params,
       files, // 파일 배열을 서비스로 전달
       updateBatchNoticeDto,
     )
@@ -114,13 +112,8 @@ export class CpBatchNoticeController {
    * @returns
    */
   @Delete('/:notificationUid')
-  async remove(
-    @Request() req,
-    @Param('lessonUid') lessonUid: string,
-    @Param('batchUid') batchUid: string,
-    @Param('notificationUid') notificationUid: string,
-  ) {
-    const data = await this.batchNoticeService.remove(req.user.uid, lessonUid, batchUid, notificationUid)
+  async remove(@Request() req, @Param() params: DeleteBatchNoticeParamsDTO) {
+    const data = await this.batchNoticeService.remove(req.user.uid, params)
 
     return {
       statusCode: HttpStatus.OK,
