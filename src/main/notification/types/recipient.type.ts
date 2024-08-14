@@ -1,5 +1,4 @@
 export enum RecipientType {
-    USER = 'USER',
-    CP = 'CP'
-  }
-  
+  USER = 'USER',
+  CP = 'CP',
+}

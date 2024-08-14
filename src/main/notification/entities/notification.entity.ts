@@ -24,7 +24,7 @@ export class Notification {
   @Column()
   relatedEntityUid: string
 
-  @Column({ type: 'enum', enum: RelatedEntityType})
+  @Column({ type: 'enum', enum: RelatedEntityType })
   relatedEntityType: RelatedEntityType
 
   @Column()

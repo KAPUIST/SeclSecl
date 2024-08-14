@@ -8,9 +8,12 @@ import { NotificationGateway } from './notification.gateway'
 import { RedisModule } from '../../common/redis/redis.module'
 import { RedisService } from '../../common/redis/redis.service'
 import { BandPost } from '../band/entities/band-posts.entity'
+import { Band } from '../band/entities/band.entity'
+import { BandPostComment } from '../band/entities/band-post-comments.entity'
+import { LessonReview } from '../review/entities/lesson.review.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Notification, BandMember, BandPost]), RedisModule],
+  imports: [TypeOrmModule.forFeature([Notification, BandMember, BandPost, Band, BandPostComment, LessonReview]), RedisModule],
   providers: [NotificationService, NotificationGateway],
   controllers: [NotificationController],
   exports: [NotificationGateway, NotificationService],
