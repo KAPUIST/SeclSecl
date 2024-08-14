@@ -63,6 +63,7 @@ import { UpdateBandCommentRO } from './ro/update-band-comment.ro'
 import { DeleteBandCommentRO } from './ro/delete-band-comment.ro'
 import { LikeBandCommentRO } from './ro/like-band-comment.ro'
 import { UnlikeBandCommentRO } from './ro/unlike-band-comment.ro'
+import { NotificationService } from '../notification/notification.service'
 
 @Injectable()
 export class BandService {
@@ -80,6 +81,7 @@ export class BandService {
     @InjectRepository(BandPostComment)
     private readonly bandPostCommentRepository: Repository<BandPostComment>,
     private dataSource: DataSource,
+    private readonly notificationService: NotificationService,
   ) {}
   // 밴드 생성 로직
   async createBand(userUid: string, createBandDto: CreateBandDto): Promise<CreateBandRO> {
@@ -277,6 +279,7 @@ export class BandService {
   ): Promise<CreateBandPostRO> {
     const bandUid = params.bandUid
     const band = await this.bandRepository.findOne({ where: { uid: bandUid } })
+
     // 밴드가 존재하지 않을 시 에러처리
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.CREATE_BAND_POST.NOT_FOUND)
@@ -286,11 +289,16 @@ export class BandService {
     if (_.isNil(isMember)) {
       throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.BAND.BAND_POSTS.CREATE_BAND_POST.NOT_FOUND_USER)
     }
+
     const createdPost = await this.bandPostRepository.save({
       bandUid,
       bandMemberUid: isMember.uid,
       ...createBandPostDto,
     })
+    console.log(createdPost)
+    // 새 게시물 등록 알림 전송
+    await this.notificationService.createPostNotification(createdPost)
+
     return {
       uid: createdPost.uid,
       bandMemberUid: createdPost.bandMemberUid,
@@ -502,6 +510,10 @@ export class BandService {
       bandMemberUid: isMember.uid,
       ...createBandCommentDTO,
     })
+
+    // 새 댓글 등록 알림 전송
+    await this.notificationService.createCommentNotification(createdBandComment)
+
     return {
       uid: createdBandComment.uid,
       bandMemberUid: createdBandComment.bandMemberUid,
@@ -625,6 +637,8 @@ export class BandService {
         const newCount = bandComment.likeCount + 1
         await manager.update(BandPostComment, { uid: bandCommentUid }, { likeCount: newCount })
         const likedBandComment = await manager.findOne(BandPostComment, { where: { uid: bandCommentUid } })
+
+
         return {
           uid: likedBandComment.uid,
           userUid,
