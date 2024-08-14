@@ -147,7 +147,7 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async addUserToChannel(userId, channelId) {
+  async addUserToChannel(userId, nickname, channelId) {
     const API_TOKEN = this.API_TOKEN
     const BASE_URL = `${this.BASE_URL}/group_channels/${channelId}/invite`
 
@@ -156,6 +156,7 @@ export class SendBirdService implements OnModuleInit, OnModuleDestroy {
         BASE_URL,
         {
           user_ids: [userId],
+          nickname: nickname,
         },
         {
           headers: {
