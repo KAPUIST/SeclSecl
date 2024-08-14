@@ -5,7 +5,6 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @ApiTags('AI랑 말하기')
-@UseGuards(JwtAuthGuard)
 @Controller('chatbot')
 export class ChatbotController {
   constructor(private readonly chatbotService: ChatbotService) {}
