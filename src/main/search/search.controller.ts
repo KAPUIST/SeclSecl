@@ -30,8 +30,12 @@ export class SearchController {
   }
 
   @Post()
-  async search(@Body() serchDto: SearchDto, @Query('category') category?: string, @Query('sortBy') sortBy?: string) {
-    const search = await this.searchService.search(serchDto, category, sortBy)
+  async search(
+    @Query('keyword') keyword: string,
+    @Query('category') category?: string,
+    @Query('sortBy') sortBy?: string,
+  ) {
+    const search = await this.searchService.search(keyword, category, sortBy)
 
     return {
       statusCode: HttpStatus.OK,

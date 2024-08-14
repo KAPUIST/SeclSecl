@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { SearchDto } from './dto/search.dto'
 import { Cron } from '@nestjs/schedule'
+import { SearchRO } from './ro/search.ro'
 
 @Injectable()
 export class SearchService implements OnModuleInit {
@@ -90,9 +91,7 @@ export class SearchService implements OnModuleInit {
     console.log('모든 해당 레슨에 대한 삭제 작업이 완료되었습니다.')
   }
 
-  async search(searchDto: SearchDto, category?: string, sortBy?: string) {
-    const { keyword } = searchDto
-
+  async search(keyword: string, category?: string, sortBy?: string): Promise<SearchRO[]> {
     const query: any = {
       bool: {
         must: [],
@@ -142,12 +141,17 @@ export class SearchService implements OnModuleInit {
         body: {
           query,
           sort: sortOptions,
+          _source: ['title', 'teacher', 'location', 'description', 'price'],
         },
       })
+      const data = response.hits.hits
 
-      return {
-        hits: response.hits.hits,
+      const result = []
+
+      for (let i = 0; i < data.length; i++) {
+        result.push(data[i]._source)
       }
+      return result
     } catch (error) {
       console.error('검색 실패:', error)
       throw error
