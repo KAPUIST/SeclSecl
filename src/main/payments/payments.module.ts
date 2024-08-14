@@ -12,17 +12,21 @@ import { PaymentOrder } from './entities/payment-orders.entity'
 import { UserLesson } from '../users/entities/user-lessons.entity'
 import { BullModule } from '@nestjs/bullmq'
 import { PaymentConsumer } from './payment.queue.consumer'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Payment, PaymentDetail, PaymentCart, PaymentOrder, User, UserLesson, Batch, Lesson]),
-    BullModule.forRoot({
-      connection: {
-        host: '3.39.240.213',
-        port: 6379,
-        password: '5577porta',
-        // tls: {},
-      },
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>('REDIS_BULLMQ_HOST'),
+          port: configService.get<number>('REDIS_BULLMQ_PORT'),
+          password: configService.get<string>('REDIS_BULLMQ_PASSWORD'),
+        },
+      }),
+      inject: [ConfigService],
     }),
     BullModule.registerQueue({
       name: 'paymentQueue',
