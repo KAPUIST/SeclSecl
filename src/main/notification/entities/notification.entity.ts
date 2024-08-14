@@ -1,4 +1,6 @@
 import { Column, CreateDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { RecipientType } from '../types/recipient.type'
+import { RelatedEntityType } from '../types/related-entity.type'
 
 @Entity('notifications')
 @Index(['recipientUid', 'recipientType'])
@@ -10,8 +12,8 @@ export class Notification {
   @Column()
   recipientUid: string
 
-  @Column()
-  recipientType: string
+  @Column({ type: 'enum', enum: RecipientType })
+  recipientType: RecipientType
 
   @Column()
   notificationType: string
@@ -22,8 +24,8 @@ export class Notification {
   @Column()
   relatedEntityUid: string
 
-  @Column()
-  relatedEntityType: string
+  @Column({ type: 'enum', enum: RelatedEntityType})
+  relatedEntityType: RelatedEntityType
 
   @Column()
   isRead: boolean

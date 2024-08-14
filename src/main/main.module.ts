@@ -25,7 +25,7 @@ import { NotificationModule } from './notification/notification.module'
     BandChatModule,
     MainBatchesModule,
     MainBatchNoticeModule,
-    NotificationModule
+    NotificationModule,
   ],
   controllers: [],
   providers: [],

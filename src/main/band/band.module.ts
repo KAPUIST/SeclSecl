@@ -13,7 +13,11 @@ import { Notification } from '../notification/entities/notification.entity'
 import { NotificationModule } from '../notification/notification.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Band, BandMember, BandPost, BandPostComment, BandLike, User]), SendbirdModule, NotificationModule],
+  imports: [
+    TypeOrmModule.forFeature([Band, BandMember, BandPost, BandPostComment, BandLike, User]),
+    SendbirdModule,
+    NotificationModule,
+  ],
   controllers: [BandController],
   providers: [BandService],
   exports: [BandService],

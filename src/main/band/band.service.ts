@@ -81,7 +81,7 @@ export class BandService {
     @InjectRepository(BandPostComment)
     private readonly bandPostCommentRepository: Repository<BandPostComment>,
     private dataSource: DataSource,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
   ) {}
   // 밴드 생성 로직
   async createBand(userUid: string, createBandDto: CreateBandDto): Promise<CreateBandRO> {
@@ -511,8 +511,8 @@ export class BandService {
       ...createBandCommentDTO,
     })
 
-        // 새 댓글 등록 알림 전송
-        await this.notificationService.createCommentNotification(createdBandComment)
+    // 새 댓글 등록 알림 전송
+    await this.notificationService.createCommentNotification(createdBandComment)
 
     return {
       uid: createdBandComment.uid,

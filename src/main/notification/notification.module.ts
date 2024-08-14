@@ -13,6 +13,6 @@ import { BandPost } from '../band/entities/band-posts.entity'
   imports: [TypeOrmModule.forFeature([Notification, BandMember, BandPost]), RedisModule],
   providers: [NotificationService, NotificationGateway],
   controllers: [NotificationController],
-  exports: [NotificationGateway, NotificationService]
+  exports: [NotificationGateway, NotificationService],
 })
 export class NotificationModule {}

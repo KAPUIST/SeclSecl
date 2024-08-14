@@ -81,16 +81,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   // Subscribe 메서드
   async subscribe(channel: string, callback: (message: string) => void): Promise<void> {
-    if(!this.subscribeChannels.has(channel)) {
-    console.log(`Subscribing to channel: ${channel}`);      
-    this.pubSubClient.subscribe(channel);
-    this.pubSubClient.on('message', (subscribedChannel, message) => {
-      if(subscribedChannel === channel){
-        console.log(`Message received on channel ${subscribedChannel}: ${message}`);
-        callback(message)
-      }
-    })
-    this.subscribeChannels.add(channel)
+    if (!this.subscribeChannels.has(channel)) {
+      console.log(`Subscribing to channel: ${channel}`)
+      this.pubSubClient.subscribe(channel)
+      this.pubSubClient.on('message', (subscribedChannel, message) => {
+        if (subscribedChannel === channel) {
+          console.log(`Message received on channel ${subscribedChannel}: ${message}`)
+          callback(message)
+        }
+      })
+      this.subscribeChannels.add(channel)
     } else {
       console.log(`Already subscribed to channel: ${channel}`)
     }
