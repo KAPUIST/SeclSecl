@@ -60,25 +60,30 @@ export class PaymentsService {
     const encryptedApiSecretKey = 'Basic ' + Buffer.from(apiSecretKey + ':').toString('base64')
 
     return await this.dataSource.transaction(async (manager) => {
-      // 결제 테이블 생성
-      const payment = await manager.save(Payment, {
-        userUid,
-        totalAmount: purchaseItemDto.totalAmount,
-        vat: purchaseItemDto.vat,
-        requestedAt: purchaseItemDto.requestedAt,
-        approvedAt: purchaseItemDto.approvedAt,
-        currency: purchaseItemDto.currency,
-        method: purchaseItemDto.method,
-        orderId: purchaseItemDto.orderId,
-        orderName: purchaseItemDto.orderName,
-        lastTransactionKey: purchaseItemDto.lastTransactionKey,
-        paymentKey: purchaseItemDto.paymentKey,
-        status: purchaseItemDto.status,
-      })
       try {
+        // 결제 테이블 생성
+        const payment = await manager.save(Payment, {
+          userUid,
+          totalAmount: purchaseItemDto.totalAmount,
+          vat: purchaseItemDto.vat,
+          requestedAt: purchaseItemDto.requestedAt,
+          approvedAt: purchaseItemDto.approvedAt,
+          currency: purchaseItemDto.currency,
+          method: purchaseItemDto.method,
+          orderId: purchaseItemDto.orderId,
+          orderName: purchaseItemDto.orderName,
+          lastTransactionKey: purchaseItemDto.lastTransactionKey,
+          paymentKey: purchaseItemDto.paymentKey,
+          status: purchaseItemDto.status,
+        })
+        let validatedPrice = 0
         const orderList = payment.orderName.split(', ')
         for (const order of orderList) {
           const batch = await manager.findOne(Batch, { where: { uid: order }, relations: { lesson: true } })
+          // 해당 기수의 정원이 초과일 때 에러 처리
+          if (batch.currentEnrollment >= batch.maxEnrollment) {
+            throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.MAX_ENROLLMENT)
+          }
           // 결제 한 기수에 인원 수 추가
           await manager.update(Batch, { uid: batch.uid }, { currentEnrollment: batch.currentEnrollment + 1 })
           // 상세 결제 테이블 생성
@@ -94,6 +99,12 @@ export class PaymentsService {
             userUid,
             batchUid: order,
           })
+          validatedPrice = validatedPrice + batch.lesson.price
+        }
+
+        // 주문한 강의들의 가격과 실제 결제된 금액의 비교
+        if (purchaseItemDto.totalAmount !== validatedPrice) {
+          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.BAD_REQUEST)
         }
         return {
           orderName: payment.orderName,
