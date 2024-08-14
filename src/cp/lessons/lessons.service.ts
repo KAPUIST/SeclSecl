@@ -73,6 +73,7 @@ export class LessonsService {
           description: lesson.description,
           location: lesson.location,
           status: lesson.status,
+          price: lesson.price,
         },
       })
 
@@ -191,6 +192,7 @@ export class LessonsService {
             description: lesson.description,
             location: lesson.location,
             status: lesson.status,
+            price: lesson.price,
           },
         },
       })
@@ -242,7 +244,7 @@ export class LessonsService {
       // Elasticsearch에서 삭제
       await this.elasticsearchService.delete({
         index: 'lessons',
-        id: uid,
+        id: lesson.uid,
       })
 
       await queryRunner.commitTransaction()

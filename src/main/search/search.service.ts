@@ -19,9 +19,8 @@ export class SearchService implements OnModuleInit {
   @Cron('0 0 3 * * 3') // 초 분 시 일 월 요일 >  새벽 3시 수요일
   async handleCron() {
     console.log('레슨 인덱싱 작업 시작')
-    await this.createAllindexs()
-    await this.updateAllindexs()
-    await this.deleteIndexs()
+    await this.refreshLessonIndexes()
+    await this.deleteIndexes()
     console.log('레슨 인덱싱 작업 종료')
   }
 
@@ -35,44 +34,14 @@ export class SearchService implements OnModuleInit {
     }
   }
 
-  // 기존 데이터베이스에 있는 강의 인덱스 생성 + 이미 있는 인덱스는 생성 x + 끝난강의 생성 x
-  async createAllindexs() {
-    // 상태가 'pending' 또는 'open'인 강의 + deletedAt = null
+  // 기존의 인덱스만 업뎃 + 없으면 추가 생성 +  끝난강의, 삭제강의 생성 x
+  async refreshLessonIndexes() {
     const lessons = await this.lessonRepository
       .createQueryBuilder('lesson')
       .where('lesson.status IN (:...statuses)', { statuses: ['pending', 'open'] })
       .andWhere('lesson.deletedAt IS NULL')
       .getMany()
-    for (const lesson of lessons) {
-      try {
-        await this.elasticsearchService.get({
-          index: 'lessons',
-          id: lesson.uid,
-        })
-      } catch (error) {
-        if (error.meta.statusCode === 404) {
-          // 문서가 존재하지 않을 때
-          await this.elasticsearchService.index({
-            index: 'lessons',
-            id: lesson.uid,
-            body: {
-              title: lesson.title,
-              teacher: lesson.teacher,
-              description: lesson.description,
-              location: lesson.location,
-              status: lesson.status,
-            },
-          })
-          console.log(`레슨 UID ${lesson.uid}가 생성되었습니다.`)
-        }
-      }
-    }
-    console.log('모든 강의에 대한 생성 시도가 완료되었습니다.')
-  }
 
-  // 기존의 인덱스만 업뎃
-  async updateAllindexs() {
-    const lessons = await this.lessonRepository.find()
     for (const lesson of lessons) {
       try {
         await this.elasticsearchService.update({
@@ -85,7 +54,9 @@ export class SearchService implements OnModuleInit {
               description: lesson.description,
               location: lesson.location,
               status: lesson.status,
+              price: lesson.price,
             },
+            doc_as_upsert: true, // 문서가 없을 경우 자동으로 생성
           },
         })
         console.log(`레슨 UID ${lesson.uid}가 업데이트되었습니다.`)
@@ -96,7 +67,7 @@ export class SearchService implements OnModuleInit {
     console.log('모든 강의에 대한 업데이트 시도가 완료되었습니다.')
   }
 
-  async deleteIndexs() {
+  async deleteIndexes() {
     // 상태가 'close'이거나 'deletedAt'이 null이 아닌 레슨을 찾음
     const lessons = await this.lessonRepository
       .createQueryBuilder('lesson')
@@ -119,7 +90,7 @@ export class SearchService implements OnModuleInit {
     console.log('모든 해당 레슨에 대한 삭제 작업이 완료되었습니다.')
   }
 
-  async search(searchDto: SearchDto, category?: string) {
+  async search(searchDto: SearchDto, category?: string, sortBy?: string) {
     const { keyword } = searchDto
 
     const query: any = {
@@ -128,7 +99,7 @@ export class SearchService implements OnModuleInit {
       },
     }
 
-    if (category && keyword) {
+    if (category && category !== 'price' && keyword) {
       query.bool.must.push({
         match: {
           [category]: {
@@ -156,20 +127,24 @@ export class SearchService implements OnModuleInit {
       })
     }
 
-    console.log('query', JSON.stringify(query, null, 2))
-    console.log('query.bool.must', JSON.stringify(query.bool.must, null, 2)) // 수정된 부분
+    // 정렬 옵션 설정
+    const sortOptions: any[] = [{ _score: { order: 'desc' } }]
+
+    if (category === 'price' && sortBy === 'asc') {
+      sortOptions.push({ price: { order: 'asc' } })
+    } else if (category === 'price' && sortBy === 'desc') {
+      sortOptions.push({ price: { order: 'desc' } })
+    }
 
     try {
       const response = await this.elasticsearchService.search({
         index: 'lessons',
         body: {
           query,
-          sort: [{ _score: { order: 'desc' } }],
+          sort: sortOptions,
         },
       })
 
-      console.log(response)
-      console.log('response.hits.hits', JSON.stringify(response.hits.hits, null, 2))
       return {
         hits: response.hits.hits,
       }

@@ -6,32 +6,21 @@ import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 @Controller('search')
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
-  // 인덱스 생성
+  // 인덱스 생성 및 업데이트
   @Post('/index')
-  async createAllindexs() {
-    const index = await this.searchService.createAllindexs()
+  async refreshLessonIndexes() {
+    const index = await this.searchService.refreshLessonIndexes()
 
     return {
       statusCode: HttpStatus.OK,
-      message: MAIN_MESSAGE_CONSTANT.SEARCH.CONTROLLER.INDEX.CREATE,
-      index,
-    }
-  }
-  // 인덱스 업데이트
-  @Patch('/index')
-  async updateAllindexs() {
-    const index = await this.searchService.updateAllindexs()
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: MAIN_MESSAGE_CONSTANT.SEARCH.CONTROLLER.INDEX.UPDATE,
+      message: MAIN_MESSAGE_CONSTANT.SEARCH.CONTROLLER.INDEX.REFRESH,
       index,
     }
   }
 
   @Delete('/index')
-  async deleteIndexs() {
-    const index = await this.searchService.deleteIndexs()
+  async deleteIndexes() {
+    const index = await this.searchService.deleteIndexes()
 
     return {
       statusCode: HttpStatus.OK,
@@ -41,8 +30,8 @@ export class SearchController {
   }
 
   @Post()
-  async search(@Body() serchDto: SearchDto, @Query('category') category?: string) {
-    const search = await this.searchService.search(serchDto, category)
+  async search(@Body() serchDto: SearchDto, @Query('category') category?: string, @Query('sortBy') sortBy?: string) {
+    const search = await this.searchService.search(serchDto, category, sortBy)
 
     return {
       statusCode: HttpStatus.OK,
