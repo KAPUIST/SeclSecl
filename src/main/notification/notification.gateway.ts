@@ -7,7 +7,7 @@ import { SocketJwtStrategy } from '../../common/strategies/socket.jwt.strategy'
   cors: {
     origin: '*',
   },
-  namespace: 'notification'
+  namespace: 'notification',
 })
 export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -16,7 +16,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   constructor(
     private readonly redisService: RedisService,
     private readonly socketJwtStrategy: SocketJwtStrategy,
-    ) {
+  ) {
     this.subscribeToRedis() // 클래스 초기화 시 구독 수행
   }
 
@@ -28,13 +28,13 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
   handleConnection(client: Socket) {
     try {
-        const token = client.handshake.query.token as string
-  
-        const payload = this.socketJwtStrategy.validateToken(token)
-        client.data.user = payload
-      } catch (error) {
-        client.disconnect(true)
-      }
+      const token = client.handshake.query.token as string
+
+      const payload = this.socketJwtStrategy.validateToken(token)
+      client.data.user = payload
+    } catch (error) {
+      client.disconnect(true)
+    }
   }
 
   handleDisconnect(client: Socket) {

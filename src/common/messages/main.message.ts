@@ -217,6 +217,8 @@ export const MAIN_MESSAGE_CONSTANT = {
         NOT_FOUND_ORDER: '존재하지 않거나 완료 처리된 주문 정보 입니다.',
         CONFLICT_PRICE: '주문 금액과 결제 금액이 같지 않습니다.',
         TRANSACTION_ERROR: '결제 진행중 오류가 생겼습니다.',
+        MAX_ENROLLMENT: '해당 기수의 정원이 다 찼습니다.',
+        BAD_REQUEST: '주문한 강의들의 가격과 결제 금액이 같지 않습니다.',
       },
       REFUND_PAYMENT: {
         SUCCESS: '주문 환불에 성공하였습니다.',
@@ -265,6 +267,13 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
       CHECK_CART: {
         SUCCESS: '장바구니 체크에 성공하였습니다.',
+        NOT_FOUND: '해당 수업은 존재하지 않습니다.',
+        CONFLICT_LESSON: '이미 보유한 강의입니다.',
+        BEFORE_RECRUITMENT: '모집기간 전인 수업입니다.',
+        AFTER_RECRUITMENT: '모집기간이 지난 수업입니다.',
+        MAX_ENROLLMENT: '해당 기수의 정원이 다 찼습니다.',
+        CONFLICT_CART_BATCH: '결제할 강의 중에 중복되는 요일, 시간을 가지는 강의가 있습니다.',
+        CONFLICT_OWNED_BATCH: '보유한 강의 중에 중복되는 요일, 시간을 가지는 강의가 있습니다.',
       },
     },
     COMMON: {

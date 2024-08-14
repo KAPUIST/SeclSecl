@@ -21,7 +21,8 @@ import { GuardModule } from '../../common/guards/guard.module'
   imports: [
     TypeOrmModule.forFeature([Notification, BandMember, BandPost, Band, BandPostComment, LessonReview, Lesson, User]),
     TypeOrmModule.forFeature([Cp], 'cp'),
-    RedisModule,GuardModule
+    RedisModule,
+    GuardModule,
   ],
   providers: [NotificationService, NotificationGateway, NotificationValidator],
   controllers: [NotificationController],

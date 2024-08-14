@@ -51,6 +51,9 @@ jobs:
           echo "REDIS_USER=${{secrets.REDIS_USER}}" >> .env
           echo "REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}}" >> .env
           echo "REDIS_TLS=${{secrets.REDIS_TLS}}" >> .env
+          echo "REDIS_BULLMQ_HOST=${{secrets.REDIS_BULLMQ_HOST}}" >> .env
+          echo "REDIS_BULLMQ_PORT=${{secrets.REDIS_BULLMQ_PORT}}" >> .env
+          echo "REDIS_BULLMQ_PASSWORD=${{secrets.REDIS_BULLMQ_PASSWORD}}" >> .env
           echo "AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}}" >> .env
           echo "AWS_SECRET_ACCESS_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}}" >> .env
           echo "AWS_REGION=${{secrets.AWS_REGION}}" >> .env
@@ -60,6 +63,9 @@ jobs:
           echo "BASE_URL=${{secrets.BASE_URL}}" >> .env
           echo "SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}}" >> .env
           echo "SENTRY_DSN=${{secrets.SENTRY_DSN}}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{secrets.GOOGLE_CLIENT_SECRET}}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{secrets.GOOGLE_CLIENT_ID}}" >> .env
+          echo "OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}}" >> .env
       - name: Install Sentry CLI
         run: npm install -g @sentry/cli
 

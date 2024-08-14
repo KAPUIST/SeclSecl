@@ -22,7 +22,7 @@ import { GuardModule } from '../../common/guards/guard.module'
     ConfigModule,
     UsersModule,
     CpModule,
-    GuardModule
+    GuardModule,
   ],
 
   controllers: [ChatController],

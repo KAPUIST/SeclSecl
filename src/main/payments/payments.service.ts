@@ -32,6 +32,8 @@ import { CreateOrderRO } from './ro/create-order.ro'
 import { RefundPaymentRO } from './ro/refund-payment.ro'
 import { CheckCartQueryDto } from './dto/check-cart-query.dto'
 import { PurchaseItemRO } from './ro/purchase-item.ro'
+import { InjectQueue } from '@nestjs/bullmq'
+import { Queue } from 'bullmq'
 
 @Injectable()
 export class PaymentsService {
@@ -50,6 +52,7 @@ export class PaymentsService {
     private readonly userLessonRepository: Repository<UserLesson>,
     private dataSource: DataSource,
     private readonly configService: ConfigService,
+    @InjectQueue('paymentQueue') private readonly paymentQueue: Queue,
   ) {}
   // 주문 결제 로직
   async purchaseItem(userUid: string, purchaseItemDto: PurchaseItemDto): Promise<PurchaseItemRO> {
@@ -57,25 +60,30 @@ export class PaymentsService {
     const encryptedApiSecretKey = 'Basic ' + Buffer.from(apiSecretKey + ':').toString('base64')
 
     return await this.dataSource.transaction(async (manager) => {
-      // 결제 테이블 생성
-      const payment = await manager.save(Payment, {
-        userUid,
-        totalAmount: purchaseItemDto.totalAmount,
-        vat: purchaseItemDto.vat,
-        requestedAt: purchaseItemDto.requestedAt,
-        approvedAt: purchaseItemDto.approvedAt,
-        currency: purchaseItemDto.currency,
-        method: purchaseItemDto.method,
-        orderId: purchaseItemDto.orderId,
-        orderName: purchaseItemDto.orderName,
-        lastTransactionKey: purchaseItemDto.lastTransactionKey,
-        paymentKey: purchaseItemDto.paymentKey,
-        status: purchaseItemDto.status,
-      })
       try {
+        // 결제 테이블 생성
+        const payment = await manager.save(Payment, {
+          userUid,
+          totalAmount: purchaseItemDto.totalAmount,
+          vat: purchaseItemDto.vat,
+          requestedAt: purchaseItemDto.requestedAt,
+          approvedAt: purchaseItemDto.approvedAt,
+          currency: purchaseItemDto.currency,
+          method: purchaseItemDto.method,
+          orderId: purchaseItemDto.orderId,
+          orderName: purchaseItemDto.orderName,
+          lastTransactionKey: purchaseItemDto.lastTransactionKey,
+          paymentKey: purchaseItemDto.paymentKey,
+          status: purchaseItemDto.status,
+        })
+        let validatedPrice = 0
         const orderList = payment.orderName.split(', ')
         for (const order of orderList) {
           const batch = await manager.findOne(Batch, { where: { uid: order }, relations: { lesson: true } })
+          // 해당 기수의 정원이 초과일 때 에러 처리
+          if (batch.currentEnrollment >= batch.maxEnrollment) {
+            throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.MAX_ENROLLMENT)
+          }
           // 결제 한 기수에 인원 수 추가
           await manager.update(Batch, { uid: batch.uid }, { currentEnrollment: batch.currentEnrollment + 1 })
           // 상세 결제 테이블 생성
@@ -91,6 +99,12 @@ export class PaymentsService {
             userUid,
             batchUid: order,
           })
+          validatedPrice = validatedPrice + batch.lesson.price
+        }
+
+        // 주문한 강의들의 가격과 실제 결제된 금액의 비교
+        if (purchaseItemDto.totalAmount !== validatedPrice) {
+          throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.PURCHASE_ITEM.BAD_REQUEST)
         }
         return {
           orderName: payment.orderName,
@@ -381,31 +395,72 @@ export class PaymentsService {
   // 장바구니 결제 유효성 체크 로직
   async checkCart(userUid: string, checkCartQueryDto: CheckCartQueryDto) {
     const orderList = checkCartQueryDto.batchList.split(', ')
+    const scheduleMap = new Map()
     const currentDate = new Date()
     for (const order of orderList) {
       // 기수 ID가 유효하지 않을 때 에러 처리
-      const validBatch = await this.batchRepository.findOne({ where: { uid: order } })
+      const validBatch = await this.batchRepository.findOne({ where: { uid: order }, relations: { batchDays: true } })
       if (_.isNil(validBatch)) {
-        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.NOT_FOUND)
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.CHECK_CART.NOT_FOUND)
       }
       // 이미 보유한 강의 일 때 에러 처리
       const isPurchasedLesson = await this.userLessonRepository.findOne({ where: { userUid, batchUid: order } })
       if (isPurchasedLesson) {
-        throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.CONFLICT_LESSON)
+        throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.CHECK_CART.CONFLICT_LESSON)
       }
       // 모집 기간 전일 때 에러 처리
       if (currentDate < validBatch.recruitmentStart) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.BEFORE_RECRUITMENT)
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.CHECK_CART.BEFORE_RECRUITMENT)
       }
       // 모집 기간이 지났을 때 에러 처리
       if (currentDate > validBatch.recruitmentEnd) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.AFTER_RECRUITMENT)
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.CHECK_CART.AFTER_RECRUITMENT)
       }
       // 해당 기수 정원이 다 찼을 때 에러 처리
       if (validBatch.currentEnrollment >= validBatch.maxEnrollment) {
-        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.ORDER.CREATE_ORDER.MAX_ENROLLMENT)
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.CHECK_CART.MAX_ENROLLMENT)
+      }
+      // 결제할 강의들 간 요일, 시간이 겹칠 때 에러 처리
+      const time = validBatch.startTime
+      const days = validBatch.batchDays
+      for (const el of days) {
+        const schedule = `${el.day}-${time}`
+        if (scheduleMap.has(schedule)) {
+          throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.CHECK_CART.CONFLICT_CART_BATCH)
+        }
+        scheduleMap.set(schedule, true)
+      }
+    }
+    // 보유한 강의와 요일 시간이 겹칠 때 에러 처리
+    const ownedClasses = await this.userLessonRepository.find({
+      where: { userUid },
+      relations: { batch: { batchDays: true } },
+    })
+    for (const detail of ownedClasses) {
+      const time = detail.batch.startTime
+      const days = detail.batch.batchDays
+      for (const el of days) {
+        const schedule = `${el.day}-${time}`
+        if (scheduleMap.has(schedule)) {
+          throw new ConflictException(MAIN_MESSAGE_CONSTANT.PAYMENT.PAYMENT_CART.CHECK_CART.CONFLICT_OWNED_BATCH)
+        }
+        scheduleMap.set(schedule, true)
       }
     }
     return
   }
+
+  // bull queue 생성
+  async bullTestQueue(userUid: string, purchaseItemDto: PurchaseItemDto) {
+    console.log('add-queue')
+    return await this.paymentQueue.add('paymentQueue', { userUid, purchaseItemDto })
+  }
+  // bull queue 테스트
+  // async bullTest(userUid, bodyId) {
+  //   return {
+  //     status: 200,
+  //     message: 'test-ok',
+  //     data: { userUid, bodyId },
+  //   }
+  // }
 }
