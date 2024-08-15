@@ -50,7 +50,6 @@ export class AuthController {
    * @param refreshToken
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('/sign-out')
   async logout(@Headers('authorization') refreshToken: string) {
@@ -66,7 +65,6 @@ export class AuthController {
    * @param authorization
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('token')
   async refresh(@Headers('authorization') RefreshToken: string) {
