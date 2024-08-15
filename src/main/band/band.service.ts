@@ -180,6 +180,8 @@ export class BandService {
       const bands = await this.bandMemberRepository.find({ where: { userUid: userUid }, relations: ['band'] })
       return bands.map((band) => ({
         bandUid: band.band.uid,
+        userUid: userUid,
+        chatUrl: band.band.chatUrl,
         name: band.band.name,
       }))
     } catch (error) {
