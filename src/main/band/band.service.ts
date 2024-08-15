@@ -64,7 +64,6 @@ import { DeleteBandCommentRO } from './ro/delete-band-comment.ro'
 import { LikeBandCommentRO } from './ro/like-band-comment.ro'
 import { UnlikeBandCommentRO } from './ro/unlike-band-comment.ro'
 import { NotificationService } from '../notification/notification.service'
-import { tryCatch } from 'bullmq'
 import { JoinedBandRO } from './ro/joined-band.ro'
 
 @Injectable()
@@ -142,13 +141,28 @@ export class BandService {
     }))
   }
   // 밴드 상세 조회 로직
-  async getBandDetail(params: GetBandDetailParamsDTO): Promise<GetBandDetailRO> {
+  async getBandDetail(params: GetBandDetailParamsDTO, userUid: string): Promise<GetBandDetailRO> {
     const bandUid = params.bandUid
-    const band = await this.bandRepository.findOne({ where: { uid: bandUid }, relations: { user: { userInfo: true } } })
+    const band = await this.bandRepository.findOne({
+      where: { uid: bandUid },
+      relations: { user: { userInfo: true } },
+    })
     // 밴드가 존재하지 않을 시 에러 처리
     if (_.isNil(band)) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_Detail.NOT_FOUND)
     }
+    let isMember = false
+    if (userUid) {
+      // 특정 사용자가 밴드 멤버인지 확인하는 쿼리
+      isMember =
+        (await this.bandRepository
+          .createQueryBuilder('band')
+          .innerJoin('band.bandMembers', 'member')
+          .where('band.uid = :bandUid', { bandUid })
+          .andWhere('member.userUid = :userUid', { userUid })
+          .getCount()) > 0
+    }
+
     return {
       uid: band.uid,
       userUid: band.userUid,
@@ -157,6 +171,7 @@ export class BandService {
       content: band.content,
       chatUrl: band.chatUrl,
       createdAt: band.createdAt,
+      isMember: isMember,
     }
   }
   // 가입한 밴드 목록 가져오기
