@@ -15,6 +15,7 @@ import { BatchNoticeModule } from './common/batch-notice/batch-notice.module'
 import { BatchPostsModule } from './main/batch-posts/batch-posts.module'
 import { SentryModule } from '@sentry/nestjs/setup'
 import { SearchModule } from './main/search/search.module'
+import { NotificationModule } from './main/notification/notification.module'
 @Module({
   imports: [
     SentryModule.forRoot(),
@@ -34,6 +35,7 @@ import { SearchModule } from './main/search/search.module'
     BatchNoticeModule,
     BatchPostsModule,
     SearchModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

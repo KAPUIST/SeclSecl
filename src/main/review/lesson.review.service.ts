@@ -9,6 +9,7 @@ import { CreateReviewDto } from './dtos/create.review.dto'
 import { LessonReviewResponseDto } from './dtos/lesson.review.response.dto'
 import { UpdateReviewDto } from './dtos/update.review.dto'
 import { LessonReview } from './entities/lesson.review.entity'
+import { NotificationService } from '../notification/notification.service'
 
 @Injectable()
 export class LessonReviewService {
@@ -23,6 +24,7 @@ export class LessonReviewService {
     private readonly userLessonRepository: Repository<UserLesson>,
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
+    private readonly notificationService: NotificationService,
   ) {}
 
   //리뷰 등록
@@ -63,6 +65,9 @@ export class LessonReviewService {
     }
     const review = await this.lessonReviewRepository.create({ ...createReviewDto, lesson, user, batch: confirmBatch })
     const savedReview = await this.lessonReviewRepository.save(review)
+
+    // 새 리뷰 등록 알림 전송
+    await this.notificationService.createReviewNotification(savedReview)
 
     const response = new LessonReviewResponseDto()
     response.uid = savedReview.uid

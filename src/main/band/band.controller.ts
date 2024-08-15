@@ -31,6 +31,8 @@ import { UnlikeBandCommentParamsDTO } from './dto/unlike-band-comment-params.dto
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { User } from '../../common/decorator/user-decorator'
+import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard'
 
 @ApiTags('밴드 관련 API')
 @Controller({ host: 'localhost', path: 'bands' })
@@ -56,6 +58,22 @@ export class BandController {
     }
   }
   /**
+   * 가입한 밴드 조회 기능
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('/joined')
+  async getMyBandList(@User() user) {
+    const userUid = user.uid
+    const bandList = await this.bandService.getMyBandList(userUid)
+    return {
+      status: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_List.SUCCEED,
+      data: bandList,
+    }
+  }
+  /**
    * 밴드 목록 조회
    * @returns
    */
@@ -73,9 +91,13 @@ export class BandController {
    * @param params
    * @returns
    */
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':bandUid')
-  async getBandDetail(@Param() params: GetBandDetailParamsDTO) {
-    const searchedBand = await this.bandService.getBandDetail(params)
+  async getBandDetail(@Param() params: GetBandDetailParamsDTO, @User() user) {
+    const userUid = user ? user.uid : null
+
+    const searchedBand = await this.bandService.getBandDetail(params, userUid)
+
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_Detail.SUCCEED,
@@ -130,7 +152,8 @@ export class BandController {
   @Post(':bandUid/join')
   async joinBand(@Request() req, @Param() params: JoinBandParamsDTO) {
     const userUid = req.user.uid
-    const joinedBand = await this.bandService.joinBand(userUid, params)
+    const nickname = req.user.nickName
+    const joinedBand = await this.bandService.joinBand(userUid, nickname, params)
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.JOIN_BAND.SUCCEED,
@@ -195,6 +218,7 @@ export class BandController {
       data: createdBandPost,
     }
   }
+
   /**
    * 밴드 게시글 목록 조회
    * @param req

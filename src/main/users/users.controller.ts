@@ -13,6 +13,8 @@ import { FindMyLessonRO } from './ro/find-my-lesson.ro'
 import { FindMyLessonDetailRO } from './ro/find-my-lesson-detail.ro'
 import { ToggleLessonBookmarkRO } from './ro/toggle-favorite.ro'
 import { FavoriteLessonRO } from './ro/favorite-lesson.ro'
+import { isFavoriteParamsDTO } from './dto/is-favorite-parmas.dto'
+import { IsFavoriteRO } from './ro/is-favorite.ro'
 
 @ApiTags('유저 정보')
 @UseGuards(JwtAuthGuard)
@@ -116,6 +118,22 @@ export class UsersController {
     return {
       statusCode: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.FIND_FAVORITE,
+      data,
+    }
+  }
+  // 상세조회 찜하기 여부 확인
+  @Get('/favorites/:lessonUid')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '상세조회 찜 여부 확인' })
+  @ApiResponse({ status: HttpStatus.OK, type: ApiResponseRo<IsFavoriteRO> })
+  async isFavorite(
+    @User('uid') uid: string,
+    @Param() params: isFavoriteParamsDTO,
+  ): Promise<ApiResponseRo<IsFavoriteRO>> {
+    const data = await this.userService.isFavorite(uid, params)
+    return {
+      statusCode: HttpStatus.OK,
+      message: MAIN_MESSAGE_CONSTANT.USER.FAVORITE.IS_FAVORITE,
       data,
     }
   }
