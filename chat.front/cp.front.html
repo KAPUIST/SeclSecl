@@ -91,9 +91,9 @@
       const token =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJkOTBmYTA3Yi03ZTNmLTQwYmYtOWQ5Yi1lMDllOTM1N2RlZTciLCJlbWFpbCI6ImtpbWNoaUBnbWFpbC5jb20iLCJ0eXBlIjoiY3AiLCJpYXQiOjE3MjM2MzY1MzgsImV4cCI6MTcyMzY0MzczOH0.8E3fRcQmJirBI4GzOK6sEXPOOZ0ZI6cdwZKsj9q5-OM'
       const decodedToken = jwt_decode(token)
-      const cpId = decodedToken.uid
+      const cpUid = decodedToken.uid
       const cpName = 'CP'
-      let chatRoomId
+      let chatRoomUid
       const socket = io('ws://localhost:3000/chatting', {
         query: { token },
       })
@@ -110,9 +110,9 @@
         console.log('WebSocket connection closed', event)
       })
 
-      socket.on('joinedRoom', (roomId) => {
-        chatRoomId = roomId
-        console.log('Joined room with ID:', chatRoomId)
+      socket.on('joinedRoom', (roomUid) => {
+        chatRoomUid = roomUid
+        console.log('Joined room with ID:', chatRoomUid)
         showChatRoom()
         loadPreviousMessages()
       })
@@ -122,13 +122,13 @@
       })
 
       function createRoom() {
-        const userId = document.getElementById('userId').value
-        socket.emit('joinRoom', { userId })
+        const userUid = document.getElementById('userUid').value
+        socket.emit('joinRoom', { userUid })
       }
 
       function sendMessage() {
         const message = document.getElementById('message').value
-        socket.emit('sendMessage', { chatRoomId, content: message, senderName: cpName })
+        socket.emit('sendMessage', { chatRoomUid, content: message, senderName: cpName })
         document.getElementById('message').value = ''
       }
 
@@ -138,9 +138,9 @@
       }
 
       async function loadPreviousMessages() {
-        console.log('Loading previous messages for chatRoomId', chatRoomId)
+        console.log('Loading previous messages for chatRoomUid', chatRoomUid)
         try {
-          const response = await fetch(`http://localhost:3000/api/chat/${chatRoomId}/messages`, {
+          const response = await fetch(`http://localhost:3000/api/chat/${chatRoomUid}/messages`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -164,7 +164,7 @@
 
       function addMessageToChat(message) {
         const messageElement = document.createElement('div')
-        messageElement.className = 'message ' + (message.sender === cpId ? 'me' : 'other')
+        messageElement.className = 'message ' + (message.sender === cpUid ? 'me' : 'other')
 
         const senderElement = document.createElement('div')
         senderElement.className = 'sender'

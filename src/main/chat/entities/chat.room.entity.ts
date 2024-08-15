@@ -7,10 +7,10 @@ export class ChatRoom {
   uid: string
 
   @Column()
-  cpId: string
+  cpUid: string
 
   @Column()
-  userId: string
+  userUid: string
 
   @CreateDateColumn()
   createdAt: Date

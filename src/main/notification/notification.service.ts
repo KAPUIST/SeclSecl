@@ -151,5 +151,4 @@ export class NotificationService {
     //Socket.IO 알림 전송
     this.notificationGateway.sendNotification(savedNotificatioin)
   }
-
 }

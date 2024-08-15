@@ -638,7 +638,6 @@ export class BandService {
         await manager.update(BandPostComment, { uid: bandCommentUid }, { likeCount: newCount })
         const likedBandComment = await manager.findOne(BandPostComment, { where: { uid: bandCommentUid } })
 
-
         return {
           uid: likedBandComment.uid,
           userUid,
