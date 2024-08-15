@@ -23,6 +23,8 @@ import { UpdateUserInfoDto } from './dto/update-userInfo.dto'
 import { FindOneUserInfoRO } from './ro/find-one-userinfo-ro'
 import { FindMyLessonRO } from './ro/find-my-lesson.ro'
 import { UpdateUserInfoRO } from './ro/update-userinfo.ro'
+import { isFavoriteParamsDTO } from './dto/is-favorite-parmas.dto'
+import { IsFavoriteRO } from './ro/is-favorite.ro'
 
 @Injectable()
 export class UsersService {
@@ -408,5 +410,17 @@ export class UsersService {
       this.logger.error(`사용자 찜 목록 조회 실패: ${error.message}`, error.stack)
       throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.USER.FAVORITE.FAVORITE_FETCH_FAILED)
     }
+  }
+
+  // 상세조회 찜하기 여부 확인 로직
+  async isFavorite(userUid: string, params: isFavoriteParamsDTO): Promise<IsFavoriteRO> {
+    const isFavorite = await this.lessonBookmarkRepository.findOne({
+      where: { userUid, lessonUid: params.lessonUid },
+    })
+    const returnValue = { isFavorite: true }
+    if (_.isNil(isFavorite)) {
+      returnValue.isFavorite = false
+    }
+    return returnValue
   }
 }
