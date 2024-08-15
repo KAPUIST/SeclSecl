@@ -340,10 +340,14 @@ export const MAIN_MESSAGE_CONSTANT = {
       FAVORITE_FETCH_FAILED: '찜한 강의 목록을 가져오는데 실패했습니다.',
       TOGGLE_FAILED: '강의 찜하기 토글 중 오류가 발생했습니다.',
       REMOVE_FAILED: '강의 찜하기 삭제 중 오류가 발생했습니다.',
+      IS_FAVORITE: '상세 조회 찜하기 여부를 성공적으로 조회 했습니다.',
     },
     COMMON: {
       USER_LESSON_ENTITY: {
         BATCH_UID: '기수 UID를 입력해 주세요',
+      },
+      USER_LESSON_BOOKMARKS: {
+        LESSON_UID: '레슨 UID를 입력해 주세요',
       },
     },
   },
