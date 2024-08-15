@@ -32,6 +32,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { User } from '../../common/decorator/user-decorator'
+import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard'
 
 @ApiTags('밴드 관련 API')
 @Controller({ host: 'localhost', path: 'bands' })
@@ -90,9 +91,13 @@ export class BandController {
    * @param params
    * @returns
    */
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':bandUid')
-  async getBandDetail(@Param() params: GetBandDetailParamsDTO) {
-    const searchedBand = await this.bandService.getBandDetail(params)
+  async getBandDetail(@Param() params: GetBandDetailParamsDTO, @User() user) {
+    const userUid = user ? user.uid : null
+
+    const searchedBand = await this.bandService.getBandDetail(params, userUid)
+
     return {
       status: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BAND.BAND_GROUP.GET_BAND_Detail.SUCCEED,
