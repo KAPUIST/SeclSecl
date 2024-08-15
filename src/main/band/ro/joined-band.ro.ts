@@ -9,4 +9,12 @@ export class JoinedBandRO {
   @ApiProperty({ description: '밴드명' })
   @IsString()
   name: string
+
+  @ApiProperty({ description: '유저 아이디' })
+  @IsString()
+  userUid: string
+
+  @ApiProperty({ description: '채팅 URL' })
+  @IsString()
+  chatUrl: string
 }
