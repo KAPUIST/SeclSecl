@@ -354,11 +354,7 @@ export class BandService {
       bandMemberUid: bandPost.bandMemberUid,
       bandMemberNickName: bandPost.bandMember.user.userInfo.nickname,
       title: bandPost.title,
-      content: bandPost.content,
-      communityImage: bandPost.communityImage,
-      likeCount: bandPost.likeCount,
       createdAt: bandPost.createdAt,
-      updatedAt: bandPost.updatedAt,
     }))
   }
   // 밴드 게시글 상세 조회 로직
