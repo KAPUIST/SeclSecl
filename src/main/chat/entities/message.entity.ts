@@ -13,7 +13,7 @@ export class Message {
   content: string
 
   @Column({ default: false })
-  isRead: boolean 
+  isRead: boolean
 
   @CreateDateColumn()
   createdAt: Date

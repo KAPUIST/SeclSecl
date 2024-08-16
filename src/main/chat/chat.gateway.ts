@@ -85,23 +85,33 @@ export class ChatGateway {
   ) {
     const senderUid = client.data.user.uid
     const message = await this.chatService.saveMessage(chatRoomUid, senderUid, content)
-    this.server.to(chatRoomUid.toString()).emit('receiveMessage', message)
+
+    //채팅방에있는 사용자에게 전송
+    this.server.to(chatRoomUid).emit('receiveMessage', message)
+
+    //해당 채팅방에 속해있는 사용자 대상 채팅 목록 업데이트    
+    const userUids = await this.chatService.getChatRoomUsers(chatRoomUid)
+    userUids.forEach(uid => {
+      const sockets = this.server.sockets.sockets
+      sockets.forEach(socket => {
+        if(socket.data.user.uid === uid) {
+          socket.emit('receiveMessageForList', message)
+        }
+      })
+    })
   }
 
   //메세지 읽음 처리
   @SubscribeMessage('markAsRead')
-  async handleMarkAsRead(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { chatRoomUid: string}
-  ) {
-    try{
+  async handleMarkAsRead(@ConnectedSocket() client: Socket, @MessageBody() data: { chatRoomUid: string }) {
+    try {
       const userUid = client.data.user.uid
       await this.chatService.markMessagesAsRead(data.chatRoomUid, userUid)
 
       //채팅방 클라이언트에게 알림
       this.server.to(data.chatRoomUid).emit('messagesMarkedAsRead', {
         chatRoomUid: data.chatRoomUid,
-        readerUid: userUid
+        readerUid: userUid,
       })
 
       this.logger.log(`Messages in room ${data.chatRoomUid} marked as read by ${userUid}`)

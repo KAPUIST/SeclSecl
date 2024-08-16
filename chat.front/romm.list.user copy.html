@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chat rooms</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 20px;
+      }
+      .chat-room {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        background-color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+      }
+      .chat-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .sender-name {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .last-message {
+        font-size: 12px;
+        color: #666;
+      }
+      .chat-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+      .last-message-time {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 5px;
+      }
+      .is-read {
+        width: 10px;
+        height: 10px;
+        background-color: red;
+        border-radius: 50%;
+        display: none;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
+      .unread .is-read {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>문의 채팅</h1>
+    <div id="chatRoomList"></div>
+
+    <script>
+      const token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzNzg1ODcxLCJleHAiOjE3MjM3OTMwNzF9.q9LbHeXkqCweaqVQOiCbXPDFdut06Y-SD7jnPu43X94' // 실제 JWT 토큰을 넣으세요
+      const decodedToken = jwt_decode(token)
+      const userUid = decodedToken.uid
+
+      // 소켓 연결 설정
+      const socket = io('ws://localhost:3000/chatting', {
+        path: '/socket.io',
+        query: { token },
+        transports: ['websocket'],
+      })
+
+      socket.on('connect', () => {
+        console.log('User WebSocket connection opened')
+        loadChatRooms() // 연결 시 채팅방 목록을 로드
+      })
+
+      async function loadChatRooms() {
+        try {
+          const response = await fetch('http://localhost:3000/api/chat/rooms', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          })
+
+          const chatRooms = await response.json()
+
+          // 최신 메시지 기준으로 채팅방 목록을 내림차순으로 정렬
+          chatRooms.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
+          displayChatRooms(chatRooms)
+        } catch (error) {
+          console.error('Error fetching chat rooms:', error)
+        }
+      }
+      function displayChatRooms(chatRooms) {
+        const chatRoomList = document.getElementById('chatRoomList')
+        chatRoomList.innerHTML = '' // 기존 목록 초기화
+
+        chatRooms.forEach((room) => {
+          const chatRoomElement = document.createElement('div')
+          chatRoomElement.className = 'chat-room'
+          chatRoomElement.dataset.roomId = room.chatRoomUid
+          if (!room.isRead) {
+            chatRoomElement.classList.add('unread')
+          }
+          chatRoomElement.innerHTML = `
+            <div class="chat-info">
+              <div class="sender-name">${room.senderName}</div>
+              <div class="last-message">${room.lastMessageContent}</div>
+            </div>
+            <div class="chat-meta">
+              <div class="last-message-time">${new Date(room.lastMessageTime).toLocaleString()}</div>
+            </div>
+            <div class="is-read"></div>
+          `
+          chatRoomElement.addEventListener('click', () => openChatRoom(room.chatRoomUid))
+          chatRoomList.appendChild(chatRoomElement)
+        })
+      }
+
+      function openChatRoom(chatRoomUid) {
+        console.log('Opening chat room:', chatRoomUid)
+      }
+
+      socket.on('messagesMarkedAsRead', ({ chatRoomUid, readerUid }) => {
+        console.log(`Messages in room ${chatRoomUid} marked as read by ${readerUid} `)
+
+        //채팅방 읽은 상태 업데이트
+        const chatRoomElement = document.querySelector(`[data-room-id="${chatRoomUid}"]`)
+        if (chatRoomElement) {
+          chatRoomElement.classList.remove('unread')
+        }
+      })
+
+      // 실시간 메시지 수신 시 해당 채팅방을 목록 맨 위로 이동
+      socket.on('receiveMessageForList', (message) => {
+        console.log('Received new message:', message)
+        const chatRoomList = document.getElementById('chatRoomList')
+        const roomElement = chatRoomList.querySelector(`[data-room-id="${message.chatRoomUid}"]`)
+
+        if (roomElement) {
+          // 채팅방 업데이트: 메시지 내용, 시간, 안읽음 상태
+          roomElement.querySelector('.last-message').textContent = message.content
+          roomElement.querySelector('.last-message-time').textContent = new Date(message.createdAt).toLocaleString()
+          roomElement.classList.add('unread') // 읽지 않은 메시지일 경우 빨간 점 표시
+
+          // 해당 채팅방을 목록의 맨 위로 이동
+          chatRoomList.removeChild(roomElement)
+          chatRoomList.insertBefore(roomElement, chatRoomList.firstChild)
+        } else {
+          // 새로운 채팅방일 경우, 목록에 추가 (필요한 경우)
+          const newChatRoomElement = document.createElement('div')
+          newChatRoomElement.className = 'chat-room unread'
+          newChatRoomElement.dataset.roomId = message.chatRoomUid
+          newChatRoomElement.innerHTML = `
+            <div class="chat-info">
+              <div class="sender-name">${message.senderName}</div>
+              <div class="last-message">${message.content}</div>
+            </div>
+            <div class="chat-meta">
+              <div class="last-message-time">${new Date(message.createdAt).toLocaleString()}</div>
+            </div>
+            <div class="is-read"></div>
+          `
+          chatRoomList.insertBefore(newChatRoomElement, chatRoomList.firstChild)
+        }
+      })
+
+      socket.on('error', (error) => {
+        console.error('WebSocket error:', error)
+      })
+
+      socket.on('disconnect', (event) => {
+        console.log('WebSocket connection closed', event)
+      })
+
+      window.onload = () => {
+        socket.connect()
+      }
+    </script>
+  </body>
+</html>

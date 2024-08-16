@@ -77,7 +77,7 @@
   <body>
     <h1>CP Chat</h1>
     <div id="createRoomSection">
-      <input id="userId" type="text" placeholder="Enter User ID" />
+      <input id="userUid" type="text" placeholder="Enter User ID" />
       <button onclick="createRoom()">Create Room</button>
     </div>
     <div id="chatRoomSection" style="display: none">
@@ -89,13 +89,15 @@
 
     <script>
       const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJkOTBmYTA3Yi03ZTNmLTQwYmYtOWQ5Yi1lMDllOTM1N2RlZTciLCJlbWFpbCI6ImtpbWNoaUBnbWFpbC5jb20iLCJ0eXBlIjoiY3AiLCJpYXQiOjE3MjM2MzY1MzgsImV4cCI6MTcyMzY0MzczOH0.8E3fRcQmJirBI4GzOK6sEXPOOZ0ZI6cdwZKsj9q5-OM'
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJkOTBmYTA3Yi03ZTNmLTQwYmYtOWQ5Yi1lMDllOTM1N2RlZTciLCJlbWFpbCI6ImtpbWNoaUBnbWFpbC5jb20iLCJ0eXBlIjoiY3AiLCJpYXQiOjE3MjM3ODU5MjAsImV4cCI6MTcyMzc5MzEyMH0.y-Z976F_fEUbK0zr8-mvfskS9EjcZTY6gmckZYouSFg'
       const decodedToken = jwt_decode(token)
       const cpUid = decodedToken.uid
       const cpName = 'CP'
       let chatRoomUid
       const socket = io('ws://localhost:3000/chatting', {
+        path: '/socket.io',
         query: { token },
+        transports: ['websocket'],
       })
 
       socket.on('connect', () => {
@@ -119,6 +121,11 @@
 
       socket.on('receiveMessage', (message) => {
         addMessageToChat(message)
+        console.log('Received new message:', message)
+
+        if (message.sender !== userUid) {
+          markMessagesAsRead()
+        }
       })
 
       function createRoom() {
@@ -157,9 +164,15 @@
           console.log('Messages:', messages)
           messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).forEach(addMessageToChat)
           scrollToBottom()
+
+          markMessagesAsRead()
         } catch (error) {
           console.error('Failed to load previous messages:', error)
         }
+      }
+
+      function markMessagesAsRead() {
+        socket.emit('markAsRead', { chatRoomUid })
       }
 
       function addMessageToChat(message) {

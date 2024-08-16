@@ -31,7 +31,7 @@ export class ChatController {
 
   //채팅 목록 불러오기
   @Get('rooms')
-  async getChatRooms( @User('uid') uid: string,  @Res() res: Response) {
+  async getChatRooms(@User('uid') uid: string, @Res() res: Response) {
     try {
       const rooms = await this.chatService.getChatRooms(uid)
       return res.status(HttpStatus.OK).json(rooms)

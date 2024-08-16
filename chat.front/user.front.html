@@ -89,12 +89,12 @@
 
     <script>
       const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzNjMwMDkzLCJleHAiOjE3MjM2MzcyOTN9.fzslT-x4g4rD2CDA_V9Q7q3SY1eJ8IxkgLkhtO8alBs'
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzNzg1ODcxLCJleHAiOjE3MjM3OTMwNzF9.q9LbHeXkqCweaqVQOiCbXPDFdut06Y-SD7jnPu43X94'
       const decodedToken = jwt_decode(token)
       const userUid = decodedToken.uid
       const userName = 'User'
       let chatRoomUid
-      const socket = io('https://dfgdwssegf.shop/chatting', {
+      const socket = io('ws://localhost:3000/chatting', {
         path: '/socket.io',
         query: { token },
         transports: ['websocket'],
@@ -121,6 +121,11 @@
 
       socket.on('receiveMessage', (message) => {
         addMessageToChat(message)
+
+        //실시간 메세지 읽음 처리
+        if (message.sender !== userUid) {
+          markMessagesAsRead()
+        }
       })
 
       function createRoom() {
@@ -142,7 +147,7 @@
       async function loadPreviousMessages() {
         console.log('Loading previous messages for chatRoomId', chatRoomUid)
         try {
-          const response = await fetch(`https://dfgdwssegf.shop/api/chat/${chatRoomUid}/messages`, {
+          const response = await fetch(`http://localhost:3000/api/chat/${chatRoomUid}/messages`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -159,9 +164,15 @@
           console.log('Messages:', messages)
           messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).forEach(addMessageToChat)
           scrollToBottom()
+
+          markMessagesAsRead()
         } catch (error) {
           console.error('Failed to load previous messages:', error)
         }
+      }
+
+      function markMessagesAsRead() {
+        socket.emit('markAsRead', { chatRoomUid })
       }
 
       function addMessageToChat(message) {
