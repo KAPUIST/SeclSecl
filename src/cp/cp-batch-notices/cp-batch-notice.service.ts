@@ -16,6 +16,14 @@ import { BatchNotice } from '../../common/batch-notice/entities/batch-notice.ent
 import { UserLesson } from '../../main/users/entities/user-lessons.entity'
 import { S3Service } from '../../common/s3/s3.service'
 import { LessonNote } from '../../common/batch-notice/entities/lesson-notes.entity'
+import { CreateBatchNoticeParamsDTO } from './dto/create-batch-notice-params.dto'
+import { FindAllBatchNoticeParamsDTO } from './dto/find-all-batch-post-params.dto'
+import { UpdateBatchNoticeParamsDTO } from './dto/update-batch-post-params.dto'
+import { DeleteBatchNoticeParamsDTO } from './dto/delete-batch-notice-params.dto'
+import { FindAllBatchNoticeRo } from './ro/find-all-batch-notice.ro'
+import { DeleteBatchNoticeRo } from './ro/delete-batch-notice.ro'
+import { CreateBatchNoticeRo } from './ro/create-batch-notice.ro'
+import { UpdateBatchNoticeRo } from './ro/update-batch-notice.ro'
 
 @Injectable()
 export class CpBatchNoticeService {
@@ -36,11 +44,10 @@ export class CpBatchNoticeService {
 
   async create(
     uid: string,
-    lessonUid: string,
-    batchUid: string,
+    params: CreateBatchNoticeParamsDTO,
     files: Express.Multer.File[],
     createBatchNoticeDto: CreateBatchNoticeDto,
-  ) {
+  ): Promise<CreateBatchNoticeRo> {
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
@@ -48,18 +55,16 @@ export class CpBatchNoticeService {
 
     try {
       // cp가 권한이 있는지 확인
-      await this.authorizedCp(uid, lessonUid)
+      await this.authorizedCp(uid, params.lessonUid)
       // 기수가 존재하는지 확인
-      await this.findBatchOrThrow(lessonUid, batchUid)
+      await this.findBatchOrThrow(params.lessonUid, params.batchUid)
 
       const newBatchNotice = this.batchNoticeRepository.create({
         ...createBatchNoticeDto,
-        batchUid,
+        batchUid: params.batchUid,
         cpUid: uid,
       })
       const savedBatchNotice = await queryRunner.manager.save(BatchNotice, newBatchNotice)
-
-      delete savedBatchNotice.deletedAt
 
       const fileEntities = []
       for (const file of files) {
@@ -75,15 +80,24 @@ export class CpBatchNoticeService {
       }
 
       const batchNotice = await queryRunner.manager.save(BatchNotice, newBatchNotice)
-      const lessonNote = await queryRunner.manager.save(LessonNote, fileEntities)
-
-      lessonNote.forEach((note) => {
-        delete note.deletedAt
-      })
+      const lessonNotes = await queryRunner.manager.save(LessonNote, fileEntities)
 
       await queryRunner.commitTransaction()
 
-      return [batchNotice, lessonNote]
+      const Notes = lessonNotes.map((item) => ({
+        lessonNote: item.lessonNote,
+        field: item.field,
+        noticeUid: item.noticeUid,
+      }))
+
+      return {
+        uid: batchNotice.uid,
+        batchUid: batchNotice.batchUid,
+        title: batchNotice.title,
+        content: batchNotice.content,
+        createdAt: batchNotice.createdAt,
+        lessonNotes: Notes,
+      }
     } catch (error) {
       console.log(error)
       await queryRunner.rollbackTransaction()
@@ -93,44 +107,57 @@ export class CpBatchNoticeService {
         await this.s3Service.deleteFile(file.key)
       }
 
-      throw new InternalServerErrorException('공지 등록 중 오류가 발생했습니다.')
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.TRANJECTION.CREATE)
     } finally {
       await queryRunner.release()
     }
   }
   // 기수 공지 전체조회
-  async findAll(uid, lessonUid, batchUid) {
+  async findAll(uid, params: FindAllBatchNoticeParamsDTO): Promise<FindAllBatchNoticeRo[]> {
     // 기수가 존재하는지 확인
-    await this.findBatchOrThrow(lessonUid, batchUid)
+    await this.findBatchOrThrow(params.lessonUid, params.batchUid)
 
-    const authorizedCp = await this.lessonRepository.findOne({ where: { uid: lessonUid, cpUid: uid } })
+    const authorizedCp = await this.lessonRepository.findOne({ where: { uid: params.lessonUid, cpUid: uid } })
 
     const authorizedUser = await this.userLessonRepository.findOne({
-      where: { userUid: uid, batchUid },
+      where: { userUid: uid, batchUid: params.batchUid },
     })
 
     if (!authorizedUser && !authorizedCp) {
       throw new ForbiddenException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_AUTHORIZED_NOTICE)
     }
 
-    const data = await this.batchNoticeRepository.find({ where: { batchUid }, relations: ['lessonNotes'] })
-
-    // deletedAt 필드 삭제
-    data.forEach((notice) => {
-      delete notice.deletedAt
+    const data = await this.batchNoticeRepository.find({
+      where: { batchUid: params.batchUid },
+      relations: ['lessonNotes'],
     })
 
-    return data
+    const results = data.map((item) => {
+      const lessonNotes = item.lessonNotes.map((note) => ({
+        lessonNote: note.lessonNote,
+        field: note.field,
+        noticeUid: note.noticeUid,
+      }))
+
+      return {
+        uid: item.uid,
+        batchUid: item.batchUid,
+        title: item.title,
+        content: item.content,
+        lessonNotes,
+      }
+    })
+
+    return results
   }
+
   // 기수 공지 수정
   async update(
     uid,
-    lessonUid,
-    batchUid,
-    notificationUid,
+    params: UpdateBatchNoticeParamsDTO,
     files: Express.Multer.File[] = [],
     updateBatchNoticeDto: UpdateBatchNoticeDto,
-  ) {
+  ): Promise<UpdateBatchNoticeRo> {
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
@@ -138,13 +165,13 @@ export class CpBatchNoticeService {
     const oldFiles: string[] = []
     try {
       //cp가 권한이 있는지 확인
-      await this.authorizedCp(uid, lessonUid)
+      await this.authorizedCp(uid, params.lessonUid)
       // 기수가 존재하는지 확인
-      await this.findBatchOrThrow(lessonUid, batchUid)
+      await this.findBatchOrThrow(params.lessonUid, params.batchUid)
 
       const { ...noticeInfo } = updateBatchNoticeDto
       const existingBatchNotice = await this.batchNoticeRepository.findOne({
-        where: { uid: notificationUid },
+        where: { uid: params.notificationUid },
         relations: ['lessonNotes'],
       })
 
@@ -163,7 +190,7 @@ export class CpBatchNoticeService {
       for (const file of files) {
         const { location, key, cdnUrl } = await this.s3Service.uploadFile(file, 'lessonNotes')
         const fileEntity = this.lessonNoteRepository.create({
-          noticeUid: notificationUid,
+          noticeUid: params.notificationUid,
           lessonNote: cdnUrl, // 파일 위치 URL
           field: file.originalname, // 파일 원본 이름
         })
@@ -175,18 +202,26 @@ export class CpBatchNoticeService {
 
       const updatedBatchNotice = await queryRunner.manager.save(BatchNotice, existingBatchNotice)
 
-      const lessonNote = await queryRunner.manager.save(LessonNote, fileEntities)
+      const lessonNotes = await queryRunner.manager.save(LessonNote, fileEntities)
 
-      updatedBatchNotice.lessonNotes = lessonNote
+      updatedBatchNotice.lessonNotes = lessonNotes
 
-      lessonNote.forEach((note) => {
-        delete note.deletedAt
-      })
-
-      delete updatedBatchNotice.deletedAt
       await queryRunner.commitTransaction()
 
-      return updatedBatchNotice
+      const Notes = lessonNotes.map((item) => ({
+        lessonNote: item.lessonNote,
+        field: item.field,
+        noticeUid: item.noticeUid,
+      }))
+
+      return {
+        uid: updatedBatchNotice.uid,
+        batchUid: updatedBatchNotice.batchUid,
+        title: updatedBatchNotice.title,
+        content: updatedBatchNotice.content,
+        updatedAt: updatedBatchNotice.createdAt,
+        lessonNotes: Notes,
+      }
     } catch (error) {
       await queryRunner.rollbackTransaction()
 
@@ -197,28 +232,27 @@ export class CpBatchNoticeService {
       if (error instanceof NotFoundException) {
         throw error
       } else {
-        throw new InternalServerErrorException('기수 공지 수정 중 오류가 발생했습니다.')
+        throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.TRANJECTION.UPDATE)
       }
     } finally {
       await queryRunner.release()
     }
   }
   // 기수 공지 삭제
-  async remove(uid: string, lessonUid: string, batchUid: string, notificationUid: string) {
+  async remove(uid: string, params: DeleteBatchNoticeParamsDTO): Promise<DeleteBatchNoticeRo[]> {
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
     try {
       //cp가 해당 강의의 권한이 있는지 확인
-      await this.authorizedCp(uid, lessonUid)
+      await this.authorizedCp(uid, params.lessonUid)
       // 기수가 존재하는지 확인
-      await this.findBatchOrThrow(lessonUid, batchUid)
+      await this.findBatchOrThrow(params.lessonUid, params.batchUid)
       const existingNotification = await queryRunner.manager.findOne(BatchNotice, {
-        where: { uid: notificationUid },
+        where: { uid: params.notificationUid },
         relations: ['lessonNotes'],
       })
 
-      console.log('existingNotification', existingNotification)
       if (!existingNotification) {
         throw new BadRequestException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_FIND_NOTICE)
       }
@@ -232,13 +266,28 @@ export class CpBatchNoticeService {
 
       await queryRunner.commitTransaction()
 
-      return deleteBatch
+      const Notes = lessonNotes.map((item) => ({
+        lessonNote: item.lessonNote,
+        field: item.field,
+        noticeUid: item.noticeUid,
+      }))
+
+      return [
+        {
+          uid: deleteBatch.uid,
+          batchUid: deleteBatch.batchUid,
+          title: deleteBatch.title,
+          content: deleteBatch.content,
+          deletedAt: deleteBatch.deletedAt,
+          lessonNotes: Notes,
+        },
+      ]
     } catch (error) {
       await queryRunner.rollbackTransaction()
       if (error instanceof NotFoundException) {
         throw error
       } else {
-        throw new InternalServerErrorException('수업 삭제 중 오류가 발생했습니다.')
+        throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.TRANJECTION.DELETE)
       }
     } finally {
       await queryRunner.release()
@@ -250,7 +299,7 @@ export class CpBatchNoticeService {
     const batch = await this.batchRepository.findOne({ where: { uid: batchId, lessonUid: lessonId } })
 
     if (!batch) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_EXISTING_BATCH)
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_EXISTING_BATCH)
     }
     return batch
   }
@@ -258,7 +307,7 @@ export class CpBatchNoticeService {
   private async authorizedCp(uid, lessonId) {
     const authorizedLesson = await this.lessonRepository.find({ where: { uid: lessonId, cpUid: uid } })
     if (authorizedLesson.length === 0) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_AUTHORIZED_LESSON)
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH_NOTICE.SERVICE.NOT_AUTHORIZED_LESSON)
     }
     return authorizedLesson
   }

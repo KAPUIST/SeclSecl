@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDate, IsNumber, IsString } from 'class-validator'
+import { IsNumber, IsString } from 'class-validator'
 
 export class PostImage {
   @ApiProperty({ description: '수업 자료' })
@@ -15,7 +15,7 @@ export class PostImage {
   postUid: string
 }
 
-export class CreateBatchPostRo {
+export class FindAllBatchPostRo {
   @ApiProperty({ description: 'UID' })
   @IsString()
   uid: string
@@ -39,8 +39,4 @@ export class CreateBatchPostRo {
   @ApiProperty({ description: '게시글 이미지들' })
   @IsString()
   postImages: PostImage[]
-
-  @ApiProperty({ description: '생성시간' })
-  @IsDate()
-  createdAt: Date
 }

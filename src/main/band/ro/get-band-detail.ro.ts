@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsString, IsUUID } from 'class-validator'
 
 export class GetBandDetailRO {
   @ApiProperty({ description: '밴드 Uid' })
@@ -25,6 +25,10 @@ export class GetBandDetailRO {
   @ApiProperty({ description: '밴드 채팅' })
   @IsString()
   chatUrl: string
+
+  @ApiProperty({ description: '밴드 가입여부' })
+  @IsBoolean()
+  isMember: boolean
 
   @ApiProperty({ description: '생성 일시' })
   @IsString()

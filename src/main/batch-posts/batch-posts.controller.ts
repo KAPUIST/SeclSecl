@@ -29,6 +29,11 @@ import { UnlikeBatchCommentParamsDTO } from './dto/unlike-batch-comment-params.d
 import { LikeBatchCommentParamsDTO } from './dto/like-batch-comment-params.dto'
 import { LikeBatchPostParamsDTO } from './dto/like-batch-post-params.dto'
 import { UnlikeBatchPostParamsDTO } from './dto/unlike-batch-post-params.dto'
+import { CreateBatchPostParamsDTO } from './dto/create-batch-post-prams.dto'
+import { FindAllBatchPostParamsDTO } from './dto/find-all-batch-post-parms.dto'
+import { FindOneBatchPostParamsDTO } from './dto/find-one-batch-post-parms.dto'
+import { UpdateBatchPostParamsDTO } from './dto/update-batch-post-parms.dto'
+import { DeleteBatchPostParamsDTO } from './dto/delete-batch-post-parms.dto'
 
 @ApiTags('기수 커뮤니티')
 @ApiBearerAuth()
@@ -47,11 +52,12 @@ export class BatchPostsController {
   @UseInterceptors(FilesInterceptor('files', 10)) // 파일 필드 'files'에서 최대 10개의 파일 업로드
   async create(
     @Request() req,
-    @Param('batchUid') batchUid: string,
+    @Param() params: CreateBatchPostParamsDTO,
+    // @Param('batchUid') batchUid: string,
     @UploadedFiles() files: Express.Multer.File[],
     @Body() createBatchPostDto: CreateBatchPostDto,
   ) {
-    const data = await this.batchPostsService.create(req.user.uid, batchUid, files, createBatchPostDto)
+    const data = await this.batchPostsService.create(req.user.uid, params, files, createBatchPostDto)
 
     return {
       statusCode: HttpStatus.OK,
@@ -65,8 +71,8 @@ export class BatchPostsController {
    * @returns
    */
   @Get('/:batchUid/posts')
-  async findAll(@Request() req, @Param('batchUid') batchUid: string) {
-    const data = await this.batchPostsService.findAll(req.user.uid, batchUid)
+  async findAll(@Request() req, @Param() params: FindAllBatchPostParamsDTO) {
+    const data = await this.batchPostsService.findAll(req.user.uid, params)
 
     return {
       statusCode: HttpStatus.OK,
@@ -81,8 +87,8 @@ export class BatchPostsController {
    * @returns
    */
   @Get('/:batchUid/posts/:postUid')
-  async findOne(@Request() req, @Param('batchUid') batchUid: string, @Param('postUid') postUid: string) {
-    const data = await this.batchPostsService.findOne(req.user.uid, batchUid, postUid)
+  async findOne(@Request() req, @Param() params: FindOneBatchPostParamsDTO) {
+    const data = await this.batchPostsService.findOne(req.user.uid, params)
 
     return {
       statusCode: HttpStatus.OK,
@@ -101,12 +107,11 @@ export class BatchPostsController {
   @UseInterceptors(FilesInterceptor('files', 10)) // 파일 필드 'files'에서 최대 10개의 파일 업로드
   async update(
     @Request() req,
-    @Param('batchUid') batchUid: string,
-    @Param('postUid') postUid: string,
+    @Param() params: UpdateBatchPostParamsDTO,
     @UploadedFiles() files: Express.Multer.File[],
     @Body() updateBatchPostDto: UpdateBatchPostDto,
   ) {
-    const data = await this.batchPostsService.update(req.user.uid, batchUid, postUid, files, updateBatchPostDto)
+    const data = await this.batchPostsService.update(req.user.uid, params, files, updateBatchPostDto)
     return {
       statusCode: HttpStatus.OK,
       message: MAIN_MESSAGE_CONSTANT.BATCH_POST.CONTROLLER.UPDATE,
@@ -120,8 +125,8 @@ export class BatchPostsController {
    * @returns
    */
   @Delete('/:batchUid/posts/:postUid')
-  async remove(@Request() req, @Param('batchUid') batchUid: string, @Param('postUid') postUid: string) {
-    const data = await this.batchPostsService.remove(req.user.uid, batchUid, postUid)
+  async remove(@Request() req, @Param() params: DeleteBatchPostParamsDTO) {
+    const data = await this.batchPostsService.remove(req.user.uid, params)
 
     return {
       statusCode: HttpStatus.OK,
