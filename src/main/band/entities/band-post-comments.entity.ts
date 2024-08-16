@@ -11,7 +11,7 @@ import {
 import { BandPost } from './band-posts.entity'
 import { BandMember } from './band-members.entity'
 import { BandLike } from './band-likes.entity'
-import { IsNotEmpty, IsString } from 'class-validator'
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { MAIN_MESSAGE_CONSTANT } from '../../../common/messages/main.message'
 
 @Entity('band_post_comments')
@@ -30,6 +30,7 @@ export class BandPostComment {
    * @example ""
    */
   @IsString()
+  @IsOptional()
   @Column({ nullable: true })
   parentCommentUid: string
 

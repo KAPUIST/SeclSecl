@@ -8,7 +8,6 @@ import { CreateAdminDto } from './dto/create-admin.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 
 @ApiTags('어드민 인증')
-@UseGuards(JwtAuthGuard)
 @Controller({ host: 'admin.localhost', path: 'auth' })
 export class AuthController {
   constructor(private readonly adminAuthService: AdminAuthService) {}
@@ -18,6 +17,7 @@ export class AuthController {
    * @param body
    * @returns
    */
+  @UseGuards(JwtAuthGuard)
   @Post('create')
   async createAdmin(@Body() createAdminDto: CreateAdminDto) {
     const data = await this.adminAuthService.createAdmin(createAdminDto)

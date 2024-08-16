@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -17,13 +18,17 @@ import { IsNotEmpty, IsString } from 'class-validator'
 import { MAIN_MESSAGE_CONSTANT } from '../../../common/messages/main.message'
 
 @Entity('band_posts')
+@Index(['bandUid', 'createdAt']) // 밴드별 최신 게시물 조회를 위한 복합 인덱스
+@Index(['bandMemberUid', 'createdAt']) // 멤버별 최신 게시물 조회를 위한 복합 인덱스
 export class BandPost {
   @PrimaryGeneratedColumn('uuid')
   uid: string
 
+  @Index()
   @Column()
   bandUid: string
 
+  @Index()
   @Column()
   bandMemberUid: string
 
@@ -48,6 +53,7 @@ export class BandPost {
   @Column({ nullable: true })
   communityImage: string
 
+  @Index()
   @Column({ default: 0 })
   likeCount: number
 

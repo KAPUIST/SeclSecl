@@ -24,6 +24,10 @@ export class FindAllBatchPostRo {
   @IsString()
   batchUid: string
 
+  @ApiProperty({ description: '유저 UID' })
+  @IsString()
+  userUid: string
+
   @ApiProperty({ description: '제목' })
   @IsString()
   title: string
