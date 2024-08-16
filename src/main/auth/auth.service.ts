@@ -254,7 +254,7 @@ export class AuthService {
       )
       const user = await this.userInfosRepository.findOne({
         where: { uid: userUid },
-        select: ['name', 'nickname'],
+        select: ['uid', 'name', 'nickname'],
       })
 
       return { user, tokens }
