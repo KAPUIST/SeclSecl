@@ -89,12 +89,12 @@ export class ChatGateway {
     //채팅방에있는 사용자에게 전송
     this.server.to(chatRoomUid).emit('receiveMessage', message)
 
-    //해당 채팅방에 속해있는 사용자 대상 채팅 목록 업데이트    
+    //해당 채팅방에 속해있는 사용자 대상 채팅 목록 업데이트
     const userUids = await this.chatService.getChatRoomUsers(chatRoomUid)
-    userUids.forEach(uid => {
+    userUids.forEach((uid) => {
       const sockets = this.server.sockets.sockets
-      sockets.forEach(socket => {
-        if(socket.data.user.uid === uid) {
+      sockets.forEach((socket) => {
+        if (socket.data.user.uid === uid) {
           socket.emit('receiveMessageForList', message)
         }
       })

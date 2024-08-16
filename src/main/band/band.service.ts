@@ -347,6 +347,7 @@ export class BandService {
     }
     const bandPostList = await this.bandPostRepository.find({
       where: { bandUid },
+      order: { createdAt: 'DESC' },
       relations: { bandMember: { user: { userInfo: true } } },
     })
     return bandPostList.map((bandPost) => ({
@@ -563,6 +564,7 @@ export class BandService {
     }
     const getBandCommentList = await this.bandPostCommentRepository.find({
       where: { bandPostUid },
+      order: { createdAt: 'DESC' },
       relations: { bandMember: { user: { userInfo: true } } },
     })
     return getBandCommentList.map((bandComment) => ({

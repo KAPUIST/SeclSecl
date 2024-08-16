@@ -6,7 +6,6 @@ import { CpInfo } from '../../cp/auth/entities/cp-infos.entity'
 import { ChatRoom } from './entities/chat.room.entity'
 import { Message } from './entities/message.entity'
 
-
 @Injectable()
 export class ChatService {
   constructor(
@@ -20,19 +19,16 @@ export class ChatService {
     private readonly cpInfosRepository: Repository<CpInfo>,
   ) {}
 
-  
-
   //특정 채팅방 유저 그룹 가져오기
   async getChatRoomUsers(chatRoomUid: string): Promise<string[]> {
-    const chatRoom = await this.chatRoomRepository.findOne({ where: {uid: chatRoomUid}})
+    const chatRoom = await this.chatRoomRepository.findOne({ where: { uid: chatRoomUid } })
 
-    if(!chatRoom) {
+    if (!chatRoom) {
       throw new NotFoundException('해당 채팅방이 없습니다.')
     }
 
     return [chatRoom.cpUid, chatRoom.userUid]
   }
-
 
   //채팅방 찾기/만들기
   async findCreateChatRoom(cpUid: string, userUid: string): Promise<ChatRoom> {
@@ -113,9 +109,7 @@ export class ChatService {
       console.log('마지막 메세지 입니다.', lastMessage)
 
       //내가 안 읽은 메세지 있는지 확인
-      const unreadMessagesExist = chatRoom.messages.some(
-        (message) => message.sender !== uid && !message.isRead
-      )
+      const unreadMessagesExist = chatRoom.messages.some((message) => message.sender !== uid && !message.isRead)
 
       const otherUserUid = chatRoom.cpUid === uid ? chatRoom.userUid : chatRoom.cpUid
       const senderInfo = await this.getSenderInfo(otherUserUid)
@@ -125,10 +119,10 @@ export class ChatService {
         senderName: senderInfo.name,
         lastMessageContent: lastMessage?.content || '메세지가 없습니다.',
         lastMessageTime: lastMessage?.createdAt || chatRoom.createdAt,
-        isRead: !unreadMessagesExist
+        isRead: !unreadMessagesExist,
       })
     }
-    console.log('서비스 채팅방 불러오기',result)
+    console.log('서비스 채팅방 불러오기', result)
     return result
   }
 
