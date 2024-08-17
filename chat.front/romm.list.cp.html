@@ -69,7 +69,7 @@
 
     <script>
       const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJkOTBmYTA3Yi03ZTNmLTQwYmYtOWQ5Yi1lMDllOTM1N2RlZTciLCJlbWFpbCI6ImtpbWNoaUBnbWFpbC5jb20iLCJ0eXBlIjoiY3AiLCJpYXQiOjE3MjM4OTQ1NDcsImV4cCI6MTcyMzkwMTc0N30.cD7MZwn-Zk2lPONnnYiC5IU9DBIE4iugRtvmbsGWRN0' // 실제 JWT 토큰을 넣으세요
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJkOTBmYTA3Yi03ZTNmLTQwYmYtOWQ5Yi1lMDllOTM1N2RlZTciLCJlbWFpbCI6ImtpbWNoaUBnbWFpbC5jb20iLCJ0eXBlIjoiY3AiLCJpYXQiOjE3MjM5MDUxODUsImV4cCI6MTcyMzkxMjM4NX0.cmzyihhKhM2i7HHAMRuu_-RfQjUSWsOHVdNQnFSkfGY' // 실제 JWT 토큰을 넣으세요
       const decodedToken = jwt_decode(token)
       const userUid = decodedToken.uid
 
@@ -149,11 +149,12 @@
         console.log('Received new message!!!!!!!!!:', message)
 
         const chatRoomMessage = message.message
-
         const chatRoomList = document.getElementById('chatRoomList')
         const roomElement = chatRoomList.querySelector(`[data-room-id="${chatRoomMessage.chatRoomUid}"]`)
 
         console.log('룸엘리먼트 임니당', roomElement)
+
+        const isUnread = chatRoomMessage.senderName !== userUid && !chatRoomMessage.isRead
 
         if (roomElement) {
           // 채팅방 업데이트: 메시지 내용, 시간, 안읽음 상태
@@ -161,8 +162,12 @@
           roomElement.querySelector('.last-message-time').textContent = new Date(
             chatRoomMessage.lastMessageTime,
           ).toLocaleString()
-          roomElement.classList.add('unread') // 읽지 않은 메시지일 경우 빨간 점 표시
 
+          if (isUnread) {
+            roomElement.classList.add('unread') // 읽지 않은 메시지일 경우 빨간 점 표시
+          } else {
+            roomElement.classList.remove('unread') // 읽은 메시지일 경우 빨간 점 제거
+          }
           // 해당 채팅방을 목록의 맨 위로 이동
           chatRoomList.removeChild(roomElement)
           chatRoomList.insertBefore(roomElement, chatRoomList.firstChild)

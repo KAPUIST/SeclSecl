@@ -41,8 +41,6 @@ export class ChatGateway {
       client.data.user = payload
       this.logger.log(`Client connected: ${client.id}`)
 
-      // 간단한 메시지 전송 테스트
-      client.emit('testMessage', 'Hello from server')
 
       this.checkAndSubscribeToRedis()
     } catch (error) {
@@ -78,50 +76,14 @@ export class ChatGateway {
     }
 
     this.redisService.subscribe('chat_list_updates', (message: string) => {
-      console.log('Raw message:', message)
-      console.log('Raw message Type:', typeof message)
 
-      let parsedMessage
-      try {
-        parsedMessage = JSON.parse(message)
-        if (typeof message === 'string') {
-          parsedMessage = JSON.parse(message)
-        } else {
-          parsedMessage = message
-        }
-        console.log('Parsed Message Type:', typeof parsedMessage) // 객체인지 확인
-        console.log('Parsed successfully:', parsedMessage)
-      } catch (error) {
-        console.error('Failed to parse JSON:', error)
-      }
+      const parsedMessage = JSON.parse(message);
 
-      // 추가로 parsedMessage가 다시 문자열로 전달되었는지 확인하고 처리
-      if (typeof parsedMessage === 'string') {
-        try {
-          parsedMessage = JSON.parse(parsedMessage)
-          console.log('Re-parsed Message Type:', typeof parsedMessage)
-        } catch (error) {
-          console.error('Failed to re-parse JSON:', error)
-          return
-        }
-      }
-
-      if (parsedMessage && Array.isArray(parsedMessage.userUids)) {
-        console.log('UserUids Array Check:', Array.isArray(parsedMessage.userUids))
-        const userUids = parsedMessage.userUids
-        console.log('UserUids value:', userUids)
-      } else {
-        console.error('parsedMessage or userUids is undefined.')
-      }
 
       // 파싱된 결과를 로깅
       this.logger.log(`Parsed Message: ${JSON.stringify(parsedMessage)}`)
       this.logger.log(`Parsed Message Type: ${typeof parsedMessage}`)
 
-      if (!parsedMessage || !parsedMessage.userUids) {
-        this.logger.error('parsedMessage or userUids is undefined.')
-        return
-      }
       const userUids = parsedMessage.userUids
       this.logger.log(`Received userUids: ${JSON.stringify(userUids)}`)
       const sockets = this.server.sockets.sockets
@@ -141,7 +103,6 @@ export class ChatGateway {
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: { cpUid?: string; userUid?: string }) {
     try {
-      console.log(data)
       let chatRoom
       const loginUid = client.data.user.uid
 
@@ -196,11 +157,10 @@ export class ChatGateway {
       const userUid = client.data.user.uid
       await this.chatService.markMessagesAsRead(data.chatRoomUid, userUid)
 
-      //채팅방 클라이언트에게 알림
-      this.server.to(data.chatRoomUid).emit('messagesMarkedAsRead', {
-        chatRoomUid: data.chatRoomUid,
-        readerUid: userUid,
-      })
+        // 채팅 목록 업데이트를 위해 Redis에 메시지를 보냅니다.
+        const otherUserMessage = await this.chatService.getChatRooms(userUid, data.chatRoomUid);
+        const payload = { userUids: [userUid], message: otherUserMessage[0] };
+        this.redisService.publish('chat_list_updates', payload);
 
       this.logger.log(`Messages in room ${data.chatRoomUid} marked as read by ${userUid}`)
     } catch (error) {

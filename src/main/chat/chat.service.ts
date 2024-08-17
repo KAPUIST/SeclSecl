@@ -54,7 +54,6 @@ export class ChatService {
       chatRoom = this.chatRoomRepository.create({ cpUid, userUid })
       await this.chatRoomRepository.save(chatRoom)
     }
-    console.log('채팅룸이 만들어졌습니다.', chatRoom)
     return chatRoom
   }
 
@@ -106,8 +105,6 @@ export class ChatService {
 
   //채팅방 불러오기
   async getChatRooms(uid: string, chatRoomUid?: string): Promise<any[]> {
-    console.log('uid임', uid)
-    console.log('chatroomuid임', chatRoomUid)
 
     const chatRooms = await this.chatRoomRepository.find({
       where: [
@@ -117,13 +114,10 @@ export class ChatService {
       relations: ['messages'],
       order: { createdAt: 'DESC' },
     })
-    console.log('chatRooms임!!!!!!!!', chatRooms)
 
     const result = []
     for (const chatRoom of chatRooms) {
       const lastMessage = chatRoom.messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
-
-      console.log('마지막 메세지 입니다.', lastMessage)
 
       const unreadMessagesExist = chatRoom.messages.some((message) => message.sender !== uid && !message.isRead)
 
@@ -139,7 +133,6 @@ export class ChatService {
         otherUserUid: otherUserUid,
       })
     }
-    console.log('서비스 채팅방 불러오기', result)
     return result
   }
 

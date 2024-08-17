@@ -69,7 +69,7 @@
 
     <script>
       const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzODk0NjAzLCJleHAiOjE3MjM5MDE4MDN9.mX3FBtM2mS7ukxus6Xzi-14Y7N_IJxlZdJ0DEG1nCoA' // 실제 JWT 토큰을 넣으세요
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzOTA0Nzg3LCJleHAiOjE3MjM5MTE5ODd9.YnKGrUukIDGUXV8a0db3SgQpW_eXLa3WseGvEG7XFnc' // 실제 JWT 토큰을 넣으세요
       const decodedToken = jwt_decode(token)
       const userUid = decodedToken.uid
 
@@ -146,13 +146,9 @@
 
       // 실시간 메시지 수신 시 해당 채팅방을 목록 맨 위로 이동
       socket.on('receiveMessageForList', (message) => {
-        console.log('Received new message!!!!!!!!!:', message)
-
         const chatRoomMessage = message.message
         const chatRoomList = document.getElementById('chatRoomList')
         const roomElement = chatRoomList.querySelector(`[data-room-id="${chatRoomMessage.chatRoomUid}"]`)
-
-        console.log('룸엘리먼트 임니당', roomElement)
 
         const isUnread = chatRoomMessage.senderName !== userUid && !chatRoomMessage.isRead
 
