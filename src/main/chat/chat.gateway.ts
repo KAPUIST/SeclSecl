@@ -41,7 +41,6 @@ export class ChatGateway {
       client.data.user = payload
       this.logger.log(`Client connected: ${client.id}`)
 
-
       this.checkAndSubscribeToRedis()
     } catch (error) {
       this.logger.error(`Connection error: ${error.message}`)
@@ -76,9 +75,7 @@ export class ChatGateway {
     }
 
     this.redisService.subscribe('chat_list_updates', (message: string) => {
-
-      const parsedMessage = JSON.parse(message);
-
+      const parsedMessage = JSON.parse(message)
 
       // 파싱된 결과를 로깅
       this.logger.log(`Parsed Message: ${JSON.stringify(parsedMessage)}`)
@@ -94,7 +91,6 @@ export class ChatGateway {
 
           socket.emit('receiveMessageForList', parsedMessage)
           this.logger.log(`Emit to: ${socket.id}, Message: ${parsedMessage.message}`)
-
         }
       })
     })
@@ -157,10 +153,10 @@ export class ChatGateway {
       const userUid = client.data.user.uid
       await this.chatService.markMessagesAsRead(data.chatRoomUid, userUid)
 
-        // 채팅 목록 업데이트를 위해 Redis에 메시지를 보냅니다.
-        const otherUserMessage = await this.chatService.getChatRooms(userUid, data.chatRoomUid);
-        const payload = { userUids: [userUid], message: otherUserMessage[0] };
-        this.redisService.publish('chat_list_updates', payload);
+      // 채팅 목록 업데이트를 위해 Redis에 메시지를 보냅니다.
+      const otherUserMessage = await this.chatService.getChatRooms(userUid, data.chatRoomUid)
+      const payload = { userUids: [userUid], message: otherUserMessage[0] }
+      this.redisService.publish('chat_list_updates', payload)
 
       this.logger.log(`Messages in room ${data.chatRoomUid} marked as read by ${userUid}`)
     } catch (error) {

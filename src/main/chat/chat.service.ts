@@ -105,7 +105,6 @@ export class ChatService {
 
   //채팅방 불러오기
   async getChatRooms(uid: string, chatRoomUid?: string): Promise<any[]> {
-
     const chatRooms = await this.chatRoomRepository.find({
       where: [
         { uid: chatRoomUid, userUid: uid },
