@@ -149,11 +149,12 @@
         console.log('Received new message!!!!!!!!!:', message)
 
         const chatRoomMessage = message.message
-
         const chatRoomList = document.getElementById('chatRoomList')
         const roomElement = chatRoomList.querySelector(`[data-room-id="${chatRoomMessage.chatRoomUid}"]`)
 
         console.log('룸엘리먼트 임니당', roomElement)
+
+        const isUnread = chatRoomMessage.senderName !== userUid && !chatRoomMessage.isRead
 
         if (roomElement) {
           // 채팅방 업데이트: 메시지 내용, 시간, 안읽음 상태
@@ -161,8 +162,12 @@
           roomElement.querySelector('.last-message-time').textContent = new Date(
             chatRoomMessage.lastMessageTime,
           ).toLocaleString()
-          roomElement.classList.add('unread') // 읽지 않은 메시지일 경우 빨간 점 표시
 
+          if (isUnread) {
+            roomElement.classList.add('unread') // 읽지 않은 메시지일 경우 빨간 점 표시
+          } else {
+            roomElement.classList.remove('unread') // 읽은 메시지일 경우 빨간 점 제거
+          }
           // 해당 채팅방을 목록의 맨 위로 이동
           chatRoomList.removeChild(roomElement)
           chatRoomList.insertBefore(roomElement, chatRoomList.firstChild)

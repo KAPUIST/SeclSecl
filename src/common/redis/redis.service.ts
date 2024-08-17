@@ -97,6 +97,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   isSubscribed(channel: string): boolean {
-    return this.subscribeChannels.has(channel);
+    return this.subscribeChannels.has(channel)
   }
 }
