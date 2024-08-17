@@ -118,6 +118,8 @@ export class ChatService {
     for (const chatRoom of chatRooms) {
       const lastMessage = chatRoom.messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
 
+
+      //내가 안 읽은 메세지 있는지 확인
       const unreadMessagesExist = chatRoom.messages.some((message) => message.sender !== uid && !message.isRead)
 
       const otherUserUid = chatRoom.cpUid === uid ? chatRoom.userUid : chatRoom.cpUid
@@ -132,6 +134,7 @@ export class ChatService {
         otherUserUid: otherUserUid,
       })
     }
+
     return result
   }
 

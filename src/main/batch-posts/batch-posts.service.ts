@@ -144,6 +144,7 @@ export class BatchPostsService {
       return {
         uid: item.uid,
         batchUid: item.batchUid,
+        userUid: item.userUid,
         title: item.title,
         content: item.content,
         likeCount: item.likeCount,
@@ -180,6 +181,7 @@ export class BatchPostsService {
       {
         uid: existingBatchPost.uid,
         batchUid: existingBatchPost.batchUid,
+        userUid: existingBatchPost.userUid,
         title: existingBatchPost.title,
         content: existingBatchPost.content,
         likeCount: existingBatchPost.likeCount,
