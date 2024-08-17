@@ -69,12 +69,12 @@
 
     <script>
       const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzNzg1ODcxLCJleHAiOjE3MjM3OTMwNzF9.q9LbHeXkqCweaqVQOiCbXPDFdut06Y-SD7jnPu43X94' // 실제 JWT 토큰을 넣으세요
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzODk0NjAzLCJleHAiOjE3MjM5MDE4MDN9.mX3FBtM2mS7ukxus6Xzi-14Y7N_IJxlZdJ0DEG1nCoA' // 실제 JWT 토큰을 넣으세요
       const decodedToken = jwt_decode(token)
       const userUid = decodedToken.uid
 
       // 소켓 연결 설정
-      const socket = io('ws://localhost:3000/chatting', {
+      const socket = io('ws://localhost:3000', {
         path: '/socket.io',
         query: { token },
         transports: ['websocket'],
@@ -146,14 +146,21 @@
 
       // 실시간 메시지 수신 시 해당 채팅방을 목록 맨 위로 이동
       socket.on('receiveMessageForList', (message) => {
-        console.log('Received new message:', message)
+        console.log('Received new message!!!!!!!!!:', message)
+
+        const chatRoomMessage = message.message
+
         const chatRoomList = document.getElementById('chatRoomList')
-        const roomElement = chatRoomList.querySelector(`[data-room-id="${message.chatRoomUid}"]`)
+        const roomElement = chatRoomList.querySelector(`[data-room-id="${chatRoomMessage.chatRoomUid}"]`)
+
+        console.log('룸엘리먼트 임니당', roomElement)
 
         if (roomElement) {
           // 채팅방 업데이트: 메시지 내용, 시간, 안읽음 상태
-          roomElement.querySelector('.last-message').textContent = message.content
-          roomElement.querySelector('.last-message-time').textContent = new Date(message.createdAt).toLocaleString()
+          roomElement.querySelector('.last-message').textContent = chatRoomMessage.lastMessageContent
+          roomElement.querySelector('.last-message-time').textContent = new Date(
+            chatRoomMessage.lastMessageTime,
+          ).toLocaleString()
           roomElement.classList.add('unread') // 읽지 않은 메시지일 경우 빨간 점 표시
 
           // 해당 채팅방을 목록의 맨 위로 이동
@@ -163,11 +170,11 @@
           // 새로운 채팅방일 경우, 목록에 추가 (필요한 경우)
           const newChatRoomElement = document.createElement('div')
           newChatRoomElement.className = 'chat-room unread'
-          newChatRoomElement.dataset.roomId = message.chatRoomUid
+          newChatRoomElement.dataset.roomId = chatRoomMessage.chatRoomUid
           newChatRoomElement.innerHTML = `
             <div class="chat-info">
-              <div class="sender-name">${message.senderName}</div>
-              <div class="last-message">${message.content}</div>
+              <div class="sender-name">${chatRoomMessage.senderName}</div>
+              <div class="last-message">${chatRoomMessage.content}</div>
             </div>
             <div class="chat-meta">
               <div class="last-message-time">${new Date(message.createdAt).toLocaleString()}</div>

@@ -95,4 +95,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       console.log(`Already subscribed to channel: ${channel}`)
     }
   }
+
+  isSubscribed(channel: string): boolean {
+    return this.subscribeChannels.has(channel);
+  }
 }

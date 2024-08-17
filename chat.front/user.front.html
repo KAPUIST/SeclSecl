@@ -89,12 +89,12 @@
 
     <script>
       const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzNzg1ODcxLCJleHAiOjE3MjM3OTMwNzF9.q9LbHeXkqCweaqVQOiCbXPDFdut06Y-SD7jnPu43X94'
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzODk0NjAzLCJleHAiOjE3MjM5MDE4MDN9.mX3FBtM2mS7ukxus6Xzi-14Y7N_IJxlZdJ0DEG1nCoA'
       const decodedToken = jwt_decode(token)
       const userUid = decodedToken.uid
       const userName = 'User'
       let chatRoomUid
-      const socket = io('ws://localhost:3000/chatting', {
+      const socket = io('ws://localhost:3000', {
         path: '/socket.io',
         query: { token },
         transports: ['websocket'],

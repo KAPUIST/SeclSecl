@@ -6,7 +6,6 @@ import { CpInfo } from '../../cp/auth/entities/cp-infos.entity'
 import { ChatRoom } from './entities/chat.room.entity'
 import { Message } from './entities/message.entity'
 
-
 @Injectable()
 export class ChatService {
   constructor(
@@ -20,27 +19,36 @@ export class ChatService {
     private readonly cpInfosRepository: Repository<CpInfo>,
   ) {}
 
-  
-
   //특정 채팅방 유저 그룹 가져오기
   async getChatRoomUsers(chatRoomUid: string): Promise<string[]> {
-    const chatRoom = await this.chatRoomRepository.findOne({ where: {uid: chatRoomUid}})
+    const chatRoom = await this.chatRoomRepository.findOne({ where: { uid: chatRoomUid } })
 
-    if(!chatRoom) {
+    if (!chatRoom) {
       throw new NotFoundException('해당 채팅방이 없습니다.')
     }
 
     return [chatRoom.cpUid, chatRoom.userUid]
   }
 
-
   //채팅방 찾기/만들기
   async findCreateChatRoom(cpUid: string, userUid: string): Promise<ChatRoom> {
-    let chatRoom = await this.chatRoomRepository.findOne({ where: { cpUid, userUid } })
-
+    //본인과의 채팅방 만들 수 없도록
     if (cpUid === userUid) {
       throw new Error('본인과의 채팅방은 만들 수 없습니다.')
     }
+
+    //cp끼리 user끼리 채팅방 만들 수 없도록
+    const Cp1 = await this.cpInfosRepository.findOne({ where: { uid: cpUid } });
+    const Cp2 = await this.cpInfosRepository.findOne({ where: { uid: userUid } });
+  
+    const User1 = await this.userInfoRepository.findOne({ where: { uid: cpUid } });
+    const User2 = await this.userInfoRepository.findOne({ where: { uid: userUid } });
+  
+    if ((Cp1 && Cp2) || (User1 && User2)) {
+      throw new Error('CP끼리 또는 사용자끼리는 채팅방을 만들 수 없습니다.');
+    }
+
+    let chatRoom = await this.chatRoomRepository.findOne({ where: { cpUid, userUid } })
 
     if (!chatRoom) {
       chatRoom = this.chatRoomRepository.create({ cpUid, userUid })
@@ -97,40 +105,44 @@ export class ChatService {
   }
 
   //채팅방 불러오기
-  async getChatRooms(uid: string): Promise<any[]> {
-    console.log('uid임', uid)
-    const chatRooms = await this.chatRoomRepository.find({
-      where: [{ userUid: uid }, { cpUid: uid }],
-      relations: ['messages'],
-      order: { createdAt: 'DESC' },
-    })
-    console.log('chatroooms 임니당', chatRooms)
+async getChatRooms(uid: string, chatRoomUid?: string): Promise<any[]> {
+  console.log('uid임', uid);
+  console.log('chatroomuid임', chatRoomUid);
+  // const whereCondition = chatRoomUid 
+  //   ? { where: { uid: chatRoomUid, userUid: uid } } 
+  //   : { where: [{ userUid: uid }, { cpUid: uid }] };
 
-    const result = []
-    for (const chatRoom of chatRooms) {
-      const lastMessage = chatRoom.messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
+  const chatRooms = await this.chatRoomRepository.find({
+    where:[{ uid: chatRoomUid, userUid: uid},{uid: chatRoomUid, cpUid: uid}],
+    relations: ['messages'],
+    order: { createdAt: 'DESC' },
+  });
+  console.log('chatRooms임!!!!!!!!', chatRooms);
 
-      console.log('마지막 메세지 입니다.', lastMessage)
+  const result = [];
+  for (const chatRoom of chatRooms) {
+    const lastMessage = chatRoom.messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
 
-      //내가 안 읽은 메세지 있는지 확인
-      const unreadMessagesExist = chatRoom.messages.some(
-        (message) => message.sender !== uid && !message.isRead
-      )
+    console.log('마지막 메세지 입니다.', lastMessage);
 
-      const otherUserUid = chatRoom.cpUid === uid ? chatRoom.userUid : chatRoom.cpUid
-      const senderInfo = await this.getSenderInfo(otherUserUid)
+    const unreadMessagesExist = chatRoom.messages.some((message) => message.sender !== uid && !message.isRead);
 
-      result.push({
-        chatRoomUid: chatRoom.uid,
-        senderName: senderInfo.name,
-        lastMessageContent: lastMessage?.content || '메세지가 없습니다.',
-        lastMessageTime: lastMessage?.createdAt || chatRoom.createdAt,
-        isRead: !unreadMessagesExist
-      })
-    }
-    console.log('서비스 채팅방 불러오기',result)
-    return result
+    const otherUserUid = chatRoom.cpUid === uid ? chatRoom.userUid : chatRoom.cpUid;
+    const senderInfo = await this.getSenderInfo(otherUserUid);
+
+    result.push({
+      chatRoomUid: chatRoom.uid,
+      senderName: senderInfo.name,
+      lastMessageContent: lastMessage?.content || '메세지가 없습니다.',
+      lastMessageTime: lastMessage?.createdAt || chatRoom.createdAt,
+      isRead: !unreadMessagesExist,
+      otherUserUid: otherUserUid,
+    });
   }
+  console.log('서비스 채팅방 불러오기', result);
+  return result;
+}
+
 
   //발송자 정보
   private async getSenderInfo(senderUid: string): Promise<{ name: string }> {
