@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { SearchDto } from './dto/search.dto'
 import { Cron } from '@nestjs/schedule'
 import { SearchRO } from './ro/search.ro'
 

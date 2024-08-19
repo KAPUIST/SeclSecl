@@ -1,6 +1,5 @@
 import { Controller, Post, Body, Query, HttpStatus, Patch, Delete } from '@nestjs/common'
 import { SearchService } from './search.service'
-import { SearchDto } from './dto/search.dto'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Controller('search')
