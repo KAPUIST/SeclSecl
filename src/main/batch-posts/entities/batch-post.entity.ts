@@ -12,7 +12,7 @@ import {
 } from 'typeorm'
 import { BatchPostComment } from './batch-post-comments.entity'
 import { BatchLike } from './batch-likes.entity'
-import { PostImage } from './post-image.entity'
+import { BatchPostImage } from './batch-post-image.entity'
 
 @Entity({ name: 'batch_posts' })
 export class BatchPost {
@@ -53,6 +53,6 @@ export class BatchPost {
   @OneToMany(() => BatchLike, (batchLike) => batchLike.batchPost)
   batchLikes: BatchLike[]
 
-  @OneToMany(() => PostImage, (image) => image.batchPost)
-  postImages: PostImage[]
+  @OneToMany(() => BatchPostImage, (image) => image.batchPost)
+  batchPostImages: BatchPostImage[]
 }

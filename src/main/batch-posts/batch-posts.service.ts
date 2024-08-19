@@ -19,7 +19,7 @@ import { UserLesson } from '../users/entities/user-lessons.entity'
 import { BatchPostComment } from './entities/batch-post-comments.entity'
 import { CreateBatchCommentRO } from './ro/create-batch-comment.ro'
 import { S3Service } from '../../common/s3/s3.service'
-import { PostImage } from './entities/post-image.entity'
+import { BatchPostImage } from './entities/batch-post-image.entity'
 import { Batch } from '../../common/batches/entities/batch.entity'
 import { GetBatchCommentRO } from './ro/get-batch-comment.ro'
 import { UpdateBatchCommentParamsDTO } from './dto/update-batch-comment-params.dto'
@@ -57,10 +57,12 @@ export class BatchPostsService {
     private readonly batchPostCommentRepository: Repository<BatchPostComment>,
     @InjectRepository(UserLesson)
     private readonly userLessonRepository: Repository<UserLesson>,
-    @InjectRepository(PostImage)
-    private readonly postImageRepository: Repository<PostImage>,
+    @InjectRepository(BatchPostImage)
+    private readonly postImageRepository: Repository<BatchPostImage>,
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
+    @InjectRepository(BatchLike)
+    private readonly batchLikeRepository: Repository<BatchLike>,
 
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,
@@ -97,7 +99,7 @@ export class BatchPostsService {
           uploadedFiles.push({ location, key })
         }
 
-        const postImages = await transactionalEntityManager.save(PostImage, imageEntities)
+        const postImages = await transactionalEntityManager.save(BatchPostImage, imageEntities)
 
         const images = postImages.map((item) => ({
           postImage: item.postImage,
@@ -130,17 +132,32 @@ export class BatchPostsService {
     //기수가 존재하나 확인
     await this.verifyBatchExistence(params.batchUid)
 
-    const data = await this.batchPostRepository.find({
-      where: { batchUid: params.batchUid },
-      relations: ['postImages'],
-    })
+    // const data = await this.batchPostRepository.find({
+    //   where: { batchUid: params.batchUid },
+    //   relations: ['batchPostImages'],
+    // })
+    const data = await this.batchPostRepository
+      .createQueryBuilder('batchPost')
+      .leftJoinAndSelect('batchPost.batchPostImages', 'batchPostImages')
+      .leftJoinAndSelect('batchPost.batchLikes', 'batchLikes', 'batchLikes.userUid = :userUid', {
+        userUid: uid,
+      })
+      .where('batchPost.batchUid = :batchUid', { batchUid: params.batchUid })
+      .getMany()
 
     const results = data.map((item) => {
-      const postImages = item.postImages.map((note) => ({
+      const postImages = item.batchPostImages.map((note) => ({
         postImage: note.postImage,
         field: note.field,
         postUid: note.postUid,
       }))
+
+      const postLikes = item.batchLikes.map((note) => ({
+        uid: note.uid,
+        postUid: note.batchPostUid,
+        userUid: note.userUid,
+      }))
+
       return {
         uid: item.uid,
         batchUid: item.batchUid,
@@ -149,6 +166,7 @@ export class BatchPostsService {
         content: item.content,
         likeCount: item.likeCount,
         postImages,
+        postLikes,
       }
     })
 
@@ -161,11 +179,21 @@ export class BatchPostsService {
     //기수가 존재하나 확인
     await this.verifyBatchExistence(params.batchUid)
 
-    const existingBatchPost = await this.batchPostRepository.findOne({
-      where: { uid: params.postUid },
-      relations: ['postImages'],
-    })
-    const postImages = existingBatchPost.postImages
+    // const existingBatchPost = await this.batchPostRepository.findOne({
+    //   where: { uid: params.postUid },
+    //   relations: ['batchPostImages'],
+    // })
+
+    const existingBatchPost = await this.batchPostRepository
+      .createQueryBuilder('batchPost')
+      .leftJoinAndSelect('batchPost.batchPostImages', 'batchPostImages')
+      .leftJoinAndSelect('batchPost.batchLikes', 'batchLikes', 'batchLikes.userUid = :userUid', {
+        userUid: uid,
+      })
+      .where('batchPost.uid = :postUid', { postUid: params.postUid })
+      .getOne()
+    const postImages = existingBatchPost.batchPostImages
+    const postLikes = existingBatchPost.batchLikes
 
     if (!existingBatchPost) {
       throw new NotFoundException('게시물을 찾을 수 없습니다.')
@@ -177,6 +205,12 @@ export class BatchPostsService {
       postUid: item.postUid,
     }))
 
+    const likes = postLikes.map((item) => ({
+      uid: item.uid,
+      postUid: item.batchPostUid,
+      userUid: item.userUid,
+    }))
+
     return [
       {
         uid: existingBatchPost.uid,
@@ -186,6 +220,7 @@ export class BatchPostsService {
         content: existingBatchPost.content,
         likeCount: existingBatchPost.likeCount,
         postImages: images,
+        postLikes: likes,
       },
     ]
   }
@@ -208,7 +243,7 @@ export class BatchPostsService {
 
         const existingBatchPost = await transactionalEntityManager.findOne(BatchPost, {
           where: { uid: params.postUid },
-          relations: ['postImages'],
+          relations: ['batchPostImages'],
         })
         if (!existingBatchPost) {
           throw new NotFoundException('게시물을 찾을 수 없습니다.')
@@ -216,12 +251,12 @@ export class BatchPostsService {
 
         const { ...postInfo } = updateBatchPostDto
 
-        if (existingBatchPost.postImages && existingBatchPost.postImages.length > 0) {
-          for (const image of existingBatchPost.postImages) {
+        if (existingBatchPost.batchPostImages && existingBatchPost.batchPostImages.length > 0) {
+          for (const image of existingBatchPost.batchPostImages) {
             oldFiles.push(image.postImage)
             await this.s3Service.deleteFile(image.postImage.split('/').pop()) // 파일 이름 추출하여 삭제
           }
-          await transactionalEntityManager.delete(PostImage, existingBatchPost.postImages)
+          await transactionalEntityManager.delete(BatchPostImage, existingBatchPost.batchPostImages)
         }
         // 새로운 이미지 업로드
         const fileEntities = []
@@ -240,9 +275,9 @@ export class BatchPostsService {
 
         const updateBatchPost = await transactionalEntityManager.save(BatchPost, existingBatchPost)
 
-        const postImages = await transactionalEntityManager.save(PostImage, fileEntities)
+        const postImages = await transactionalEntityManager.save(BatchPostImage, fileEntities)
 
-        updateBatchPost.postImages = postImages
+        updateBatchPost.batchPostImages = postImages
 
         const images = postImages.map((item) => ({
           postImage: item.postImage,
@@ -280,17 +315,17 @@ export class BatchPostsService {
 
         const existingBatchPost = await transactionalEntityManager.findOne(BatchPost, {
           where: { uid: params.postUid },
-          relations: ['postImages'],
+          relations: ['batchPostImages'],
         })
         if (!existingBatchPost) {
           throw new NotFoundException('게시물을 찾을 수 없습니다.')
         }
         const deleteBatch = await transactionalEntityManager.softRemove(BatchPost, existingBatchPost)
 
-        const postImages = existingBatchPost.postImages
+        const postImages = existingBatchPost.batchPostImages
 
         if (postImages && postImages.length > 0) {
-          await transactionalEntityManager.softRemove(PostImage, postImages)
+          await transactionalEntityManager.softRemove(BatchPostImage, postImages)
         }
 
         const images = postImages.map((item) => ({

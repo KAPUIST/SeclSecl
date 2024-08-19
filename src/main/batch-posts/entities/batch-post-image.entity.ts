@@ -9,8 +9,8 @@ import {
   ManyToOne,
 } from 'typeorm'
 import { BatchPost } from './batch-post.entity'
-@Entity({ name: 'post_images' })
-export class PostImage {
+@Entity({ name: 'batch_post_images' })
+export class BatchPostImage {
   @PrimaryGeneratedColumn('uuid')
   uid: string
 
@@ -32,7 +32,7 @@ export class PostImage {
   @DeleteDateColumn()
   deletedAt: Date
 
-  @ManyToOne(() => BatchPost, (post) => post.postImages)
+  @ManyToOne(() => BatchPost, (post) => post.batchPostImages)
   @JoinColumn({ name: 'post_uid' })
   batchPost: BatchPost
 }
