@@ -24,6 +24,7 @@ import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interf
 import { SendBirdService } from '../../common/sendbird/sendbird.service'
 import { lastValueFrom } from 'rxjs'
 import { GoogleSignUpDto } from './dtos/google-sign-up.dto'
+import { createHash } from 'crypto'
 
 @Injectable()
 export class AuthService {
@@ -41,7 +42,13 @@ export class AuthService {
     private readonly smsService: SMSService,
     private tokenService: TokenService,
   ) {}
-
+  private hashToken(tokenWithBearer: string): string {
+    const token = tokenWithBearer.toLowerCase().startsWith('bearer ') ? tokenWithBearer.split(' ')[1] : tokenWithBearer
+    return createHash('sha256').update(token).digest('hex')
+  }
+  private createRedisKey(userUid: string, hashedToken: string): string {
+    return `refreshToken:${userUid}:${hashedToken}`
+  }
   private generateVerificationCode(): string {
     return Math.floor(100000 + Math.random() * 900000).toString() // 6자리 코드 생성
   }
@@ -76,7 +83,6 @@ export class AuthService {
         where: { email, deletedAt: null },
         select: ['uid', 'password', 'email'],
       })
-      console.log(user)
 
       if (!user || !(await this.verifyPassword(password, user.password))) {
         return null
@@ -245,13 +251,18 @@ export class AuthService {
       const payload: JwtPayload = { uid: userUid, email, type: 'main' }
       const tokens = await this.tokenService.generateTokens(payload)
 
-      await this.refreshTokenRepository.upsert(
-        {
-          user: { uid: userUid },
-          refreshToken: tokens.refreshToken,
-        },
-        ['user'],
-      )
+      // await this.refreshTokenRepository.upsert(
+      //   {
+      //     user: { uid: userUid },
+      //     refreshToken: tokens.refreshToken,
+      //   },
+      //   ['user'],
+      // )
+      const hashedRefreshToken = this.hashToken(tokens.refreshToken)
+      const refreshTokenKey = this.createRedisKey(userUid, hashedRefreshToken)
+
+      await this.redisService.setValue(refreshTokenKey, tokens.refreshToken, 7 * 24 * 60 * 60)
+
       const user = await this.userInfosRepository.findOne({
         where: { uid: userUid },
         select: ['uid', 'name', 'nickname'],
@@ -281,15 +292,21 @@ export class AuthService {
   async signOut(refreshToken: string): Promise<void> {
     try {
       const payload = this.tokenService.verifyToken(refreshToken, 'main')
-      const storedToken = await this.refreshTokenRepository.findOne({
-        where: { user: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
-      })
+      // const storedToken = await this.refreshTokenRepository.findOne({
+      //   where: { user: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
+      // })
+      // Redis에서 리프레쉬 토큰을 확인합니다.
+
+      const hashedRefreshToken = this.hashToken(refreshToken)
+      const refreshTokenKey = this.createRedisKey(payload.uid, hashedRefreshToken)
+
+      const storedToken = await this.redisService.getValue(refreshTokenKey)
 
       if (!storedToken) {
         throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.INVALID_REFRESH_TOKEN)
       }
 
-      await this.refreshTokenRepository.update({ user: { uid: payload.uid } }, { refreshToken: null })
+      await this.redisService.deleteValue(refreshTokenKey)
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error
@@ -301,17 +318,27 @@ export class AuthService {
   async updateTokens(refreshToken: string) {
     try {
       const payload = this.tokenService.verifyToken(refreshToken, 'main')
-      const storedToken = await this.refreshTokenRepository.findOne({
-        where: { user: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
-      })
+      // const storedToken = await this.refreshTokenRepository.findOne({
+      //   where: { user: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
+      // })
+      const hashedRefreshToken = this.hashToken(refreshToken)
+      const refreshTokenKey = this.createRedisKey(payload.uid, hashedRefreshToken)
 
+      const storedToken = await this.redisService.getValue(refreshTokenKey)
       if (!storedToken) {
         throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.INVALID_REFRESH_TOKEN)
       }
 
       const tokens = await this.tokenService.generateTokens({ uid: payload.uid, email: payload.email, type: 'main' })
-      await this.refreshTokenRepository.update({ user: { uid: payload.uid } }, { refreshToken: tokens.refreshToken })
 
+      // Redis에서 기존 리프레쉬 토큰 삭제
+      await this.redisService.deleteValue(refreshTokenKey)
+
+      // await this.refreshTokenRepository.update({ user: { uid: payload.uid } }, { refreshToken: tokens.refreshToken })
+      const newHashedRefreshToken = this.hashToken(tokens.refreshToken)
+      const newRefreshTokenKey = this.createRedisKey(payload.uid, newHashedRefreshToken)
+
+      await this.redisService.setValue(newRefreshTokenKey, tokens.refreshToken, 7 * 24 * 60 * 60)
       return tokens
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -324,7 +351,6 @@ export class AuthService {
 
   async deleteUser(userUid: string): Promise<void> {
     try {
-      console.log(userUid, 'id')
       const user = await this.userRepository.findOne({ where: { uid: userUid } })
 
       if (!user) {
