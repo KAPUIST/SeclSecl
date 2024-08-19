@@ -38,6 +38,7 @@ export class SearchService implements OnModuleInit {
   async refreshLessonIndexes() {
     const lessons = await this.lessonRepository
       .createQueryBuilder('lesson')
+      .leftJoinAndSelect('lesson.images', 'image')
       .where('lesson.status IN (:...statuses)', { statuses: ['pending', 'open'] })
       .andWhere('lesson.deletedAt IS NULL')
       .getMany()
@@ -49,12 +50,14 @@ export class SearchService implements OnModuleInit {
           id: lesson.uid,
           body: {
             doc: {
+              uid: lesson.uid,
               title: lesson.title,
               teacher: lesson.teacher,
               description: lesson.description,
               location: lesson.location,
               status: lesson.status,
               price: lesson.price,
+              image: lesson.images.length > 0 ? lesson.images[0] : null,
             },
             doc_as_upsert: true, // 문서가 없을 경우 자동으로 생성
           },
@@ -62,6 +65,7 @@ export class SearchService implements OnModuleInit {
         console.log(`레슨 UID ${lesson.uid}가 업데이트되었습니다.`)
       } catch (error) {
         // 예외 발생 시 아무것도 하지 않음, 다음 강의로 계속 진행
+        console.error(`레슨 UID ${lesson.uid} 업데이트 실패:`, error)
       }
     }
     console.log('모든 강의에 대한 업데이트 시도가 완료되었습니다.')
@@ -71,6 +75,7 @@ export class SearchService implements OnModuleInit {
     // 상태가 'close'이거나 'deletedAt'이 null이 아닌 레슨을 찾음
     const lessons = await this.lessonRepository
       .createQueryBuilder('lesson')
+      .leftJoinAndSelect('lesson.images', 'image')
       .where('lesson.status = :status', { status: 'close' })
       .orWhere('lesson.deletedAt IS NOT NULL')
       .withDeleted() // 논리적으로 삭제된 레코드도 포함하여 조회
@@ -85,6 +90,7 @@ export class SearchService implements OnModuleInit {
         console.log(`레슨 UID ${lesson.uid}가 Elasticsearch에서 삭제되었습니다.`)
       } catch (error) {
         // 예외 발생 시 다음 강의로 계속 진행
+        console.error(`레슨 UID ${lesson.uid} 삭제 실패:`, error)
       }
     }
     console.log('모든 해당 레슨에 대한 삭제 작업이 완료되었습니다.')

@@ -68,12 +68,14 @@ export class LessonsService {
         index: 'lessons',
         id: lesson.uid,
         body: {
+          uid: lesson.uid,
           title: lesson.title,
           teacher: lesson.teacher,
           description: lesson.description,
           location: lesson.location,
           status: lesson.status,
           price: lesson.price,
+          image: lesson.images.length > 0 ? lesson.images[0] : null,
         },
       })
 
@@ -187,12 +189,14 @@ export class LessonsService {
         id: lesson.uid,
         body: {
           doc: {
+            uid: lesson.uid,
             title: lesson.title,
             teacher: lesson.teacher,
             description: lesson.description,
             location: lesson.location,
             status: lesson.status,
             price: lesson.price,
+            image: lesson.images.length > 0 ? lesson.images[0] : null,
           },
         },
       })
