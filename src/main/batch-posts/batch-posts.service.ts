@@ -215,7 +215,7 @@ export class BatchPostsService {
       likeCount: existingBatchPost.likeCount,
       createdAt: existingBatchPost.createdAt,
       postImages: images,
-      isLiked: userHasLiked, // Boolean indicating if the user liked the post
+      isLiked: userHasLiked,
     }
   }
 
