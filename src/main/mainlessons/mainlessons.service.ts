@@ -37,13 +37,16 @@ export class MainLessonsService {
     try {
       const [lessons, count]: [Lesson[], number] = await this.lessonsRepository.findAndCount({
         where: { isVerified: true },
-        relations: ['images'],
+        relations: ['images', 'batches'],
         order: {
           createdAt: 'DESC',
         },
       })
 
-      const lessonROs: LessonRO[] = lessons.map((lesson) => ({
+      //기수 없는 레슨 걸러내기
+      const filteredLessons = lessons.filter((lesson) => lesson.batches && lesson.batches.length > 0)
+
+      const lessonROs: LessonRO[] = filteredLessons.map((lesson) => ({
         ...this.mapLessonToRO(lesson),
         lesson: lesson.images[0].url,
       }))
