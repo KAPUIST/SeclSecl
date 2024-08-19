@@ -16,8 +16,8 @@ import { ScheduleModule } from '@nestjs/schedule'
       useFactory: async (configService: ConfigService) => ({
         node: configService.get<string>('ELASTICSEARCH_NODE'),
         maxRetries: 5, // 재시도 횟수
-        requestTimeout: 60000, // 요청 시간
-        sniffOnStart: true, //, 연결 시도를 로그로 띄움
+        requestTimeout: 30000, // 요청 시간
+        sniffOnStart: false, //, 연결 시도를 로그로 띄움
         log: 'trace', //터미널에 로그 띄우게 바꿈
       }),
       inject: [ConfigService],
