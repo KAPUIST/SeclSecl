@@ -83,7 +83,6 @@ export class AuthService {
         where: { email, deletedAt: null },
         select: ['uid', 'password', 'email'],
       })
-      console.log(user)
 
       if (!user || !(await this.verifyPassword(password, user.password))) {
         return null
@@ -262,8 +261,7 @@ export class AuthService {
       const hashedRefreshToken = this.hashToken(tokens.refreshToken)
       const refreshTokenKey = this.createRedisKey(userUid, hashedRefreshToken)
 
-      const ttl = 7 * 24 * 60 * 60
-      await this.redisService.setValue(refreshTokenKey, tokens.refreshToken, ttl)
+      await this.redisService.setValue(refreshTokenKey, tokens.refreshToken, 7 * 24 * 60 * 60)
 
       const user = await this.userInfosRepository.findOne({
         where: { uid: userUid },
@@ -303,7 +301,7 @@ export class AuthService {
       const refreshTokenKey = this.createRedisKey(payload.uid, hashedRefreshToken)
 
       const storedToken = await this.redisService.getValue(refreshTokenKey)
-      console.log(storedToken)
+
       if (!storedToken) {
         throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.AUTH.COMMON.INVALID_REFRESH_TOKEN)
       }
@@ -339,8 +337,8 @@ export class AuthService {
       // await this.refreshTokenRepository.update({ user: { uid: payload.uid } }, { refreshToken: tokens.refreshToken })
       const newHashedRefreshToken = this.hashToken(tokens.refreshToken)
       const newRefreshTokenKey = this.createRedisKey(payload.uid, newHashedRefreshToken)
-      const ttl = 7 * 24 * 60 * 60 // 7일 (초 단위)
-      await this.redisService.setValue(newRefreshTokenKey, tokens.refreshToken, ttl)
+
+      await this.redisService.setValue(newRefreshTokenKey, tokens.refreshToken, 7 * 24 * 60 * 60)
       return tokens
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -353,7 +351,6 @@ export class AuthService {
 
   async deleteUser(userUid: string): Promise<void> {
     try {
-      console.log(userUid, 'id')
       const user = await this.userRepository.findOne({ where: { uid: userUid } })
 
       if (!user) {
