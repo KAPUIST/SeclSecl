@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway, WebSocketServer, MessageBody, ConnectedSocket } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
+import { RedisService } from '../../common/redis/redis.service'
 import { SocketJwtStrategy } from '../../common/strategies/socket.jwt.strategy'
 import { ChatService } from './chat.service'
 
@@ -12,29 +13,35 @@ import { ChatService } from './chat.service'
     exposedHeaders: ['Authorization'],
     credentials: true,
   },
-  namespace: 'chatting',
+  // namespace: 'chatting',
 })
 export class ChatGateway {
   @WebSocketServer()
   server: Server
   private logger: Logger = new Logger('ChatGateway')
+  private isSubscribedToRedis = false
 
   constructor(
     private readonly chatService: ChatService,
     private readonly socketJwtStrategy: SocketJwtStrategy,
+    private readonly redisService: RedisService,
   ) {}
 
   afterInit(server: Server) {
     this.logger.log('Init')
+    this.logger.log(`Server initialized`)
+
+    this.checkAndSubscribeToRedis()
   }
 
   handleConnection(client: Socket, ...args: any[]) {
     try {
       const token = client.handshake.query.token as string
-
       const payload = this.socketJwtStrategy.validateToken(token)
       client.data.user = payload
       this.logger.log(`Client connected: ${client.id}`)
+
+      this.checkAndSubscribeToRedis()
     } catch (error) {
       this.logger.error(`Connection error: ${error.message}`)
       client.disconnect(true)
@@ -45,15 +52,55 @@ export class ChatGateway {
     this.logger.log(`Client disconnected: ${client.id}`)
   }
 
+  // Redis 구독 체크 및 구독 설정
+  private checkAndSubscribeToRedis() {
+    if (!this.isSubscribedToRedis) {
+      const sockets = this.server.sockets.sockets
+      if (sockets && sockets.size > 0) {
+        this.subscribeToRedis()
+        this.isSubscribedToRedis = true
+      } else {
+        this.logger.error('WebSocket server sockets are not initialized.')
+      }
+    }
+  }
+
+  //Redis 구독
+  private subscribeToRedis() {
+    const sockets = this.server.sockets.sockets
+
+    if (!sockets || sockets.size === 0) {
+      this.logger.error('WebSocket server sockets are not initialized.')
+      return
+    }
+
+    this.redisService.subscribe('chat_list_updates', (message: string) => {
+      const parsedMessage = JSON.parse(message)
+
+      // 파싱된 결과를 로깅
+      this.logger.log(`Parsed Message: ${JSON.stringify(parsedMessage)}`)
+      this.logger.log(`Parsed Message Type: ${typeof parsedMessage}`)
+
+      const userUids = parsedMessage.userUids
+      this.logger.log(`Received userUids: ${JSON.stringify(userUids)}`)
+      const sockets = this.server.sockets.sockets
+
+      sockets.forEach((socket) => {
+        if (userUids.includes(socket.data.user.uid)) {
+          this.logger.log(`Checking socket user: ${socket.data.user?.uid}`)
+
+          socket.emit('receiveMessageForList', parsedMessage)
+          this.logger.log(`Emit to: ${socket.id}, Message: ${parsedMessage.message}`)
+        }
+      })
+    })
+  }
   //채팅방 생성
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: { cpUid?: string; userUid?: string }) {
     try {
-      console.log(data)
       let chatRoom
       const loginUid = client.data.user.uid
-      console.log('cpUid:', data.cpUid)
-      console.log('userUid:', data.userUid)
 
       if (!data.cpUid && data.userUid) {
         const cpUid = loginUid
@@ -89,16 +136,14 @@ export class ChatGateway {
     //채팅방에있는 사용자에게 전송
     this.server.to(chatRoomUid).emit('receiveMessage', message)
 
-    //해당 채팅방에 속해있는 사용자 대상 채팅 목록 업데이트
+    //채팅 목록 업데이트
     const userUids = await this.chatService.getChatRoomUsers(chatRoomUid)
-    userUids.forEach((uid) => {
-      const sockets = this.server.sockets.sockets
-      sockets.forEach((socket) => {
-        if (socket.data.user.uid === uid) {
-          socket.emit('receiveMessageForList', message)
-        }
-      })
-    })
+
+    for (const uid of userUids) {
+      const otherUserMessage = await this.chatService.getChatRooms(uid, chatRoomUid)
+      const payload = { userUids: [uid], message: otherUserMessage[0] }
+      this.redisService.publish('chat_list_updates', payload)
+    }
   }
 
   //메세지 읽음 처리
@@ -108,11 +153,10 @@ export class ChatGateway {
       const userUid = client.data.user.uid
       await this.chatService.markMessagesAsRead(data.chatRoomUid, userUid)
 
-      //채팅방 클라이언트에게 알림
-      this.server.to(data.chatRoomUid).emit('messagesMarkedAsRead', {
-        chatRoomUid: data.chatRoomUid,
-        readerUid: userUid,
-      })
+      // 채팅 목록 업데이트를 위해 Redis에 메시지를 보냅니다.
+      const otherUserMessage = await this.chatService.getChatRooms(userUid, data.chatRoomUid)
+      const payload = { userUids: [userUid], message: otherUserMessage[0] }
+      this.redisService.publish('chat_list_updates', payload)
 
       this.logger.log(`Messages in room ${data.chatRoomUid} marked as read by ${userUid}`)
     } catch (error) {

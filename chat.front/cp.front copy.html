@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Chat</title>
+    <title>CP Chat</title>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
@@ -75,9 +75,9 @@
     </style>
   </head>
   <body>
-    <h1>User Chat</h1>
+    <h1>CP Chat</h1>
     <div id="createRoomSection">
-      <input id="cpUid" type="text" placeholder="Enter CP ID" />
+      <input id="userUid" type="text" placeholder="Enter User ID" />
       <button onclick="createRoom()">Create Room</button>
     </div>
     <div id="chatRoomSection" style="display: none">
@@ -89,10 +89,10 @@
 
     <script>
       const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlNDcyZGM0Ny03NjRlLTQ5MmItOGIxZi03MzI4NzM2MGFjMzkiLCJlbWFpbCI6Inlld29uQGdtYWlsLmNvbSIsInR5cGUiOiJtYWluIiwiaWF0IjoxNzIzOTA0Nzg3LCJleHAiOjE3MjM5MTE5ODd9.YnKGrUukIDGUXV8a0db3SgQpW_eXLa3WseGvEG7XFnc'
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJiMWQ0Y2Y0ZC00NDE0LTQ2YzUtOGUxMC05MzUxZmQ1ODZjMDYiLCJlbWFpbCI6ImhpaGloaUBnbWFpbC5jb20iLCJ0eXBlIjoiY3AiLCJpYXQiOjE3MjM5MDUyOTgsImV4cCI6MTcyMzkxMjQ5OH0.XnkhpWFPfODkpvbHQJ6ZDfT1CxHVvm-XEEf4-47c4QY'
       const decodedToken = jwt_decode(token)
-      const userUid = decodedToken.uid
-      const userName = 'User'
+      const cpUid = decodedToken.uid
+      const cpName = 'CP'
       let chatRoomUid
       const socket = io('ws://localhost:3000', {
         path: '/socket.io',
@@ -101,7 +101,7 @@
       })
 
       socket.on('connect', () => {
-        console.log('User WebSocket connection opened')
+        console.log('CP WebSocket connection opened')
       })
 
       socket.on('error', (error) => {
@@ -121,21 +121,21 @@
 
       socket.on('receiveMessage', (message) => {
         addMessageToChat(message)
+        console.log('Received new message:', message)
 
-        //실시간 메세지 읽음 처리
         if (message.sender !== userUid) {
           markMessagesAsRead()
         }
       })
 
       function createRoom() {
-        const cpUid = document.getElementById('cpUid').value
-        socket.emit('joinRoom', { cpUid })
+        const userUid = document.getElementById('userUid').value
+        socket.emit('joinRoom', { userUid })
       }
 
       function sendMessage() {
         const message = document.getElementById('message').value
-        socket.emit('sendMessage', { chatRoomUid, content: message, senderName: userName })
+        socket.emit('sendMessage', { chatRoomUid, content: message, senderName: cpName })
         document.getElementById('message').value = ''
       }
 
@@ -145,7 +145,7 @@
       }
 
       async function loadPreviousMessages() {
-        console.log('Loading previous messages for chatRoomId', chatRoomUid)
+        console.log('Loading previous messages for chatRoomUid', chatRoomUid)
         try {
           const response = await fetch(`http://localhost:3000/api/chat/${chatRoomUid}/messages`, {
             method: 'GET',
@@ -177,7 +177,7 @@
 
       function addMessageToChat(message) {
         const messageElement = document.createElement('div')
-        messageElement.className = 'message ' + (message.sender === userUid ? 'me' : 'other')
+        messageElement.className = 'message ' + (message.sender === cpUid ? 'me' : 'other')
 
         const senderElement = document.createElement('div')
         senderElement.className = 'sender'
