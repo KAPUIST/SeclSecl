@@ -50,6 +50,10 @@ export class FindAllBatchPostRo {
   @IsString()
   content: string
 
+  @ApiProperty({ description: '생성일자' }) 
+  @IsString() 
+  createdAt: Date
+
   @ApiProperty({ description: '좋아요 수' })
   @IsNumber()
   likeCount: number
