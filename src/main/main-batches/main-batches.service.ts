@@ -32,6 +32,7 @@ export class MainBatchesService {
 
     const batches = await this.batchRepository.find({
       where: { lessonUid: params.lessonUid, recruitmentEnd: MoreThan(cuurntDate) },
+      order: { createdAt: 'DESC' },
     })
     if (batches.length === 0) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_EXISTING_BATCH)

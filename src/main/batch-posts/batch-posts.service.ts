@@ -143,6 +143,7 @@ export class BatchPostsService {
         userUid: uid,
       })
       .where('batchPost.batchUid = :batchUid', { batchUid: params.batchUid })
+      .orderBy('batchPost.createdAt', 'DESC')
       .getMany()
 
     const results = data.map((item) => {
@@ -369,6 +370,7 @@ export class BatchPostsService {
     const batchCommentList = await this.batchPostCommentRepository.find({
       where: { batchPostUid },
       relations: { user: { userInfo: true } },
+      order: { createdAt: 'DESC' },
     })
     return batchCommentList.map((comment) => ({
       uid: comment.uid,
