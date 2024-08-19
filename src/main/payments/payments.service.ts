@@ -397,6 +397,8 @@ export class PaymentsService {
     const orderList = checkCartQueryDto.batchList.split(', ')
     const scheduleMap = new Map()
     const currentDate = new Date()
+    const startDate = []
+    const endDate = []
     for (const order of orderList) {
       // 기수 ID가 유효하지 않을 때 에러 처리
       const validBatch = await this.batchRepository.findOne({ where: { uid: order }, relations: { batchDays: true } })
