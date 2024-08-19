@@ -39,12 +39,15 @@ export class SearchService implements OnModuleInit {
     const lessons = await this.lessonRepository
       .createQueryBuilder('lesson')
       .leftJoinAndSelect('lesson.images', 'image')
-      .where('lesson.status IN (:...statuses)', { statuses: ['pending', 'open'] })
+      .where('lesson.status IN (:...statuses)', {
+        statuses: ['pending', 'open'],
+      })
       .andWhere('lesson.deletedAt IS NULL')
       .getMany()
 
     for (const lesson of lessons) {
       try {
+        const imageUrl = lesson.images.length > 0 ? lesson.images[0].url : null
         await this.elasticsearchService.update({
           index: 'lessons',
           id: lesson.uid,
@@ -57,7 +60,7 @@ export class SearchService implements OnModuleInit {
               location: lesson.location,
               status: lesson.status,
               price: lesson.price,
-              image: lesson.images.length > 0 ? lesson.images[0] : null,
+              image: { url: imageUrl },
             },
             doc_as_upsert: true, // 문서가 없을 경우 자동으로 생성
           },
@@ -146,7 +149,7 @@ export class SearchService implements OnModuleInit {
         body: {
           query,
           sort: sortOptions,
-          _source: ['title', 'teacher', 'location', 'description', 'price'],
+          _source: ['title', 'teacher', 'location', 'description', 'price', 'uid', 'image'],
         },
       })
       const data = response.hits.hits

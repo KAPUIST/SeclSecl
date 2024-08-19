@@ -64,6 +64,8 @@ export class LessonsService {
       await queryRunner.manager.save(LessonImages, imageEntities)
 
       // Elasticsearch에 인덱싱
+      const imageUrl = lesson.images.length > 0 ? lesson.images[0].url : null
+
       await this.elasticsearchService.index({
         index: 'lessons',
         id: lesson.uid,
@@ -75,7 +77,7 @@ export class LessonsService {
           location: lesson.location,
           status: lesson.status,
           price: lesson.price,
-          image: lesson.images.length > 0 ? lesson.images[0] : null,
+          image: { url: imageUrl },
         },
       })
 
@@ -184,6 +186,8 @@ export class LessonsService {
       await queryRunner.manager.save(LessonImages, imageEntities)
 
       // Elasticsearch에 업데이트
+      const imageUrl = lesson.images.length > 0 ? lesson.images[0].url : null
+
       await this.elasticsearchService.update({
         index: 'lessons',
         id: lesson.uid,
@@ -196,7 +200,7 @@ export class LessonsService {
             location: lesson.location,
             status: lesson.status,
             price: lesson.price,
-            image: lesson.images.length > 0 ? lesson.images[0] : null,
+            image: { url: imageUrl },
           },
         },
       })
