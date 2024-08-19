@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Query, HttpStatus, Patch, Delete } from '@nestjs/common'
+import { Controller, Post, Query, HttpStatus, Delete } from '@nestjs/common'
 import { SearchService } from './search.service'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
@@ -19,7 +19,7 @@ export class SearchController {
 
   @Delete('/index')
   async deleteIndexes() {
-    const index = await this.searchService.deleteIndexes()
+    const index = await this.searchService.deleteInactiveIndexes()
 
     return {
       statusCode: HttpStatus.OK,

@@ -1,14 +1,16 @@
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common'
 import { ElasticsearchService } from '@nestjs/elasticsearch'
 import { ConfigService } from '@nestjs/config'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { Cron } from '@nestjs/schedule'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { SearchRO } from './ro/search.ro'
 
 @Injectable()
 export class SearchService implements OnModuleInit {
+  private readonly logger = new Logger(SearchService.name)
+
   constructor(
     private readonly elasticsearchService: ElasticsearchService,
     private readonly configService: ConfigService,
@@ -16,133 +18,97 @@ export class SearchService implements OnModuleInit {
     private readonly lessonRepository: Repository<Lesson>,
   ) {}
 
-  @Cron('0 0 3 * * 3') // 초 분 시 일 월 요일 >  새벽 3시 수요일
-  async handleCron() {
-    console.log('레슨 인덱싱 작업 시작')
-    await this.refreshLessonIndexes()
-    await this.deleteIndexes()
-    console.log('레슨 인덱싱 작업 종료')
+  async onModuleInit() {
+    await this.checkElasticsearchConnection()
   }
 
-  // elasticsearch 연결 확인 >> 기본적으로 9200포트 사용
-  async onModuleInit() {
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async handleCron() {
+    this.logger.log('레슨 인덱싱 작업 시작')
+    await Promise.all([this.refreshLessonIndexes(), this.deleteInactiveIndexes()])
+    this.logger.log('레슨 인덱싱 작업 종료')
+  }
+
+  private async checkElasticsearchConnection() {
     try {
       await this.elasticsearchService.ping()
-      console.log(`Elasticsearch 연결 성공: ${this.configService.get<string>('ELASTICSEARCH_NODE')}번 포트`)
+      this.logger.log(`Elasticsearch 연결 성공: ${this.configService.get<string>('ELASTICSEARCH_NODE')}번 포트`)
     } catch (error) {
-      console.error('Elasticsearch 연결 실패:', error)
+      this.logger.error('Elasticsearch 연결 실패:', error)
     }
   }
 
-  // 기존의 인덱스만 업뎃 + 없으면 추가 생성 +  끝난강의, 삭제강의 생성 x
   async refreshLessonIndexes() {
-    const lessons = await this.lessonRepository
+    const lessons = await this.getActiveLessons()
+    await Promise.all(lessons.map((lesson) => this.upsertLessonIndex(lesson)))
+    this.logger.log('모든 강의에 대한 업데이트 시도가 완료되었습니다.')
+  }
+
+  private async getActiveLessons(): Promise<Lesson[]> {
+    return this.lessonRepository
       .createQueryBuilder('lesson')
       .leftJoinAndSelect('lesson.images', 'image')
-      .where('lesson.status IN (:...statuses)', {
-        statuses: ['pending', 'open'],
-      })
+      .where('lesson.status IN (:...statuses)', { statuses: ['pending', 'open'] })
       .andWhere('lesson.deletedAt IS NULL')
       .getMany()
-
-    for (const lesson of lessons) {
-      try {
-        const imageUrl = lesson.images.length > 0 ? lesson.images[0].url : null
-        await this.elasticsearchService.update({
-          index: 'lessons',
-          id: lesson.uid,
-          body: {
-            doc: {
-              uid: lesson.uid,
-              title: lesson.title,
-              teacher: lesson.teacher,
-              description: lesson.description,
-              location: lesson.location,
-              status: lesson.status,
-              price: lesson.price,
-              image: { url: imageUrl },
-            },
-            doc_as_upsert: true, // 문서가 없을 경우 자동으로 생성
-          },
-        })
-        console.log(`레슨 UID ${lesson.uid}가 업데이트되었습니다.`)
-      } catch (error) {
-        // 예외 발생 시 아무것도 하지 않음, 다음 강의로 계속 진행
-        console.error(`레슨 UID ${lesson.uid} 업데이트 실패:`, error)
-      }
-    }
-    console.log('모든 강의에 대한 업데이트 시도가 완료되었습니다.')
   }
 
-  async deleteIndexes() {
-    // 상태가 'close'이거나 'deletedAt'이 null이 아닌 레슨을 찾음
-    const lessons = await this.lessonRepository
+  private async upsertLessonIndex(lesson: Lesson) {
+    try {
+      const imageUrl = lesson.images[0]?.url ?? null
+      await this.elasticsearchService.update({
+        index: 'lessons',
+        id: lesson.uid,
+        body: {
+          doc: {
+            uid: lesson.uid,
+            title: lesson.title,
+            teacher: lesson.teacher,
+            description: lesson.description,
+            location: lesson.location,
+            status: lesson.status,
+            price: lesson.price,
+            image: { url: imageUrl },
+          },
+          doc_as_upsert: true,
+        },
+      })
+      this.logger.log(`레슨 UID ${lesson.uid}가 업데이트되었습니다.`)
+    } catch (error) {
+      this.logger.error(`레슨 UID ${lesson.uid} 업데이트 실패:`, error)
+    }
+  }
+
+  async deleteInactiveIndexes() {
+    const lessons = await this.getInactiveLessons()
+    await Promise.all(lessons.map((lesson) => this.deleteLessonIndex(lesson)))
+    this.logger.log('모든 해당 레슨에 대한 삭제 작업이 완료되었습니다.')
+  }
+
+  private async getInactiveLessons(): Promise<Lesson[]> {
+    return this.lessonRepository
       .createQueryBuilder('lesson')
-      .leftJoinAndSelect('lesson.images', 'image')
       .where('lesson.status = :status', { status: 'close' })
       .orWhere('lesson.deletedAt IS NOT NULL')
-      .withDeleted() // 논리적으로 삭제된 레코드도 포함하여 조회
+      .withDeleted()
       .getMany()
+  }
 
-    for (const lesson of lessons) {
-      try {
-        await this.elasticsearchService.delete({
-          index: 'lessons',
-          id: lesson.uid,
-        })
-        console.log(`레슨 UID ${lesson.uid}가 Elasticsearch에서 삭제되었습니다.`)
-      } catch (error) {
-        // 예외 발생 시 다음 강의로 계속 진행
-        console.error(`레슨 UID ${lesson.uid} 삭제 실패:`, error)
-      }
+  private async deleteLessonIndex(lesson: Lesson) {
+    try {
+      await this.elasticsearchService.delete({
+        index: 'lessons',
+        id: lesson.uid,
+      })
+      this.logger.log(`레슨 UID ${lesson.uid}가 Elasticsearch에서 삭제되었습니다.`)
+    } catch (error) {
+      this.logger.error(`레슨 UID ${lesson.uid} 삭제 실패:`, error)
     }
-    console.log('모든 해당 레슨에 대한 삭제 작업이 완료되었습니다.')
   }
 
   async search(keyword: string, category?: string, sortBy?: string): Promise<SearchRO[]> {
-    const query: any = {
-      bool: {
-        must: [],
-      },
-    }
-
-    if (category && category !== 'price' && keyword) {
-      query.bool.must.push({
-        match: {
-          [category]: {
-            query: keyword,
-            fuzziness: 1,
-            operator: 'or',
-            minimum_should_match: '30%',
-            lenient: true,
-            zero_terms_query: 'all',
-          },
-        },
-      })
-    } else if (keyword) {
-      query.bool.must.push({
-        multi_match: {
-          query: keyword,
-          fields: ['title^3', 'teacher^2', 'description^1.5', 'location^1'],
-          fuzziness: 'AUTO',
-          operator: 'or',
-          minimum_should_match: '50%',
-          slop: 2,
-          lenient: true,
-          zero_terms_query: 'all',
-        },
-      })
-    }
-
-    // 정렬 옵션 설정
-    const sortOptions: any[] = [{ _score: { order: 'desc' } }]
-
-    if (category === 'price' && sortBy === 'asc') {
-      sortOptions.push({ price: { order: 'asc' } })
-    } else if (category === 'price' && sortBy === 'desc') {
-      sortOptions.push({ price: { order: 'desc' } })
-    }
-
+    const query = this.buildSearchQuery(keyword, category)
+    const sortOptions = this.buildSortOptions(category, sortBy)
     try {
       const response = await this.elasticsearchService.search({
         index: 'lessons',
@@ -152,17 +118,72 @@ export class SearchService implements OnModuleInit {
           _source: ['title', 'teacher', 'location', 'description', 'price', 'uid', 'image'],
         },
       })
-      const data = response.hits.hits
-
-      const result = []
-
-      for (let i = 0; i < data.length; i++) {
-        result.push(data[i]._source)
-      }
-      return result
+      return response.hits.hits.map((hit) => hit._source as SearchRO)
     } catch (error) {
-      console.error('검색 실패:', error)
+      this.logger.error('검색 실패:', error)
       throw error
     }
+  }
+
+  private buildSearchQuery(keyword: string, category?: string): any {
+    if (!keyword) {
+      return { match_all: {} }
+    }
+
+    const sharedQueryParams = {
+      fuzziness: 2,
+      prefix_length: 1,
+      max_expansions: 50,
+      operator: 'or',
+      minimum_should_match: '65%',
+    }
+
+    const fields = ['title^3', 'teacher^2', 'description^1.5', 'location^1']
+
+    if (category && category !== 'price') {
+      return {
+        bool: {
+          should: [
+            {
+              match: {
+                [category]: {
+                  query: keyword,
+                  ...sharedQueryParams,
+                  boost: 2,
+                },
+              },
+            },
+            {
+              multi_match: {
+                query: keyword,
+                fields: fields,
+                ...sharedQueryParams,
+                type: 'best_fields',
+                tie_breaker: 0.3,
+              },
+            },
+          ],
+          minimum_should_match: 1,
+        },
+      }
+    } else {
+      return {
+        multi_match: {
+          query: keyword,
+          fields: fields,
+          ...sharedQueryParams,
+          type: 'best_fields',
+          tie_breaker: 0.3,
+        },
+      }
+    }
+  }
+
+  private buildSortOptions(category?: string, sortBy?: string): any[] {
+    const sortOptions: any[] = [{ _score: { order: 'desc' } }]
+    if (category === 'price' && ['asc', 'desc'].includes(sortBy)) {
+      sortOptions.unshift({ price: { order: sortBy } })
+    }
+    return sortOptions
   }
 }
