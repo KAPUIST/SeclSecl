@@ -193,12 +193,12 @@ export class BatchPostsService {
       })
       .where('batchPost.uid = :postUid', { postUid: params.postUid })
       .getOne()
-    const postImages = existingBatchPost.batchPostImages
-    const postLikes = existingBatchPost.batchLikes
-
     if (!existingBatchPost) {
       throw new NotFoundException('게시물을 찾을 수 없습니다.')
     }
+
+    const postImages = existingBatchPost.batchPostImages || []
+    const postLikes = existingBatchPost.batchLikes || []
 
     const images = postImages.map((item) => ({
       postImage: item.postImage,

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNumber, IsString } from 'class-validator'
+import { IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class PostImage {
   @ApiProperty({ description: '수업 자료' })
@@ -56,6 +56,7 @@ export class FindOneBatchPostRo {
 
   @ApiProperty({ description: '게시글 이미지들' })
   @IsString()
+  @IsOptional()
   postImages: PostImage[]
 
   @ApiProperty({ description: '게시글 좋아요들' })
