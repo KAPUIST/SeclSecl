@@ -497,4 +497,13 @@ export const MAIN_MESSAGE_CONSTANT = {
       },
     },
   },
+  SEARCH: {
+    CONTROLLER: {
+      INDEX: {
+        REFRESH: '인덱스가 성공적으로 업데이트 되었습니다.',
+        DELETE: '인덱스가 성공적으로 삭제 되었습니다.',
+      },
+      SEARCH: '검색을 성공했습니다.',
+    },
+  },
 }

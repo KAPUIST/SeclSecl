@@ -27,7 +27,7 @@ jobs:
 
       - name: Setup environment variables
         run: |
-          echo "${{ secrets.ENV }}" > .env
+          echo "${{ secrets.ENV_DEV }}" > .env
 
       - name: Install Sentry CLI
         run: npm install -g @sentry/cli
