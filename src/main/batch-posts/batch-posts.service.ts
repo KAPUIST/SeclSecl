@@ -166,6 +166,7 @@ export class BatchPostsService {
         title: item.title,
         content: item.content,
         likeCount: item.likeCount,
+        createdAt: item.createdAt,
         postImages,
         postLikes,
       }
@@ -174,7 +175,7 @@ export class BatchPostsService {
     return results
   }
   // 커뮤니티 상세조회
-  async findOne(uid: string, params: FindOneBatchPostParamsDTO): Promise<FindOneBatchPostRo[]> {
+  async findOne(uid: string, params: FindOneBatchPostParamsDTO): Promise<FindOneBatchPostRo> {
     //유저 권한 확인
     await this.checkUserPermission(uid)
     //기수가 존재하나 확인
@@ -212,18 +213,17 @@ export class BatchPostsService {
       userUid: item.userUid,
     }))
 
-    return [
-      {
+    return {
         uid: existingBatchPost.uid,
         batchUid: existingBatchPost.batchUid,
         userUid: existingBatchPost.userUid,
         title: existingBatchPost.title,
         content: existingBatchPost.content,
         likeCount: existingBatchPost.likeCount,
+        createdAt: existingBatchPost.createdAt,
         postImages: images,
         postLikes: likes,
-      },
-    ]
+      }
   }
 
   async update(
