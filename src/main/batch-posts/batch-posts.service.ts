@@ -176,30 +176,22 @@ export class BatchPostsService {
   }
   // 커뮤니티 상세조회
   async findOne(uid: string, params: FindOneBatchPostParamsDTO): Promise<FindOneBatchPostRo> {
-    //유저 권한 확인
+    // 유저 권한 확인
     await this.checkUserPermission(uid)
-    //기수가 존재하나 확인
+    // 기수가 존재하나 확인
     await this.verifyBatchExistence(params.batchUid)
-
-    // const existingBatchPost = await this.batchPostRepository.findOne({
-    //   where: { uid: params.postUid },
-    //   relations: ['batchPostImages'],
-    // })
 
     const existingBatchPost = await this.batchPostRepository
       .createQueryBuilder('batchPost')
       .leftJoinAndSelect('batchPost.batchPostImages', 'batchPostImages')
-      .leftJoinAndSelect('batchPost.batchLikes', 'batchLikes', 'batchLikes.userUid = :userUid', {
-        userUid: uid,
-      })
       .where('batchPost.uid = :postUid', { postUid: params.postUid })
       .getOne()
+
     if (!existingBatchPost) {
       throw new NotFoundException('게시물을 찾을 수 없습니다.')
     }
 
     const postImages = existingBatchPost.batchPostImages || []
-    const postLikes = existingBatchPost.batchLikes || []
 
     const images = postImages.map((item) => ({
       postImage: item.postImage,
@@ -207,23 +199,24 @@ export class BatchPostsService {
       postUid: item.postUid,
     }))
 
-    const likes = postLikes.map((item) => ({
-      uid: item.uid,
-      postUid: item.batchPostUid,
-      userUid: item.userUid,
-    }))
+    const userHasLiked =
+      (await this.batchLikeRepository
+        .createQueryBuilder('batchLikes')
+        .where('batchLikes.batchPostUid = :postUid', { postUid: params.postUid })
+        .andWhere('batchLikes.userUid = :userUid', { userUid: uid })
+        .getCount()) > 0
 
     return {
-        uid: existingBatchPost.uid,
-        batchUid: existingBatchPost.batchUid,
-        userUid: existingBatchPost.userUid,
-        title: existingBatchPost.title,
-        content: existingBatchPost.content,
-        likeCount: existingBatchPost.likeCount,
-        createdAt: existingBatchPost.createdAt,
-        postImages: images,
-        postLikes: likes,
-      }
+      uid: existingBatchPost.uid,
+      batchUid: existingBatchPost.batchUid,
+      userUid: existingBatchPost.userUid,
+      title: existingBatchPost.title,
+      content: existingBatchPost.content,
+      likeCount: existingBatchPost.likeCount,
+      createdAt: existingBatchPost.createdAt,
+      postImages: images,
+      isLiked: userHasLiked,
+    }
   }
 
   async update(
@@ -372,17 +365,33 @@ export class BatchPostsService {
       relations: { user: { userInfo: true } },
       order: { createdAt: 'DESC' },
     })
-    return batchCommentList.map((comment) => ({
-      uid: comment.uid,
-      userUid,
-      nickName: comment.user.userInfo.nickname,
-      batchPostUid,
-      parentCommentUid: comment.parentCommentUid,
-      content: comment.content,
-      likeCount: comment.likeCount,
-      createdAt: comment.createdAt,
-      updatedAt: comment.updatedAt,
-    }))
+    const result = await Promise.all(
+      batchCommentList.map(async (comment) => {
+        // 각 댓글에 대해 사용자가 좋아요를 눌렀는지 확인하는 쿼리
+        const isLiked =
+          (await this.batchLikeRepository.findOne({
+            where: {
+              batchCommentUid: comment.uid,
+              userUid: userUid,
+            },
+          })) !== null
+
+        return {
+          uid: comment.uid,
+          userUid: comment.userUid,
+          nickName: comment.user.userInfo.nickname,
+          batchPostUid: comment.batchPostUid,
+          parentCommentUid: comment.parentCommentUid,
+          content: comment.content,
+          likeCount: comment.likeCount,
+          createdAt: comment.createdAt,
+          updatedAt: comment.updatedAt,
+          isLiked, // 사용자가 이 댓글에 좋아요를 눌렀는지 여부를 나타내는 boolean 값
+        }
+      }),
+    )
+
+    return result
   }
   // 기수별 커뮤니티 댓글 작성 로직
   async createBatchComment(

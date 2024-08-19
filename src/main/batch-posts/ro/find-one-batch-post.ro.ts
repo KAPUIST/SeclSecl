@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNumber, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class PostImage {
   @ApiProperty({ description: '수업 자료' })
@@ -50,8 +50,8 @@ export class FindOneBatchPostRo {
   @IsString()
   content: string
 
-  @ApiProperty({ description: '생성일자' }) 
-  @IsString() 
+  @ApiProperty({ description: '생성일자' })
+  @IsString()
   createdAt: Date
 
   @ApiProperty({ description: '좋아요 수' })
@@ -64,6 +64,6 @@ export class FindOneBatchPostRo {
   postImages: PostImage[]
 
   @ApiProperty({ description: '게시글 좋아요들' })
-  @IsString()
-  postLikes: PostLike[]
+  @IsBoolean()
+  isLiked: boolean
 }
