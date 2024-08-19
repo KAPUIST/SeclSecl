@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { MoreThan, Repository } from 'typeorm'
 import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { Batch } from '../../common/batches/entities/batch.entity'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
@@ -27,8 +27,12 @@ export class MainBatchesService {
   async findAll(uid: string, params: FindBatchParamsDTO): Promise<FindBatchRo[]> {
     //기수를 조회할 수 있는 권한 확인
     await this.checkAuthorization(uid, params.lessonUid)
+    //지난 모집기간 걸러내기
+    const cuurntDate = new Date()
 
-    const batches = await this.batchRepository.find({ where: { lessonUid: params.lessonUid } })
+    const batches = await this.batchRepository.find({
+      where: { lessonUid: params.lessonUid, recruitmentEnd: MoreThan(cuurntDate) },
+    })
     if (batches.length === 0) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.NOT_EXISTING_BATCH)
     }
