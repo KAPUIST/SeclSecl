@@ -15,6 +15,20 @@ export class PostImage {
   postUid: string
 }
 
+export class PostLike {
+  @ApiProperty({ description: '좋아요 Uid' })
+  @IsString()
+  uid: string
+
+  @ApiProperty({ description: '게시글 Uid' })
+  @IsString()
+  postUid: string
+
+  @ApiProperty({ description: '유저 Uid' })
+  @IsString()
+  userUid: string
+}
+
 export class FindOneBatchPostRo {
   @ApiProperty({ description: 'UID' })
   @IsString()
@@ -43,4 +57,8 @@ export class FindOneBatchPostRo {
   @ApiProperty({ description: '게시글 이미지들' })
   @IsString()
   postImages: PostImage[]
+
+  @ApiProperty({ description: '게시글 좋아요들' })
+  @IsString()
+  postLikes: PostLike[]
 }
