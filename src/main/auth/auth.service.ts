@@ -286,7 +286,7 @@ export class AuthService {
       const tempUser = `temp_user:${email}`
       await this.redisService.setValue(tempUser, JSON.stringify({ email, googleId: sub }), 300)
       // 추가 정보 입력 페이지로 리디렉션 (프론트엔드에서 처리)
-      return { redirect: `https://sclescle.bubbleapps.io/version-test/google_sign_up?email=${email}` }
+      return { redirect: `https://sclescle.bubbleapps.io/google_sign_up?email=${email}` }
     }
   }
   async signOut(refreshToken: string): Promise<void> {
