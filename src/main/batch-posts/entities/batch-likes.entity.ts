@@ -24,6 +24,6 @@ export class BatchLike {
   batchPost: BatchPost
 
   @ManyToOne(() => BatchPostComment, (batchPostComment) => batchPostComment.batchLikes)
-  @JoinColumn({ name: 'batch_post_comment_uid' })
+  @JoinColumn({ name: 'batch_comment_uid' })
   batchPostComment: BatchPostComment
 }
