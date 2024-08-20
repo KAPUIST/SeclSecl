@@ -130,7 +130,7 @@ export class BandService {
   }
   // 밴드 목록 조회 로직
   async getBandList(): Promise<GetBandListRO[]> {
-    const bandList = await this.bandRepository.find()
+    const bandList = await this.bandRepository.find({ order: { createdAt: 'DESC' } })
     return bandList.map((band) => ({
       uid: band.uid,
       userUid: band.userUid,
