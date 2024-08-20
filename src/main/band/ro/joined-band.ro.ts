@@ -6,6 +6,10 @@ export class JoinedBandRO {
   @IsUUID()
   bandUid: string
 
+  @ApiProperty({ description: '밴드장 아이디' })
+  @IsString()
+  bandMasterUid: string
+
   @ApiProperty({ description: '밴드명' })
   @IsString()
   name: string
