@@ -80,7 +80,7 @@ export class AuthController {
 
     if (result.email) {
       // 이미 등록된 이메일인 경우
-      const redirectUrl = `https://sclescle.bubbleapps.io/version-test/google_auth_callback?email=${result.email}`
+      const redirectUrl = `https://sclescle.bubbleapps.io/google_auth_callback?email=${result.email}`
       return res.redirect(redirectUrl)
     } else {
       // 추가 정보 입력이 필요한 경우
