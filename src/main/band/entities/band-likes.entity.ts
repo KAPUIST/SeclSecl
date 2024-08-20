@@ -24,6 +24,6 @@ export class BandLike {
   bandPost: BandPost
 
   @ManyToOne(() => BandPostComment, (bandPostComment) => bandPostComment.bandLikes, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'band_post_comment_uid' })
+  @JoinColumn({ name: 'band_comment_uid' })
   bandPostComment: BandPostComment
 }
