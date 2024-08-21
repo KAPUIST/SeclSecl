@@ -30,49 +30,52 @@ export class LessonReviewService {
 
   //수업 찾기
   private async findLessonById(lessonUid: string): Promise<Lesson> {
-    const lesson = await this.lessonRepository.findOne({ where: {uid: lessonUid}})
+    const lesson = await this.lessonRepository.findOne({ where: { uid: lessonUid } })
 
-    if(!lesson) {
+    if (!lesson) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
     }
     return lesson
   }
 
+  //유저 찾기
+  private async findUserById(userUid: string): Promise<User> {
+    const user = await this.userRepository.findOne({where: {uid: userUid}, relations: ['userInfo']})
+
+    if (!user) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_USER)
+    }
+    return user
+  }
+
   //리뷰 등록
-  async createReview(id: string, uid, createReviewDto: CreateReviewDto): Promise<LessonReviewResponseDto> {
+  async createReview(lessonUid: string, userUid, createReviewDto: CreateReviewDto): Promise<LessonReviewResponseDto> {
     const { batchUid } = createReviewDto
 
     //수업 존재 확인
-    const lesson = await this.findLessonById(id)
+    const lesson = await this.findLessonById(lessonUid)
 
     //입력한 batchId가 받아온 lessonUid의 batch인지 확인
-    const confirmBatch = await this.batchRepository.findOne({ where: { uid: batchUid, lessonUid: id } })
+    const confirmBatch = await this.batchRepository.findOne({ where: { uid: batchUid, lessonUid } })
     if (!confirmBatch) {
       throw new Error(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_INCLUDE)
     }
 
     //내강의실 batch별 존재 확인
-    const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid, userUid: uid } })
+    const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid, userUid: userUid } })
     if (!batch) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_BATCH)
     }
 
     const existedReview = await this.lessonReviewRepository.findOne({
-      where: { batch: { uid: batchUid }, user: { uid: uid } },
+      where: { batch: { uid: batchUid }, user: { uid: userUid } },
     })
 
     if (existedReview) {
       throw new Error(MAIN_MESSAGE_CONSTANT.REVIEW.ALREADY_EXIST)
     }
 
-    const user = await this.userRepository.findOne({
-      where: { uid: uid },
-      relations: ['userInfo'],
-    })
-
-    if (!user) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_USER)
-    }
+    const user = await this.findUserById(userUid)
     const review = await this.lessonReviewRepository.create({ ...createReviewDto, lesson, user, batch: confirmBatch })
     const savedReview = await this.lessonReviewRepository.save(review)
 
@@ -116,12 +119,11 @@ export class LessonReviewService {
   async updateReview(
     lessonUid: string,
     reviewUid: string,
-    uid: string,
+    userUid: string,
     updateReviewDto: UpdateReviewDto,
   ): Promise<LessonReviewResponseDto> {
-    
-        //수업 존재 확인
-        const lesson = await this.findLessonById(lessonUid)
+    //수업 존재 확인
+    const lesson = await this.findLessonById(lessonUid)
 
     const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewUid } })
 
@@ -133,10 +135,7 @@ export class LessonReviewService {
 
     const savedReview = await this.lessonReviewRepository.save(review)
 
-    const user = await this.userRepository.findOne({
-      where: { uid: uid },
-      relations: ['userInfo'],
-    })
+    const user = await this.findUserById(userUid)
 
     const response = new LessonReviewResponseDto()
     response.uid = savedReview.uid
@@ -150,8 +149,7 @@ export class LessonReviewService {
   }
 
   //리뷰 삭제
-  async removeReview(lessonUid: string, reviewUid: string, uid: string): Promise<LessonReviewResponseDto> {
-  
+  async removeReview(lessonUid: string, reviewUid: string, userUid: string): Promise<LessonReviewResponseDto> {
     //수업 존재 확인
     const lesson = await this.findLessonById(lessonUid)
 
@@ -161,10 +159,7 @@ export class LessonReviewService {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_REVIEW)
     }
 
-    const user = await this.userRepository.findOne({
-      where: { uid: uid },
-      relations: ['userInfo'],
-    })
+    const user = await this.findUserById(userUid)
 
     await this.lessonReviewRepository.delete(reviewUid)
 

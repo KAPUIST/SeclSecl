@@ -12,8 +12,8 @@ export class ReviewController {
   constructor(private readonly lessonReviewService: LessonReviewService) {}
 
   @Post('/:lessonUid/reviews')
-  async createReview(@Param('lessonUid') id: string, @Req() req, @Body() createReviewDto: CreateReviewDto) {
-    const data = await this.lessonReviewService.createReview(id, req.user.uid, createReviewDto)
+  async createReview(@Param('lessonUid') lessonUid: string, @Req() req, @Body() createReviewDto: CreateReviewDto) {
+    const data = await this.lessonReviewService.createReview(lessonUid, req.user.uid, createReviewDto)
 
     return {
       status: HttpStatus.CREATED,
