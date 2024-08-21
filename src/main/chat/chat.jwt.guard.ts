@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from
 import { Observable } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
 import * as jwt from 'jsonwebtoken'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {
@@ -12,7 +13,7 @@ export class WsAuthGuard implements CanActivate {
     const token = client.handshake.query.token as string // 쿼리에서 JWT 토큰을 가져온다
 
     if (!token) {
-      throw new UnauthorizedException('Token not found')
+      throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.CHAT.JWT.NOT_FOUND)
     }
 
     try {

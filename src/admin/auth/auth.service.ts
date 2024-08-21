@@ -7,6 +7,7 @@ import { AdminRefreshToken } from './entities/admin.refresh-token.entity'
 import { TokenService } from '../../common/auth/token/token.service'
 import { JwtPayload } from '../../common/auth/token/interface/jwt-payload.interface'
 import { CreateAdminDto } from './dto/create-admin.dto'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Injectable()
 export class AdminAuthService {
@@ -26,7 +27,7 @@ export class AdminAuthService {
     const existedEamil = await this.adminRepository.findOne({ where: { email: email } })
 
     if (existedEamil) {
-      throw new Error('이미 존재하는 이메일 입니다.')
+      throw new Error(MAIN_MESSAGE_CONSTANT.ADMIN.AUTH.CREATE.ALREADY_EXIST_EMAIL)
     }
 
     const saltRounds = 10
@@ -38,7 +39,7 @@ export class AdminAuthService {
 
       return email
     } catch (error) {
-      throw new Error('어드민 계정 생성에 실패했습니다.')
+      throw new Error(MAIN_MESSAGE_CONSTANT.ADMIN.AUTH.CREATE.FAIL)
     }
   }
 
@@ -78,13 +79,12 @@ export class AdminAuthService {
   async signOut(refreshToken: string) {
     try {
       const payload = this.tokenService.verifyToken(refreshToken, 'admin')
-      console.log('확인@@@@@:', payload)
       const storedToken = await this.adminRefreshTokenRepository.findOne({
         where: { admin: { uid: payload.uid }, refreshToken: refreshToken.split(' ')[1] },
       })
 
       if (!storedToken) {
-        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.ADMIN.AUTH.SIG_OUT.UNAUTHRORIZED_REFRESH_TOKEN)
       }
 
       await this.adminRefreshTokenRepository.update({ admin: { uid: payload.uid } }, { refreshToken: null })
@@ -100,7 +100,7 @@ export class AdminAuthService {
       })
 
       if (!storedToken) {
-        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.')
+        throw new UnauthorizedException(MAIN_MESSAGE_CONSTANT.ADMIN.AUTH.UPDATE_TOKEN.UNAUTHRORIZED_REFRESH_TOKEN)
       }
       const tokens = await this.tokenService.generateTokens({ uid: payload.uid, email: payload.email, type: 'main' })
       await this.adminRefreshTokenRepository.update(

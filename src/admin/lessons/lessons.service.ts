@@ -11,6 +11,7 @@ import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { LessonApprovalRequests } from './entities/lesson-approval-request.entity'
 import { ApprovalType } from './types/approval.type'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Injectable()
 export class AdminLessonService {
@@ -39,10 +40,10 @@ export class AdminLessonService {
     try {
       const lesson = await queryRunner1.manager.findOne(Lesson, { where: { uid: lessonId } })
       if (!lesson) {
-        throw new NotFoundException('수업을 찾을 수 없습니다.')
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.ADMIN.LESSON.NOT_FOUND)
       }
       if (lesson.isVerified) {
-        throw new BadRequestException('이미 승인된 수업입니다.')
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.ADMIN.LESSON.ALREADY_APPROVED)
       }
 
       // 첫 번째 데이터베이스에서 수업 업데이트
@@ -67,7 +68,7 @@ export class AdminLessonService {
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error
       }
-      throw new InternalServerErrorException('강의 승인 처리에 실패했습니다.')
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.ADMIN.LESSON.APPROVE_FAIL)
     } finally {
       // 연결 해제
       await queryRunner1.release()
@@ -88,11 +89,11 @@ export class AdminLessonService {
     try {
       const lesson = await queryRunner1.manager.findOne(Lesson, { where: { uid: lessonId } })
       if (!lesson) {
-        throw new NotFoundException('수업을 찾을 수 없습니다.')
+        throw new NotFoundException(MAIN_MESSAGE_CONSTANT.ADMIN.LESSON.NOT_FOUND)
       }
 
       if (lesson.isVerified) {
-        throw new BadRequestException('이미 승인된 수업입니다.')
+        throw new BadRequestException(MAIN_MESSAGE_CONSTANT.ADMIN.LESSON.ALREADY_APPROVED)
       }
 
       await queryRunner1.manager.softDelete(Lesson, { uid: lessonId })
@@ -113,7 +114,7 @@ export class AdminLessonService {
         throw error
       }
       this.logger.error(error)
-      throw new InternalServerErrorException('강의 거부 처리에 실패했습니다.')
+      throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.ADMIN.LESSON.REJECT_FAIL)
     } finally {
       // 연결 해제
       await queryRunner1.release()

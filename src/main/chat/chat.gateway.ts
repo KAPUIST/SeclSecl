@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway, WebSocketServer, MessageBody, ConnectedSocket } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 import { RedisService } from '../../common/redis/redis.service'
 import { SocketJwtStrategy } from '../../common/strategies/socket.jwt.strategy'
 import { ChatService } from './chat.service'
@@ -113,7 +114,7 @@ export class ChatGateway {
         this.logger.log('joinRoom 이벤트 수신 - 사용자:', JSON.stringify({ cpUid, userUid }))
         chatRoom = await this.chatService.findCreateChatRoom(cpUid, userUid)
       } else {
-        throw new Error('cpUid 또는 userUid가 제공되지 않았습니다.')
+        throw new Error(MAIN_MESSAGE_CONSTANT.CHAT.CREATEFINDCHATROOM.INVALID_UID)
       }
 
       client.join(chatRoom.uid.toString())

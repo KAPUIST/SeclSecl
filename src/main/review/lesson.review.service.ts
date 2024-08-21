@@ -6,10 +6,11 @@ import { Batch } from '../../common/batches/entities/batch.entity'
 import { UserLesson } from '../users/entities/user-lessons.entity'
 import { User } from '../users/entities/user.entity'
 import { CreateReviewDto } from './dtos/create.review.dto'
-import { LessonReviewResponseDto } from './dtos/lesson.review.response.dto'
+import { LessonReviewRo } from './ro/lesson.review.ro'
 import { UpdateReviewDto } from './dtos/update.review.dto'
 import { LessonReview } from './entities/lesson.review.entity'
 import { NotificationService } from '../notification/notification.service'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Injectable()
 export class LessonReviewService {
@@ -27,152 +28,129 @@ export class LessonReviewService {
     private readonly notificationService: NotificationService,
   ) {}
 
+  //수업 찾기
+  private async findLessonById(lessonUid: string): Promise<Lesson> {
+    const lesson = await this.lessonRepository.findOne({ where: { uid: lessonUid } })
+
+    if (!lesson) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
+    }
+    return lesson
+  }
+
+  //유저 찾기
+  private async findUserById(userUid: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { uid: userUid }, relations: ['userInfo'] })
+
+    if (!user) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_USER)
+    }
+    return user
+  }
+
+  //리뷰 반환
+  private reviewResponse(savedReview: LessonReview, lesson: Lesson, user: User): LessonReviewRo {
+    const response = new LessonReviewRo()
+    response.uid = savedReview.uid
+    response.content = savedReview.content
+    response.rate = savedReview.rate
+    response.lessonUid = lesson.uid
+    response.nickname = user.userInfo.nickname
+    response.createdAt = savedReview.createdAt
+    return response
+  }
+
   //리뷰 등록
-  async createReview(id: string, uid, createReviewDto: CreateReviewDto): Promise<LessonReviewResponseDto> {
+  async createReview(lessonUid: string, userUid, createReviewDto: CreateReviewDto): Promise<LessonReviewRo> {
     const { batchUid } = createReviewDto
 
-    const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
-    if (!lesson) {
-      throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
-    }
-    //입력한 batchId가 받아온 lessonId의 batch인지 확인
-    const confirmBatch = await this.batchRepository.findOne({ where: { uid: batchUid, lessonUid: id } })
+    //수업 존재 확인
+    const lesson = await this.findLessonById(lessonUid)
+
+    //입력한 batchId가 받아온 lessonUid의 batch인지 확인
+    const confirmBatch = await this.batchRepository.findOne({ where: { uid: batchUid, lessonUid } })
     if (!confirmBatch) {
-      throw new Error('입력하신 batchId가 lessonId에 포함되지 않습니다.')
+      throw new Error(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_INCLUDE)
     }
 
     //내강의실 batch별 존재 확인
-    const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid, userUid: uid } })
+    const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid, userUid: userUid } })
     if (!batch) {
-      throw new NotFoundException('수강중인 기수를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_BATCH)
     }
 
     const existedReview = await this.lessonReviewRepository.findOne({
-      where: { batch: { uid: batchUid }, user: { uid: uid } },
+      where: { batch: { uid: batchUid }, user: { uid: userUid } },
     })
 
     if (existedReview) {
-      throw new Error('이미 리뷰를 작성했습니다.')
+      throw new Error(MAIN_MESSAGE_CONSTANT.REVIEW.ALREADY_EXIST)
     }
 
-    const user = await this.userRepository.findOne({
-      where: { uid: uid },
-      relations: ['userInfo'],
-    })
-
-    if (!user) {
-      throw new NotFoundException('해당 사용자를 찾을 수 없습니다.')
-    }
+    const user = await this.findUserById(userUid)
     const review = await this.lessonReviewRepository.create({ ...createReviewDto, lesson, user, batch: confirmBatch })
     const savedReview = await this.lessonReviewRepository.save(review)
 
     // 새 리뷰 등록 알림 전송
     await this.notificationService.createReviewNotification(savedReview)
 
-    const response = new LessonReviewResponseDto()
-    response.uid = savedReview.uid
-    response.content = savedReview.content
-    response.rate = savedReview.rate
-    response.lessonUid = lesson.uid
-    response.nickname = user.userInfo.nickname
-    response.createdAt = savedReview.createdAt
-
-    return response
+    return this.reviewResponse(savedReview, lesson, user)
   }
 
   //리뷰 조회
-  async readReviews(id: string): Promise<LessonReviewResponseDto[]> {
-    const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
-
-    if (!lesson) {
-      throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
-    }
+  async readReviews(id: string): Promise<LessonReviewRo[]> {
+    //수업 존재 확인
+    const lesson = await this.findLessonById(id)
 
     const reviews = await this.lessonReviewRepository.find({
       where: { lesson: { uid: id } },
       relations: ['lesson', 'user', 'user.userInfo'],
     })
 
-    return reviews.map((review) => {
-      const response = new LessonReviewResponseDto()
-      ;(response.uid = review.uid), (response.content = review.content)
-      response.rate = review.rate
-      response.lessonUid = review.lesson.uid
-      response.nickname = review.user.userInfo.nickname
-      response.createdAt = review.createdAt
-
-      return response
-    })
+    return reviews.map((review) => this.reviewResponse(review, lesson, review.user))
   }
 
   //리뷰 수정
   async updateReview(
-    lessonId: string,
-    reviewId: string,
-    uid: string,
+    lessonUid: string,
+    reviewUid: string,
+    userUid: string,
     updateReviewDto: UpdateReviewDto,
-  ): Promise<LessonReviewResponseDto> {
-    const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
+  ): Promise<LessonReviewRo> {
+    //수업 존재 확인
+    const lesson = await this.findLessonById(lessonUid)
 
-    if (!lesson) {
-      throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
-    }
-
-    const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewId } })
+    const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewUid } })
 
     if (!review) {
-      throw new NotFoundException('해당 리뷰를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_REVIEW)
     }
 
     Object.assign(review, updateReviewDto)
 
     const savedReview = await this.lessonReviewRepository.save(review)
 
-    const user = await this.userRepository.findOne({
-      where: { uid: uid },
-      relations: ['userInfo'],
-    })
+    const user = await this.findUserById(userUid)
 
-    const response = new LessonReviewResponseDto()
-    response.uid = savedReview.uid
-    response.content = savedReview.content
-    response.rate = savedReview.rate
-    response.lessonUid = lesson.uid
-    response.nickname = user.userInfo.nickname
-    response.createdAt = savedReview.createdAt
 
-    return response
+    return this.reviewResponse(savedReview, lesson, user)
   }
 
   //리뷰 삭제
-  async removeReview(lessonId: string, reviewId: string, uid: string): Promise<LessonReviewResponseDto> {
-    const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
+  async removeReview(lessonUid: string, reviewUid: string, userUid: string): Promise<LessonReviewRo> {
+    //수업 존재 확인
+    const lesson = await this.findLessonById(lessonUid)
 
-    if (!lesson) {
-      throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
-    }
-
-    const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewId } })
+    const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewUid } })
 
     if (!review) {
-      throw new NotFoundException('해당 리뷰를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_REVIEW)
     }
 
-    const user = await this.userRepository.findOne({
-      where: { uid: uid },
-      relations: ['userInfo'],
-    })
+    const user = await this.findUserById(userUid)
 
-    await this.lessonReviewRepository.delete(reviewId)
+    await this.lessonReviewRepository.delete(reviewUid)
 
-    const response = new LessonReviewResponseDto()
-    response.uid = review.uid
-    response.content = review.content
-    response.rate = review.rate
-    response.lessonUid = lesson.uid
-    response.nickname = user.userInfo.nickname
-    response.createdAt = review.createdAt
-
-    return response
+    return this.reviewResponse(review, lesson, user)
   }
 }

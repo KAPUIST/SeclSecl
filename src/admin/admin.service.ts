@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { Repository } from 'typeorm'
+import { MAIN_MESSAGE_CONSTANT } from '../common/messages/main.message'
 import { Cp } from '../cp/auth/entities/cp.entity'
 
 @Injectable()
@@ -36,10 +37,10 @@ export class AdminService {
   async approveCp(id: string) {
     const cp = await this.cpRepository.findOne({ where: { uid: id } })
     if (!cp) {
-      throw new NotFoundException('cp를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.ADMIN.CP.NOT_FOUND)
     }
     if (cp.isVerified) {
-      throw new BadRequestException('이미 승인된 CP입니다.')
+      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.ADMIN.CP.ALREADY_APPROVE)
     }
 
     cp.isVerified = true
@@ -51,11 +52,11 @@ export class AdminService {
     const cp = await this.cpRepository.findOne({ where: { uid: id } })
     console.log('cp:', cp)
     if (!cp) {
-      throw new NotFoundException('cp를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.ADMIN.CP.NOT_FOUND)
     }
 
     if (cp.isVerified) {
-      throw new BadRequestException('이미 승인된 CP입니다.')
+      throw new BadRequestException(MAIN_MESSAGE_CONSTANT.ADMIN.CP.ALREADY_APPROVE)
     }
 
     await this.cpRepository.remove(cp)

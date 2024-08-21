@@ -506,4 +506,50 @@ export const MAIN_MESSAGE_CONSTANT = {
       SEARCH: '검색을 성공했습니다.',
     },
   },
+  CHAT: {
+    COMMON: {
+      NOT_FOUND: '해당 채팅방이 없습니다.',
+    },
+    JWT: {
+      NOT_FOUND: '토큰이 없습니다.',
+      INVALID_TOKEN: '유효하지 않은 토큰입니다.',
+    },
+    CREATEFINDCHATROOM: {
+      INVALID_UID: 'cpUid와 userUid는 모두 필요합니다.',
+      SELF_CHAT_ROOM: '본인과의 채팅방은 만들 수 없습니다.',
+      INVALID_PARTICIPANTS: 'CP끼리 또는 사용자끼리는 채팅방을 만들 수 없습니다.',
+    },
+  },
+  ADMIN: {
+    AUTH: {
+      CREATE: {
+        ALREADY_EXIST_EMAIL: '이미 존재하는 이메일 입니다.',
+        FAIL: '어드민 계정 생성에 실패했습니다.',
+      },
+      SIG_OUT: {
+        UNAUTHRORIZED_REFRESH_TOKEN: '유효하지 않은 리프레시 토큰입니다.',
+      },
+      UPDATE_TOKEN: {
+        UNAUTHRORIZED_REFRESH_TOKEN: '유효하지 않은 리프레시 토큰입니다.',
+      },
+    },
+    LESSON: {
+      NOT_FOUND: '수업을 찾을 수 없습니다.',
+      ALREADY_APPROVED: '이미 승인된 수업입니다.',
+      APPROVE_FAIL: '강의 승인 처리에 실패했습니다.',
+      REJECT_FAIL: '강의 거부 처리에 실패했습니다.',
+    },
+    CP: {
+      NOT_FOUND: 'cp를 찾을 수 없습니다.',
+      ALREADY_APPROVE: '이미 승인된 CP입니다.',
+    },
+  },
+  REVIEW: {
+    NOT_FOUND_LESSON: '해당 수업을 찾을 수 없습니다.',
+    NOT_FOUND_BATCH: '수강중인 기수를 찾을 수 없습니다.',
+    NOT_INCLUDE: '입력하신 batchId가 lessonId에 포함되지 않습니다.',
+    ALREADY_EXIST: '이미 리뷰를 작성했습니다.',
+    NOT_FOUND_USER: '해당 사용자를 찾을 수 없습니다.',
+    NOT_FOUND_REVIEW: '해당 리뷰를 찾을 수 없습니다.',
+  },
 }
