@@ -550,7 +550,6 @@ export const MAIN_MESSAGE_CONSTANT = {
     NOT_INCLUDE: '입력하신 batchId가 lessonId에 포함되지 않습니다.',
     ALREADY_EXIST: '이미 리뷰를 작성했습니다.',
     NOT_FOUND_USER: '해당 사용자를 찾을 수 없습니다.',
-    NOT_FOUND_REVIEW: '해당 리뷰를 찾을 수 없습니다.'
-
-  }
+    NOT_FOUND_REVIEW: '해당 리뷰를 찾을 수 없습니다.',
+  },
 }

@@ -28,15 +28,24 @@ export class LessonReviewService {
     private readonly notificationService: NotificationService,
   ) {}
 
+  //수업 찾기
+  private async findLessonById(lessonUid: string): Promise<Lesson> {
+    const lesson = await this.lessonRepository.findOne({ where: {uid: lessonUid}})
+
+    if(!lesson) {
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
+    }
+    return lesson
+  }
+
   //리뷰 등록
   async createReview(id: string, uid, createReviewDto: CreateReviewDto): Promise<LessonReviewResponseDto> {
     const { batchUid } = createReviewDto
 
-    const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
-    if (!lesson) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
-    }
-    //입력한 batchId가 받아온 lessonId의 batch인지 확인
+    //수업 존재 확인
+    const lesson = await this.findLessonById(id)
+
+    //입력한 batchId가 받아온 lessonUid의 batch인지 확인
     const confirmBatch = await this.batchRepository.findOne({ where: { uid: batchUid, lessonUid: id } })
     if (!confirmBatch) {
       throw new Error(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_INCLUDE)
@@ -83,11 +92,8 @@ export class LessonReviewService {
 
   //리뷰 조회
   async readReviews(id: string): Promise<LessonReviewResponseDto[]> {
-    const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
-
-    if (!lesson) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
-    }
+    //수업 존재 확인
+    const lesson = await this.findLessonById(id)
 
     const reviews = await this.lessonReviewRepository.find({
       where: { lesson: { uid: id } },
@@ -108,18 +114,16 @@ export class LessonReviewService {
 
   //리뷰 수정
   async updateReview(
-    lessonId: string,
-    reviewId: string,
+    lessonUid: string,
+    reviewUid: string,
     uid: string,
     updateReviewDto: UpdateReviewDto,
   ): Promise<LessonReviewResponseDto> {
-    const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
+    
+        //수업 존재 확인
+        const lesson = await this.findLessonById(lessonUid)
 
-    if (!lesson) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
-    }
-
-    const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewId } })
+    const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewUid } })
 
     if (!review) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_REVIEW)
@@ -146,14 +150,12 @@ export class LessonReviewService {
   }
 
   //리뷰 삭제
-  async removeReview(lessonId: string, reviewId: string, uid: string): Promise<LessonReviewResponseDto> {
-    const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
+  async removeReview(lessonUid: string, reviewUid: string, uid: string): Promise<LessonReviewResponseDto> {
+  
+    //수업 존재 확인
+    const lesson = await this.findLessonById(lessonUid)
 
-    if (!lesson) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
-    }
-
-    const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewId } })
+    const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewUid } })
 
     if (!review) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_REVIEW)
@@ -164,7 +166,7 @@ export class LessonReviewService {
       relations: ['userInfo'],
     })
 
-    await this.lessonReviewRepository.delete(reviewId)
+    await this.lessonReviewRepository.delete(reviewUid)
 
     const response = new LessonReviewResponseDto()
     response.uid = review.uid

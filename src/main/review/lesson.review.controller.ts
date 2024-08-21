@@ -11,8 +11,8 @@ import { LessonReviewService } from './lesson.review.service'
 export class ReviewController {
   constructor(private readonly lessonReviewService: LessonReviewService) {}
 
-  @Post('/:lessonId/reviews')
-  async createReview(@Param('lessonId') id: string, @Req() req, @Body() createReviewDto: CreateReviewDto) {
+  @Post('/:lessonUid/reviews')
+  async createReview(@Param('lessonUid') id: string, @Req() req, @Body() createReviewDto: CreateReviewDto) {
     const data = await this.lessonReviewService.createReview(id, req.user.uid, createReviewDto)
 
     return {
@@ -22,8 +22,8 @@ export class ReviewController {
     }
   }
 
-  @Get('/:lessonId/reviews')
-  async readReviews(@Param('lessonId') id: string) {
+  @Get('/:lessonUid/reviews')
+  async readReviews(@Param('lessonUid') id: string) {
     const data = await this.lessonReviewService.readReviews(id)
 
     return {
@@ -33,14 +33,14 @@ export class ReviewController {
     }
   }
 
-  @Patch('/:lessons/reviews/:reviewId')
+  @Patch('/:lessons/reviews/:reviewUid')
   async updateReview(
-    @Param('lessonId') lessonId: string,
-    @Param('reviewId') reviewId: string,
+    @Param('lessonUid') lessonUid: string,
+    @Param('reviewUid') reviewUid: string,
     @Body() updateReviewDto: UpdateReviewDto,
     @Req() req,
   ) {
-    const data = await this.lessonReviewService.updateReview(lessonId, reviewId, req.user.uid, updateReviewDto)
+    const data = await this.lessonReviewService.updateReview(lessonUid, reviewUid, req.user.uid, updateReviewDto)
 
     return {
       status: HttpStatus.OK,
@@ -49,9 +49,9 @@ export class ReviewController {
     }
   }
 
-  @Delete('/:lessons/reviews/:reviewId')
-  async removeReview(@Param('lessonId') lessonId: string, @Param('reviewId') reviewId: string, @Req() req) {
-    const data = await this.lessonReviewService.removeReview(lessonId, reviewId, req.user.uid)
+  @Delete('/:lessons/reviews/:reviewUid')
+  async removeReview(@Param('lessonUid') lessonUid: string, @Param('reviewUid') reviewUid: string, @Req() req) {
+    const data = await this.lessonReviewService.removeReview(lessonUid, reviewUid, req.user.uid)
 
     return {
       status: HttpStatus.OK,
