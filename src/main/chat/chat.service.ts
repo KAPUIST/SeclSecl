@@ -25,7 +25,7 @@ export class ChatService {
     const chatRoom = await this.chatRoomRepository.findOne({ where: { uid: chatRoomUid } })
 
     if (!chatRoom) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.CHAT.SERVICE.COMMON.NOT_FOUND)
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.CHAT.COMMON.NOT_FOUND)
     }
 
     return [chatRoom.cpUid, chatRoom.userUid]
@@ -34,12 +34,12 @@ export class ChatService {
   //채팅방 찾기/만들기
   async findCreateChatRoom(cpUid: string, userUid: string): Promise<ChatRoom> {
     //유효성 검사 추가
-    if(!cpUid || !userUid) {
-      throw new Error(MAIN_MESSAGE_CONSTANT.CHAT.SERVICE.CREATEFINDCHATROOM.INVALID_UID)
+    if (!cpUid || !userUid) {
+      throw new Error(MAIN_MESSAGE_CONSTANT.CHAT.CREATEFINDCHATROOM.INVALID_UID)
     }
     //본인과의 채팅방 만들 수 없도록
     if (cpUid === userUid) {
-      throw new Error(MAIN_MESSAGE_CONSTANT.CHAT.SERVICE.CREATEFINDCHATROOM.SELF_CHAT_ROOM)
+      throw new Error(MAIN_MESSAGE_CONSTANT.CHAT.CREATEFINDCHATROOM.SELF_CHAT_ROOM)
     }
 
     //cp끼리 user끼리 채팅방 만들 수 없도록
@@ -50,7 +50,7 @@ export class ChatService {
     const User2 = await this.userInfoRepository.findOne({ where: { uid: userUid } })
 
     if ((Cp1 && Cp2) || (User1 && User2)) {
-      throw new Error(MAIN_MESSAGE_CONSTANT.CHAT.SERVICE.CREATEFINDCHATROOM.INVALID_PARTICIPANTS)
+      throw new Error(MAIN_MESSAGE_CONSTANT.CHAT.CREATEFINDCHATROOM.INVALID_PARTICIPANTS)
     }
 
     let chatRoom = await this.chatRoomRepository.findOne({ where: { cpUid, userUid } })
@@ -66,7 +66,7 @@ export class ChatService {
   async saveMessage(chatRoomUid: string, sender: string, content: string): Promise<any> {
     const chatRoom = await this.chatRoomRepository.findOne({ where: { uid: chatRoomUid } })
     if (!chatRoom) {
-      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.CHAT.SERVICE.COMMON.NOT_FOUND)
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.CHAT.COMMON.NOT_FOUND)
     }
     const message = this.messageRepository.create({ chatRoom, sender, content, isRead: false })
     const savedMessage = await this.messageRepository.save(message)

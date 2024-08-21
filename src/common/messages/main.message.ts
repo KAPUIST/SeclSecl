@@ -507,16 +507,17 @@ export const MAIN_MESSAGE_CONSTANT = {
     },
   },
   CHAT: {
-    SERVICE: {
-      COMMON:{
+      COMMON: {
         NOT_FOUND: '해당 채팅방이 없습니다.'
       },
-      CREATEFINDCHATROOM:{
+      JWT: {
+        NOT_FOUND: '토큰이 없습니다.',
+        INVALID_TOKEN: '유효하지 않은 토큰입니다.'
+      },
+      CREATEFINDCHATROOM: {
         INVALID_UID: 'cpUid와 userUid는 모두 필요합니다.',
         SELF_CHAT_ROOM: '본인과의 채팅방은 만들 수 없습니다.',
         INVALID_PARTICIPANTS: 'CP끼리 또는 사용자끼리는 채팅방을 만들 수 없습니다.',
-
       },
-    }
-  }
+  },
 }

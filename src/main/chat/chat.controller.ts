@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { ChatService } from './chat.service'
 import { Response } from 'express'
 import { User } from '../../common/decorator/user-decorator'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @ApiBearerAuth()
 @ApiTags('채팅 불러오기')
@@ -38,7 +39,7 @@ export class ChatController {
     } catch (error) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Failed to get messages',
+        message: MAIN_MESSAGE_CONSTANT.CHAT.JWT.INVALID_TOKEN,
       })
     }
   }
