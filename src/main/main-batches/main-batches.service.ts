@@ -28,10 +28,10 @@ export class MainBatchesService {
     //기수를 조회할 수 있는 권한 확인
     await this.checkAuthorization(uid, params.lessonUid)
     //지난 모집기간 걸러내기
-    const cuurntDate = new Date()
+    const currentDate = new Date()
 
     const batches = await this.batchRepository.find({
-      where: { lessonUid: params.lessonUid, recruitmentEnd: MoreThan(cuurntDate) },
+      where: { lessonUid: params.lessonUid, recruitmentEnd: MoreThan(currentDate) },
       order: { createdAt: 'DESC' },
     })
     if (batches.length === 0) {
@@ -54,6 +54,7 @@ export class MainBatchesService {
           currentEnrollment: batch.currentEnrollment,
           startTime: batch.startTime,
           batchDays,
+          isDone: batch.isDone,
         }
       }),
     )
@@ -82,6 +83,7 @@ export class MainBatchesService {
       title: batch.lesson.title,
       description: batch.lesson.description,
       batchDays,
+      isDone: batch.isDone,
     }
   }
 

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { ArrayMinSize, ArrayNotEmpty, IsDate, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator'
+import { ArrayMinSize, ArrayNotEmpty, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator'
 import { BatchDayType } from '../../../common/batches/types/batch-types'
 
 export class UpdateBatchDto {
@@ -38,7 +38,7 @@ export class UpdateBatchDto {
   @IsOptional()
   startTime?: string
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsNumber()
   @IsOptional()
   maxEnrollment?: number
@@ -48,4 +48,9 @@ export class UpdateBatchDto {
   @IsEnum(BatchDayType, { each: true })
   @IsOptional()
   days?: BatchDayType[]
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  isDone?: boolean
 }

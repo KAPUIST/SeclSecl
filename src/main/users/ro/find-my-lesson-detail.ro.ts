@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsUUID, IsBoolean, IsDate, IsNumber, IsPositive, ValidateNested, IsArray } from 'class-validator'
+import { IsString, IsUUID, IsDate, IsNumber, IsPositive, ValidateNested, IsArray } from 'class-validator'
 import { Type } from 'class-transformer'
 
 class BatchInfo {
@@ -77,10 +77,6 @@ export class FindMyLessonDetailRO {
   @ApiProperty({ description: '기수 Uid' })
   @IsUUID()
   batchUid: string
-
-  @ApiProperty({ description: '완료 여부' })
-  @IsBoolean()
-  isDone: boolean
 
   @ApiProperty({ description: '생성 일시' })
   @IsDate()
