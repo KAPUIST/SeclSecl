@@ -1,6 +1,6 @@
 import { Rate } from '../type/lesson.review.rate'
 
-export class DeletedReviewResponseDto {
+export class LessonReviewRo {
   uid: string
   content: string
   rate: Rate

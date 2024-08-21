@@ -6,7 +6,7 @@ import { Batch } from '../../common/batches/entities/batch.entity'
 import { UserLesson } from '../users/entities/user-lessons.entity'
 import { User } from '../users/entities/user.entity'
 import { CreateReviewDto } from './dtos/create.review.dto'
-import { LessonReviewResponseDto } from './dtos/lesson.review.response.dto'
+import { LessonReviewRo } from './ro/lesson.review.ro'
 import { UpdateReviewDto } from './dtos/update.review.dto'
 import { LessonReview } from './entities/lesson.review.entity'
 import { NotificationService } from '../notification/notification.service'
@@ -40,7 +40,7 @@ export class LessonReviewService {
 
   //유저 찾기
   private async findUserById(userUid: string): Promise<User> {
-    const user = await this.userRepository.findOne({where: {uid: userUid}, relations: ['userInfo']})
+    const user = await this.userRepository.findOne({ where: { uid: userUid }, relations: ['userInfo'] })
 
     if (!user) {
       throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_USER)
@@ -48,8 +48,20 @@ export class LessonReviewService {
     return user
   }
 
+  //리뷰 반환
+  private reviewResponse(savedReview: LessonReview, lesson: Lesson, user: User): LessonReviewRo {
+    const response = new LessonReviewRo()
+    response.uid = savedReview.uid
+    response.content = savedReview.content
+    response.rate = savedReview.rate
+    response.lessonUid = lesson.uid
+    response.nickname = user.userInfo.nickname
+    response.createdAt = savedReview.createdAt
+    return response
+  }
+
   //리뷰 등록
-  async createReview(lessonUid: string, userUid, createReviewDto: CreateReviewDto): Promise<LessonReviewResponseDto> {
+  async createReview(lessonUid: string, userUid, createReviewDto: CreateReviewDto): Promise<LessonReviewRo> {
     const { batchUid } = createReviewDto
 
     //수업 존재 확인
@@ -82,19 +94,11 @@ export class LessonReviewService {
     // 새 리뷰 등록 알림 전송
     await this.notificationService.createReviewNotification(savedReview)
 
-    const response = new LessonReviewResponseDto()
-    response.uid = savedReview.uid
-    response.content = savedReview.content
-    response.rate = savedReview.rate
-    response.lessonUid = lesson.uid
-    response.nickname = user.userInfo.nickname
-    response.createdAt = savedReview.createdAt
-
-    return response
+    return this.reviewResponse(savedReview, lesson, user)
   }
 
   //리뷰 조회
-  async readReviews(id: string): Promise<LessonReviewResponseDto[]> {
+  async readReviews(id: string): Promise<LessonReviewRo[]> {
     //수업 존재 확인
     const lesson = await this.findLessonById(id)
 
@@ -103,16 +107,7 @@ export class LessonReviewService {
       relations: ['lesson', 'user', 'user.userInfo'],
     })
 
-    return reviews.map((review) => {
-      const response = new LessonReviewResponseDto()
-      ;(response.uid = review.uid), (response.content = review.content)
-      response.rate = review.rate
-      response.lessonUid = review.lesson.uid
-      response.nickname = review.user.userInfo.nickname
-      response.createdAt = review.createdAt
-
-      return response
-    })
+    return reviews.map((review) => this.reviewResponse(review, lesson, review.user))
   }
 
   //리뷰 수정
@@ -121,7 +116,7 @@ export class LessonReviewService {
     reviewUid: string,
     userUid: string,
     updateReviewDto: UpdateReviewDto,
-  ): Promise<LessonReviewResponseDto> {
+  ): Promise<LessonReviewRo> {
     //수업 존재 확인
     const lesson = await this.findLessonById(lessonUid)
 
@@ -137,19 +132,12 @@ export class LessonReviewService {
 
     const user = await this.findUserById(userUid)
 
-    const response = new LessonReviewResponseDto()
-    response.uid = savedReview.uid
-    response.content = savedReview.content
-    response.rate = savedReview.rate
-    response.lessonUid = lesson.uid
-    response.nickname = user.userInfo.nickname
-    response.createdAt = savedReview.createdAt
 
-    return response
+    return this.reviewResponse(savedReview, lesson, user)
   }
 
   //리뷰 삭제
-  async removeReview(lessonUid: string, reviewUid: string, userUid: string): Promise<LessonReviewResponseDto> {
+  async removeReview(lessonUid: string, reviewUid: string, userUid: string): Promise<LessonReviewRo> {
     //수업 존재 확인
     const lesson = await this.findLessonById(lessonUid)
 
@@ -163,14 +151,6 @@ export class LessonReviewService {
 
     await this.lessonReviewRepository.delete(reviewUid)
 
-    const response = new LessonReviewResponseDto()
-    response.uid = review.uid
-    response.content = review.content
-    response.rate = review.rate
-    response.lessonUid = lesson.uid
-    response.nickname = user.userInfo.nickname
-    response.createdAt = review.createdAt
-
-    return response
+    return this.reviewResponse(review, lesson, user)
   }
 }
