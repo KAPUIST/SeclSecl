@@ -51,6 +51,9 @@ export class Batch {
   @Column({ default: 0 })
   currentEnrollment: number
 
+  @Column({ default: false })
+  isDone: boolean
+
   @CreateDateColumn()
   createdAt: Date
 

@@ -14,10 +14,6 @@ export class FindMyLessonRO {
   @IsUUID()
   batchUid: string
 
-  @ApiProperty({ description: '완료 여부' })
-  @IsString()
-  isDone: boolean
-
   @ApiProperty({ description: '강의 제목' })
   @IsString()
   title: string

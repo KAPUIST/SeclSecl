@@ -85,7 +85,6 @@ export class UsersService {
       uid: userLesson.uid,
       userUid: userLesson.userUid,
       batchUid: userLesson.batchUid,
-      isDone: userLesson.isDone,
       title: userLesson.title,
       teacher: userLesson.teacher,
       status: userLesson.status,
@@ -105,7 +104,6 @@ export class UsersService {
     return {
       userUid: userLesson.userUid,
       batchUid: userLesson.batchUid,
-      isDone: userLesson.isDone,
       createdAt: userLesson.createdAt,
       updatedAt: userLesson.updatedAt,
       batch: {
@@ -240,7 +238,6 @@ export class UsersService {
           'lesson.status AS status',
           'batch.startDate AS startDate',
           'batch.endDate AS endDate',
-          'userLesson.isDone AS isDone',
           'lessonImages.url AS imageUrl',
         ])
         .getRawMany()
@@ -270,7 +267,6 @@ export class UsersService {
         .select([
           'userLesson.userUid',
           'userLesson.batchUid',
-          'userLesson.isDone',
           'userLesson.createdAt',
           'userLesson.updatedAt',
           'batch.uid',

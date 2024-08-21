@@ -22,9 +22,6 @@ export class UserLesson {
   @Column()
   batchUid: string
 
-  @Column({ default: false })
-  isDone: boolean
-
   @CreateDateColumn()
   createdAt: Date
 

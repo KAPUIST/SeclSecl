@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDate, IsEnum, IsNumber, IsString } from 'class-validator'
+import { IsBoolean, IsDate, IsEnum, IsNumber, IsString } from 'class-validator'
 import { BatchDayType } from '../../../common/batches/types/batch-types'
 
 export class FindOneBatchRo {
@@ -58,4 +58,8 @@ export class FindOneBatchRo {
   @ApiProperty({ description: '수강 요일' })
   @IsEnum(BatchDayType, { each: true })
   batchDays: BatchDayType[]
+
+  @ApiProperty({ description: '완료 여부' })
+  @IsBoolean()
+  isDone: boolean
 }
