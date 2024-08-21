@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsUUID, IsDate, IsNumber, IsPositive, ValidateNested, IsArray } from 'class-validator'
+import { IsString, IsUUID, IsDate, IsNumber, IsPositive, ValidateNested, IsArray, IsBoolean } from 'class-validator'
 import { Type } from 'class-transformer'
 
 class BatchInfo {
@@ -31,6 +31,10 @@ class BatchInfo {
   @ApiProperty({ description: '강의 시작 시간' })
   @IsString()
   startTime: string
+
+  @ApiProperty({ description: '완료 여부' })
+  @IsBoolean()
+  isDone: boolean
 }
 
 class LessonInfo {

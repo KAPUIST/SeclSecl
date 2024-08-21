@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDateString, IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsDateString, IsString, IsUUID } from 'class-validator'
 
 export class FindMyLessonRO {
   @ApiProperty({ description: '내 강의 목록 Uid' })
@@ -37,4 +37,8 @@ export class FindMyLessonRO {
   @ApiProperty({ description: '강의 이미지' })
   @IsString()
   imageUrl: string
+
+  @ApiProperty({ description: '완료 여부' })
+  @IsBoolean()
+  isDone: boolean
 }
