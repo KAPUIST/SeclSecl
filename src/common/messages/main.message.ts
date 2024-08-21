@@ -506,4 +506,17 @@ export const MAIN_MESSAGE_CONSTANT = {
       SEARCH: '검색을 성공했습니다.',
     },
   },
+  CHAT: {
+    SERVICE: {
+      COMMON:{
+        NOT_FOUND: '해당 채팅방이 없습니다.'
+      },
+      CREATEFINDCHATROOM:{
+        INVALID_UID: 'cpUid와 userUid는 모두 필요합니다.',
+        SELF_CHAT_ROOM: '본인과의 채팅방은 만들 수 없습니다.',
+        INVALID_PARTICIPANTS: 'CP끼리 또는 사용자끼리는 채팅방을 만들 수 없습니다.',
+
+      },
+    }
+  }
 }
