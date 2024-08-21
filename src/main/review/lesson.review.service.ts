@@ -10,6 +10,7 @@ import { LessonReviewResponseDto } from './dtos/lesson.review.response.dto'
 import { UpdateReviewDto } from './dtos/update.review.dto'
 import { LessonReview } from './entities/lesson.review.entity'
 import { NotificationService } from '../notification/notification.service'
+import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
 
 @Injectable()
 export class LessonReviewService {
@@ -33,18 +34,18 @@ export class LessonReviewService {
 
     const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
     if (!lesson) {
-      throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
     }
     //입력한 batchId가 받아온 lessonId의 batch인지 확인
     const confirmBatch = await this.batchRepository.findOne({ where: { uid: batchUid, lessonUid: id } })
     if (!confirmBatch) {
-      throw new Error('입력하신 batchId가 lessonId에 포함되지 않습니다.')
+      throw new Error(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_INCLUDE)
     }
 
     //내강의실 batch별 존재 확인
     const batch = await this.userLessonRepository.findOne({ where: { batchUid: batchUid, userUid: uid } })
     if (!batch) {
-      throw new NotFoundException('수강중인 기수를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_BATCH)
     }
 
     const existedReview = await this.lessonReviewRepository.findOne({
@@ -52,7 +53,7 @@ export class LessonReviewService {
     })
 
     if (existedReview) {
-      throw new Error('이미 리뷰를 작성했습니다.')
+      throw new Error(MAIN_MESSAGE_CONSTANT.REVIEW.ALREADY_EXIST)
     }
 
     const user = await this.userRepository.findOne({
@@ -61,7 +62,7 @@ export class LessonReviewService {
     })
 
     if (!user) {
-      throw new NotFoundException('해당 사용자를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_USER)
     }
     const review = await this.lessonReviewRepository.create({ ...createReviewDto, lesson, user, batch: confirmBatch })
     const savedReview = await this.lessonReviewRepository.save(review)
@@ -85,7 +86,7 @@ export class LessonReviewService {
     const lesson = await this.lessonRepository.findOne({ where: { uid: id } })
 
     if (!lesson) {
-      throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
     }
 
     const reviews = await this.lessonReviewRepository.find({
@@ -115,13 +116,13 @@ export class LessonReviewService {
     const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
 
     if (!lesson) {
-      throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
     }
 
     const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewId } })
 
     if (!review) {
-      throw new NotFoundException('해당 리뷰를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_REVIEW)
     }
 
     Object.assign(review, updateReviewDto)
@@ -149,13 +150,13 @@ export class LessonReviewService {
     const lesson = await this.lessonRepository.findOne({ where: { uid: lessonId } })
 
     if (!lesson) {
-      throw new NotFoundException('해당 수업을 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_LESSON)
     }
 
     const review = await this.lessonReviewRepository.findOne({ where: { uid: reviewId } })
 
     if (!review) {
-      throw new NotFoundException('해당 리뷰를 찾을 수 없습니다.')
+      throw new NotFoundException(MAIN_MESSAGE_CONSTANT.REVIEW.NOT_FOUND_REVIEW)
     }
 
     const user = await this.userRepository.findOne({
