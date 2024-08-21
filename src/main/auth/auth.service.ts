@@ -139,7 +139,7 @@ export class AuthService {
         }),
       )
 
-      await lastValueFrom(this.sendBirdService.createUser(user.uid, nickname, 'https://example.com/profile.jpg'))
+      // await lastValueFrom(this.sendBirdService.createUser(user.uid, nickname, 'https://example.com/profile.jpg'))
       await this.redisService.deleteValue(`verified:${phoneNumber}`)
 
       return { email: user.email }
