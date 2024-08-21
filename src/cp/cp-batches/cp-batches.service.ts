@@ -81,6 +81,7 @@ export class CpBatchesService {
           maxEnrollment: createBatch.maxEnrollment,
           currentEnrollment: createBatch.currentEnrollment,
           createdDays,
+          isDone: createBatch.isDone,
         }
       } catch (err) {
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.TRANSACTION_ERROR)
@@ -116,6 +117,7 @@ export class CpBatchesService {
           currentEnrollment: batch.currentEnrollment,
           startTime: batch.startTime,
           batchDays,
+          isDone: batch.isDone,
         }
       }),
     )
@@ -146,6 +148,7 @@ export class CpBatchesService {
       title: batch.lesson.title,
       description: batch.lesson.description,
       batchDays,
+      isDone: batch.isDone,
     }
   }
 
@@ -188,6 +191,7 @@ export class CpBatchesService {
           createdAt: updatedBatch.createdAt,
           updatedAt: updatedBatch.updatedAt,
           updatedDays,
+          isDone: updatedBatch.isDone,
         }
       } catch (err) {
         throw new InternalServerErrorException(MAIN_MESSAGE_CONSTANT.BATCH.SERVICE.TRANSACTION_ERROR)
