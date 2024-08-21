@@ -91,6 +91,7 @@ export class UsersService {
       startDate: userLesson.startDate,
       endDate: userLesson.endDate,
       imageUrl: userLesson.imageUrl,
+      isDone: userLesson.isDone,
     }
   }
 
@@ -114,6 +115,7 @@ export class UsersService {
         startDate: userLesson.batch.startDate,
         endDate: userLesson.batch.endDate,
         startTime: userLesson.batch.startTime,
+        isDone: userLesson.batch.isDone,
       },
       lesson: {
         uid: userLesson.batch.lesson.uid,
@@ -238,6 +240,7 @@ export class UsersService {
           'lesson.status AS status',
           'batch.startDate AS startDate',
           'batch.endDate AS endDate',
+          'batch.isDone AS isDone',
           'lessonImages.url AS imageUrl',
         ])
         .getRawMany()
@@ -276,6 +279,7 @@ export class UsersService {
           'batch.startDate',
           'batch.endDate',
           'batch.startTime',
+          'batch.isDone',
           'lesson.uid',
           'lesson.cpUid',
           'lesson.title',
