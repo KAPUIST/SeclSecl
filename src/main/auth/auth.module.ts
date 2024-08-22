@@ -16,10 +16,11 @@ import { TokenModule } from '../../common/auth/token/token.Module'
 import { GuardModule } from '../../common/guards/guard.module'
 import { SendbirdModule } from '../../common/sendbird/sendbird.module'
 import { LocalStrategy } from '../../common/strategies/local.strategy'
+import { BandMember } from '../band/entities/band-members.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserInfos, RefreshToken]),
+    TypeOrmModule.forFeature([User, UserInfos, RefreshToken, BandMember]),
     PassportModule,
     RedisModule,
     SMSModule,
