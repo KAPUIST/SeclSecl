@@ -25,6 +25,7 @@ import { SendBirdService } from '../../common/sendbird/sendbird.service'
 import { lastValueFrom } from 'rxjs'
 import { GoogleSignUpDto } from './dtos/google-sign-up.dto'
 import { createHash } from 'crypto'
+import { BandMember } from '../band/entities/band-members.entity'
 
 @Injectable()
 export class AuthService {
@@ -39,6 +40,8 @@ export class AuthService {
     private readonly userInfosRepository: Repository<UserInfos>,
     @InjectRepository(RefreshToken)
     private refreshTokenRepository: Repository<RefreshToken>,
+    @InjectRepository(BandMember)
+    private readonly bandMemberRepository: Repository<BandMember>,
     private readonly smsService: SMSService,
     private tokenService: TokenService,
   ) {}
@@ -357,6 +360,11 @@ export class AuthService {
         throw new NotFoundException('사용자를 찾을 수 없습니다.')
       }
       await this.userRepository.softDelete(userUid)
+      // 벤드 멤버스 삭제 처리
+      const isBandMember = await this.bandMemberRepository.find({ where: { userUid } })
+      if (isBandMember) {
+        await this.bandMemberRepository.delete({ userUid })
+      }
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error
