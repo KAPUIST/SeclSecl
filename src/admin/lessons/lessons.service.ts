@@ -12,6 +12,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { LessonApprovalRequests } from './entities/lesson-approval-request.entity'
 import { ApprovalType } from './types/approval.type'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { ElasticsearchService } from '@nestjs/elasticsearch'
 
 @Injectable()
 export class AdminLessonService {
@@ -25,6 +26,7 @@ export class AdminLessonService {
     private readonly lessonRepository: Repository<Lesson>,
     @InjectRepository(LessonApprovalRequests, 'admin')
     private readonly lessonApprovalRequests: Repository<LessonApprovalRequests>,
+    private readonly elasticsearchService: ElasticsearchService,
   ) {}
 
   //수업 승인
@@ -56,6 +58,26 @@ export class AdminLessonService {
       approvalRequest.requestStatus = ApprovalType.APPROVED
 
       await queryRunner2.manager.save(approvalRequest)
+
+      // Elasticsearch에 업데이트
+      const imageUrl = lesson.images.length > 0 ? lesson.images[0].url : null
+
+      await this.elasticsearchService.update({
+        index: 'lessons',
+        id: lesson.uid,
+        body: {
+          doc: {
+            uid: lesson.uid,
+            title: lesson.title,
+            teacher: lesson.teacher,
+            description: lesson.description,
+            location: lesson.location,
+            status: lesson.status,
+            price: lesson.price,
+            image: { url: imageUrl },
+          },
+        },
+      })
 
       await queryRunner1.commitTransaction()
       await queryRunner2.commitTransaction()
