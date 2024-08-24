@@ -12,6 +12,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { LessonApprovalRequests } from './entities/lesson-approval-request.entity'
 import { ApprovalType } from './types/approval.type'
 import { MAIN_MESSAGE_CONSTANT } from '../../common/messages/main.message'
+import { ElasticsearchService } from '@nestjs/elasticsearch'
 
 @Injectable()
 export class AdminLessonService {
@@ -25,6 +26,7 @@ export class AdminLessonService {
     private readonly lessonRepository: Repository<Lesson>,
     @InjectRepository(LessonApprovalRequests, 'admin')
     private readonly lessonApprovalRequests: Repository<LessonApprovalRequests>,
+    private readonly elasticsearchService: ElasticsearchService,
   ) {}
 
   //수업 승인
@@ -45,11 +47,21 @@ export class AdminLessonService {
       if (lesson.isVerified) {
         throw new BadRequestException(MAIN_MESSAGE_CONSTANT.ADMIN.LESSON.ALREADY_APPROVED)
       }
-
       // 첫 번째 데이터베이스에서 수업 업데이트
       lesson.isVerified = true
       lesson.status = 'OPEN'
       await queryRunner1.manager.save(lesson)
+
+      // Elasticsearch에 status 업데이트
+      await this.elasticsearchService.update({
+        index: 'lessons',
+        id: lesson.uid,
+        body: {
+          doc: {
+            status: lesson.status,
+          },
+        },
+      })
 
       const approvalRequest = new LessonApprovalRequests()
       approvalRequest.lessonId = lesson.uid
@@ -59,6 +71,7 @@ export class AdminLessonService {
 
       await queryRunner1.commitTransaction()
       await queryRunner2.commitTransaction()
+
       return lesson
     } catch (error) {
       // 에러가 발생하면 롤백
@@ -104,6 +117,12 @@ export class AdminLessonService {
       rejectionRequest.rejectionReason = content
 
       await queryRunner2.manager.save(rejectionRequest)
+
+      // Elasticsearch에서 삭제
+      await this.elasticsearchService.delete({
+        index: 'lessons',
+        id: lesson.uid,
+      })
 
       await queryRunner1.commitTransaction()
       await queryRunner2.commitTransaction()

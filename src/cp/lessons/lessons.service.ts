@@ -188,22 +188,30 @@ export class LessonsService {
       // Elasticsearch에 업데이트
       const imageUrl = lesson.images.length > 0 ? lesson.images[0].url : null
 
-      await this.elasticsearchService.update({
-        index: 'lessons',
-        id: lesson.uid,
-        body: {
-          doc: {
-            uid: lesson.uid,
-            title: lesson.title,
-            teacher: lesson.teacher,
-            description: lesson.description,
-            location: lesson.location,
-            status: lesson.status,
-            price: lesson.price,
-            image: { url: imageUrl },
+      if (lesson.status !== 'close') {
+        await this.elasticsearchService.update({
+          index: 'lessons',
+          id: lesson.uid,
+          body: {
+            doc: {
+              uid: lesson.uid,
+              title: lesson.title,
+              teacher: lesson.teacher,
+              description: lesson.description,
+              location: lesson.location,
+              status: lesson.status,
+              price: lesson.price,
+              image: { url: imageUrl },
+            },
           },
-        },
-      })
+        })
+      } else {
+        // Elasticsearch에서 삭제
+        await this.elasticsearchService.delete({
+          index: 'lessons',
+          id: lesson.uid,
+        })
+      }
 
       await queryRunner.commitTransaction()
 

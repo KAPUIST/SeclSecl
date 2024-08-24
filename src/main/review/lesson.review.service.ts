@@ -132,7 +132,6 @@ export class LessonReviewService {
 
     const user = await this.findUserById(userUid)
 
-
     return this.reviewResponse(savedReview, lesson, user)
   }
 

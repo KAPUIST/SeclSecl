@@ -8,6 +8,7 @@ import { Lesson } from '../../common/lessons/entities/lessons.entity'
 import { AdminLessonController } from './lessons.controller'
 import { AdminLessonService } from './lessons.service'
 import { LessonApprovalRequests } from './entities/lesson-approval-request.entity'
+import { SearchModule } from '../../main/search/search.module'
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { LessonApprovalRequests } from './entities/lesson-approval-request.entit
     ConfigModule,
     GuardModule,
     TokenModule,
+    SearchModule,
   ],
   controllers: [AdminLessonController],
   providers: [AdminLessonService],
