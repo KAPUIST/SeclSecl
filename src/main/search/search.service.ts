@@ -113,7 +113,15 @@ export class SearchService implements OnModuleInit {
       const response = await this.elasticsearchService.search({
         index: 'lessons',
         body: {
-          query,
+          query: {
+            bool: {
+              must_not: [
+                { match: { status: 'pending' } }, // status가 'pending'인 문서를 제외
+                { match: { status: 'close' } }, // status가 'close'인 문서를 제외 > 대비용
+              ],
+              must: query, // 기존의 검색 조건을 그대로 사용
+            },
+          },
           sort: sortOptions,
           _source: ['title', 'teacher', 'location', 'description', 'price', 'uid', 'image'],
         },

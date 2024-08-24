@@ -47,11 +47,21 @@ export class AdminLessonService {
       if (lesson.isVerified) {
         throw new BadRequestException(MAIN_MESSAGE_CONSTANT.ADMIN.LESSON.ALREADY_APPROVED)
       }
-
       // 첫 번째 데이터베이스에서 수업 업데이트
       lesson.isVerified = true
       lesson.status = 'OPEN'
       await queryRunner1.manager.save(lesson)
+
+      // Elasticsearch에 status 업데이트
+      await this.elasticsearchService.update({
+        index: 'lessons',
+        id: lesson.uid,
+        body: {
+          doc: {
+            status: lesson.status,
+          },
+        },
+      })
 
       const approvalRequest = new LessonApprovalRequests()
       approvalRequest.lessonId = lesson.uid
@@ -59,31 +69,13 @@ export class AdminLessonService {
 
       await queryRunner2.manager.save(approvalRequest)
 
-      // Elasticsearch에 업데이트
-      const imageUrl = lesson.images.length > 0 ? lesson.images[0].url : null
-
-      await this.elasticsearchService.update({
-        index: 'lessons',
-        id: lesson.uid,
-        body: {
-          doc: {
-            uid: lesson.uid,
-            title: lesson.title,
-            teacher: lesson.teacher,
-            description: lesson.description,
-            location: lesson.location,
-            status: lesson.status,
-            price: lesson.price,
-            image: { url: imageUrl },
-          },
-        },
-      })
-
       await queryRunner1.commitTransaction()
       await queryRunner2.commitTransaction()
+
       return lesson
     } catch (error) {
       // 에러가 발생하면 롤백
+      console.log('error', error)
       this.logger.error(error)
       await queryRunner1.rollbackTransaction()
       await queryRunner2.rollbackTransaction()
@@ -126,6 +118,12 @@ export class AdminLessonService {
       rejectionRequest.rejectionReason = content
 
       await queryRunner2.manager.save(rejectionRequest)
+
+      // Elasticsearch에서 삭제
+      await this.elasticsearchService.delete({
+        index: 'lessons',
+        id: lesson.uid,
+      })
 
       await queryRunner1.commitTransaction()
       await queryRunner2.commitTransaction()
