@@ -75,7 +75,6 @@ export class AdminLessonService {
       return lesson
     } catch (error) {
       // 에러가 발생하면 롤백
-      console.log('error', error)
       this.logger.error(error)
       await queryRunner1.rollbackTransaction()
       await queryRunner2.rollbackTransaction()
